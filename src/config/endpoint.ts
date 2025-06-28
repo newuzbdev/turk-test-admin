@@ -9,3 +9,4 @@ export const authEndpoints = {
     refresh: "/api/admin/refresh",
     logout: "/api/admin/logout",
 };
+export const ieltsEndpoint = '/api/ielts';
