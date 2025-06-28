@@ -1,6 +1,5 @@
-import { Outlet } from 'react-router';
-import { Listening, Reading } from './lazy-pages';
-import { Book, Headphones } from 'lucide-react';
+import { Listening, Login, Reading } from './lazy-pages';
+import { Book, Headphones, LogIn } from 'lucide-react';
 
 
 export interface RouterConfig {
@@ -16,12 +15,12 @@ export interface RouterConfig {
 
 export const routerConfig: RouterConfig[] = [
     {
-        title: 'Reading',
-        label: 'Reading',
-        icon: <Book />,
-        path: 'reading',
-        page: <Reading />,
-        inMenu: true,
+        title: 'Login',
+        label: 'Login',
+        icon: <LogIn />,
+        path: 'login',
+        page: <Login />,
+        inMenu: false,
     },
     {
         title: 'Listening',
@@ -29,6 +28,14 @@ export const routerConfig: RouterConfig[] = [
         icon: <Headphones />,
         path: 'listening',
         page: <Listening />,
+        inMenu: true,
+    },
+    {
+        title: 'Reading',
+        label: 'Reading',
+        icon: <Book />,
+        path: 'reading',
+        page: <Reading />,
         inMenu: true,
     },
     // {
