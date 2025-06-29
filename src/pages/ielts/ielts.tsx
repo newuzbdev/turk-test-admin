@@ -52,6 +52,14 @@ export default function IELTSPage() {
 
     const columns = [
         {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: string) => (
+                <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{text}</span>
+            ),
+        },
+        {
             title: 'Sarlavha',
             dataIndex: 'title',
             key: 'title',
@@ -82,6 +90,7 @@ export default function IELTSPage() {
             ),
         },
     ];
+
 
     return (
         <div className="p-6">

@@ -4,119 +4,143 @@ import { api } from '..';
 import { notification } from 'antd';
 
 export interface TestAnswerDto {
-    variant: string;
-    answer: string;
-    correct: boolean;
+  variant: string;
+  answer: string;
+  correct: boolean;
 }
 
 export interface TestQuestionDto {
-    number: number;
-    type: string;
-    text: string;
-    answers: TestAnswerDto[];
+  number: number;
+  type: string;
+  text: string;
+  answers: TestAnswerDto[];
 }
 
 export interface TestSectionDto {
-    title: string;
-    content: string;
-    imageUrl: string;
-    questions: TestQuestionDto[];
+  title: string;
+  content: string;
+  imageUrl: string;
+  questions: TestQuestionDto[];
 }
 
 export interface TestPartDto {
-    number: number;
-    audioUrl: string;
-    title: string;
-    sections: TestSectionDto[];
+  number: number;
+  audioUrl: string;
+  title: string;
+  sections: TestSectionDto[];
 }
 
 export interface TestItem {
-    id: string;
-    title: string;
-    type: string;
-    ieltsId: string;
-    createdAt: string;
-    updatedAt: string;
-    parts: TestPartDto[];
+  id: string;
+  title: string;
+  type: string;
+  ieltsId: string;
+  createdAt: string;
+  updatedAt: string;
+  parts: TestPartDto[];
 }
 
 export interface CreateTestDto {
-    title: string;
-    type: string;
-    ieltsId: string;
-    parts: TestPartDto[];
+  title: string;
+  type: string;
+  ieltsId: string;
+  parts: TestPartDto[];
+}
+
+export interface SubmitAnswerDto {
+  questionId: string;
+  userAnswer: string;
 }
 
 const endpoint = '/api/test';
 
 export const useGetTestList = (page: number = 1, limit: number = 10) => {
-    return useQuery({
-        queryKey: ['test', page, limit],
-        queryFn: async () => {
-            const { data } = await api.get(`${endpoint}?page=${page}&limit=${limit}`);
-            return data;
-        },
-    });
+  return useQuery({
+    queryKey: ['test', page, limit],
+    queryFn: async () => {
+      const { data } = await api.get(`${endpoint}?page=${page}&limit=${limit}`);
+      return data;
+    },
+  });
 };
 
 export const useGetOneTest = (id: string) => {
-    return useQuery({
-        queryKey: ['test', id],
-        queryFn: async () => {
-            const { data } = await api.get(`${endpoint}/${id}`);
-            return data;
-        },
-        enabled: !!id,
-    });
+  return useQuery({
+    queryKey: ['test', id],
+    queryFn: async () => {
+      const { data } = await api.get(`${endpoint}/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
 };
 
 export const useCreateTest = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (values: CreateTestDto) => {
-            const { data } = await api.post(endpoint, values);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['test'] });
-            notification.success({ message: 'Test muvaffaqiyatli yaratildi', placement: 'bottomRight' });
-        },
-        onError: () => {
-            notification.error({ message: 'Test yaratishda xatolik yuz berdi', placement: 'bottomRight' });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (values: CreateTestDto) => {
+      const { data } = await api.post(endpoint, values);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['test'] });
+      notification.success({ message: 'Test muvaffaqiyatli yaratildi', placement: 'bottomRight' });
+    },
+    onError: () => {
+      notification.error({ message: 'Test yaratishda xatolik yuz berdi', placement: 'bottomRight' });
+    },
+  });
 };
 
 export const useUpdateTest = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...values }: CreateTestDto & { id: string }) => {
-            const { data } = await api.patch(`${endpoint}/${id}`, values);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['test'] });
-            notification.success({ message: 'Test yangilandi', placement: 'bottomRight' });
-        },
-        onError: () => {
-            notification.error({ message: 'Test yangilashda xatolik yuz berdi', placement: 'bottomRight' });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: CreateTestDto & { id: string }) => {
+      const { data } = await api.patch(`${endpoint}/${id}`, values);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['test'] });
+      notification.success({ message: 'Test yangilandi', placement: 'bottomRight' });
+    },
+    onError: () => {
+      notification.error({ message: 'Test yangilashda xatolik yuz berdi', placement: 'bottomRight' });
+    },
+  });
 };
 
 export const useDeleteTest = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { data } = await api.delete(`${endpoint}/${id}`);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['test'] });
-            notification.success({ message: 'Test o\'chirildi', placement: 'bottomRight' });
-        },
-        onError: () => {
-            notification.error({ message: 'Test o\'chirishda xatolik yuz berdi', placement: 'bottomRight' });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`${endpoint}/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['test'] });
+      notification.success({ message: 'Test o\'chirildi', placement: 'bottomRight' });
+    },
+    onError: () => {
+      notification.error({ message: 'Test o\'chirishda xatolik yuz berdi', placement: 'bottomRight' });
+    },
+  });
+};
+
+export const useSubmitTestAnswers = () => {
+  return useMutation({
+    mutationFn: async (answers: SubmitAnswerDto[]) => {
+      const { data } = await api.post(`${endpoint}/submit-all`, { answers });
+      return data;
+    },
+    onSuccess: () => {
+      notification.success({ message: 'Javoblar yuborildi', placement: 'bottomRight' });
+    },
+    onError: (err: any) => {
+      if (err?.response?.status === 403) {
+        notification.error({ message: 'Ruxsat yo\'q: admin bo\'lishingiz kerak', placement: 'bottomRight' });
+      } else {
+        notification.error({ message: 'Javoblar yuborishda xatolik', placement: 'bottomRight' });
+      }
+    },
+  });
 };
