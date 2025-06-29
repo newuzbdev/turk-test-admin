@@ -19,7 +19,6 @@ export const AntProvider = ({ children }: PropsWithChildren) => {
     const errorColor = isDark ? '#EF4444' : '#DC2626' // Red shade
     const infoColor = isDark ? '#3B82F6' : '#2563EB' // Blue shade
 
-    // Background colors
     const bgBase = isDark ? '#1E1F2E' : '#FFFFFF'
     // const bgSecondary = isDark ? '#282A3F' : '#F9FAFB'
     // const bgTertiary = isDark ? '#363850' : '#F3F4F6'
@@ -150,7 +149,6 @@ export const AntProvider = ({ children }: PropsWithChildren) => {
                         // bgColor: isDark ? '#282A3F' : '#F3F4F6'
                     },
 
-                    // Switch component
                     Switch: {
                         handleBg: '#FFFFFF',
                         colorPrimary: primaryColor,

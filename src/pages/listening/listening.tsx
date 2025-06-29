@@ -1,5 +1,6 @@
-import { Button, Card, Modal, Space, Table, Typography } from 'antd';
+import { Button, Card, Layout, Typography, Table, Space, Modal } from 'antd';
 import { useState } from 'react';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import {
     useCreateTest,
     useDeleteTest,
@@ -11,12 +12,15 @@ import {
 import ListeningForm from '../../components/test/ListeningForm';
 
 const { Title } = Typography;
+const { Content } = Layout;
 
-export default function listening() {
+export default function Listening() {
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTest, setEditingTest] = useState<TestItem | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deleteTestId, setDeleteTestId] = useState<string | null>(null);
 
     const { data, isLoading } = useGetTestList(page, limit);
     const createMutation = useCreateTest();
@@ -27,13 +31,12 @@ export default function listening() {
         setEditingTest(record);
         setIsModalOpen(true);
     };
-
     const handleDelete = (id: string) => {
-        Modal.confirm({
-            title: 'Testni o‘chirmoqchimisiz?',
-            onOk: () => deleteMutation.mutate(id),
-        });
+        setDeleteTestId(id);
+        setDeleteModalOpen(true);
     };
+
+
 
     const handleSubmit = (data: CreateTestDto) => {
         if (editingTest) {
@@ -46,67 +49,156 @@ export default function listening() {
     };
 
     const columns = [
-        { title: 'Test nomi', dataIndex: 'title', key: 'title' },
-        { title: 'Turi', dataIndex: 'type', key: 'type' },
-        { title: 'IELTS ID', dataIndex: 'ieltsId', key: 'ieltsId' },
+        {
+            title: 'Test nomi',
+            dataIndex: 'title',
+            key: 'title',
+            render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>
+        },
+        {
+            title: 'Turi',
+            dataIndex: 'type',
+            key: 'type',
+            render: (type: string) => (
+                <span>
+                    {type}
+                </span>
+            )
+        },
+        {
+            title: 'IELTS ID',
+            dataIndex: 'ieltsId',
+            key: 'ieltsId',
+            render: (text: string) => <code >{text}</code>
+        },
         {
             title: 'Amallar',
             key: 'actions',
             render: (_: any, record: TestItem) => (
                 <Space>
-                    <Button onClick={() => handleEdit(record)}>✏️ Tahrirlash</Button>
-                    <Button danger onClick={() => handleDelete(record.id)}>🗑 O‘chirish</Button>
+                    <Button
+                        type="text"
+                        icon={<EditOutlined />}
+                        onClick={() => handleEdit(record)}
+                        style={{ color: '#1890ff' }}
+                    >
+                        Tahrirlash
+                    </Button>
+                    <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDelete(record.id)}
+                    >
+                        O'chirish
+                    </Button>
                 </Space>
             ),
         },
     ];
 
     return (
-        <Card>
-            <Space style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-                <Title level={4}>Listening Testlar</Title>
-                <Button type='primary' onClick={() => {
-                    setEditingTest(null);
-                    setIsModalOpen(true);
-                }}>
-                    ➕ Yangi Test
-                </Button>
-            </Space>
+        <Layout >
+            <Content    >
+                <Card
+                    style={{
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        border: 'none'
+                    }}
+                >
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '24px'
+                    }}>
+                        <Title level={3}>
+                            🎧 Listening Testlar
+                        </Title>
+                        <Button
+                            type='primary'
+                            icon={<PlusOutlined />}
+                            size="large"
+                            style={{
+                                borderRadius: '8px',
+                                background: '#10b981',
+                                borderColor: '#10b981',
+                                height: '44px',
+                                paddingLeft: '20px',
+                                paddingRight: '20px'
+                            }}
+                            onClick={() => {
+                                setEditingTest(null);
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            Yangi Test Yaratish
+                        </Button>
+                    </div>
 
-            <Table
-                rowKey="id"
-                loading={isLoading}
-                dataSource={data?.data || []}
-                columns={columns}
-                pagination={{
-                    current: page,
-                    pageSize: limit,
-                    total: data?.total || 0,
-                    onChange: setPage,
-                }}
-            />
+                    <Table
+                        rowKey="id"
+                        loading={isLoading}
+                        dataSource={data?.data || []}
+                        columns={columns}
+                        pagination={{
+                            current: page,
+                            pageSize: limit,
+                            total: data?.total || 0,
+                            onChange: setPage,
+                            showSizeChanger: false,
+                            showQuickJumper: true,
+                            showTotal: (total, range) =>
+                                `${range[0]}-${range[1]} / ${total} ta test`,
+                        }}
+                    />
+                </Card>
+                <Modal
+                    open={deleteModalOpen}
+                    title="Testni o'chirmoqchimisiz?"
+                    onCancel={() => setDeleteModalOpen(false)}
+                    onOk={() => {
+                        if (deleteTestId) {
+                            deleteMutation.mutate(deleteTestId, {
+                                onSuccess: () => {
+                                    setDeleteModalOpen(false);
+                                    setDeleteTestId(null);
+                                },
+                            });
+                        }
+                    }}
+                    okText="Ha, o'chirish"
+                    cancelText="Bekor qilish"
+                >
+                    <p>Bu amalni bekor qilib bo'lmaydi.</p>
+                </Modal>
 
-            <Modal
-                title={editingTest ? 'Testni tahrirlash' : 'Yangi Test yaratish'}
-                open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                footer={null}
-                width={1000}
-            >
-                <ListeningForm
-                    initialData={
-                        editingTest
-                            ? {
-                                title: editingTest.title,
-                                type: editingTest.type,
-                                ieltsId: editingTest.ieltsId,
-                                parts: editingTest.parts,
-                            }
-                            : undefined
-                    }
-                    onSubmit={handleSubmit}
-                />
-            </Modal>
-        </Card>
+                <Modal
+                    title={null}
+                    open={isModalOpen}
+                    onCancel={() => setIsModalOpen(false)}
+                    footer={null}
+                    width={1400}
+                    style={{ top: 20 }}
+                    bodyStyle={{ padding: 0 }}
+                >
+                    <ListeningForm
+                        initialData={
+                            editingTest
+                                ? {
+                                    title: editingTest.title,
+                                    type: editingTest.type,
+                                    ieltsId: editingTest.ieltsId,
+                                    parts: editingTest.parts,
+                                }
+                                : undefined
+                        }
+                        onSubmit={handleSubmit}
+                        onCancel={() => setIsModalOpen(false)}
+                    />
+                </Modal>
+            </Content>
+        </Layout>
     );
 }

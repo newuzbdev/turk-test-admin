@@ -1,42 +1,85 @@
-import { Input, Checkbox, Button, Col, Row } from 'antd';
-import type { TestAnswerDto } from '../../config/querys/test-query';
+"use client"
+
+import { Input, Button, Col, Row, Tag } from "antd"
+import { DeleteOutlined } from "@ant-design/icons"
+import type { TestAnswerDto } from "../../config/querys/test-query"
 
 type Props = {
-    answer: TestAnswerDto;
-    onChange: (field: keyof TestAnswerDto, value: any) => void;
-    onRemove: () => void;
-};
+  answer: TestAnswerDto
+  onChange: (field: keyof TestAnswerDto, value: any) => void
+  onRemove: () => void
+}
 
 export default function AnswerForm({ answer, onChange, onRemove }: Props) {
-    return (
-        <Row gutter={8} style={{ marginBottom: 8 }}>
-            <Col span={4}>
-                <Input
-                    placeholder='Variant (A, B, ...)'
-                    value={answer.variantText}
-                    onChange={(e) => onChange('variantText', e.target.value)}
-                />
-            </Col>
-            <Col span={16}>
-                <Input
-                    placeholder='Javob matni'
-                    value={answer.answer}
-                    onChange={(e) => onChange('answer', e.target.value)}
-                />
-            </Col>
-            <Col span={2}>
-                <Checkbox
-                    checked={answer.correct}
-                    onChange={(e) => onChange('correct', e.target.checked)}
-                >
-                    ✅
-                </Checkbox>
-            </Col>
-            <Col span={2}>
-                <Button danger onClick={onRemove}>
-                    🗑
-                </Button>
-            </Col>
-        </Row>
-    );
+  const handleCorrectToggle = () => {
+    onChange("correct", !answer.correct)
+  }
+
+  return (
+    <Row gutter={8} style={{ marginBottom: 8, alignItems: "center" }}>
+      <Col span={3}>
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            background:
+              answer.variantText === "A"
+                ? "#3b82f6"
+                : answer.variantText === "B"
+                  ? "#3b82f6"
+                  : answer.variantText === "C"
+                    ? "#3b82f6"
+                    : "#e5e7eb",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+            fontSize: "14px",
+          }}
+        >
+          {answer.variantText || "?"}
+        </div>
+      </Col>
+      <Col span={2}>
+        <Input
+          placeholder="A"
+          value={answer.variantText}
+          onChange={(e) => onChange("variantText", e.target.value)}
+          style={{
+            textAlign: "center",
+            borderRadius: "6px",
+            fontWeight: "bold",
+          }}
+          maxLength={1}
+        />
+      </Col>
+      <Col span={14}>
+        <Input
+          placeholder="Javob matni"
+          value={answer.answer}
+          onChange={(e) => onChange("answer", e.target.value)}
+          style={{ borderRadius: "6px" }}
+        />
+      </Col>
+      <Col span={3}>
+        <Tag
+          color={answer.correct ? "green" : "default"}
+          style={{
+            cursor: "pointer",
+            borderRadius: "4px",
+            border: "none",
+            padding: "4px 8px",
+          }}
+          onClick={handleCorrectToggle}
+        >
+          {answer.correct ? "✅ To'g'ri" : "Noto'g'ri"}
+        </Tag>
+      </Col>
+      <Col span={2}>
+        <Button danger type="text" icon={<DeleteOutlined />} onClick={onRemove} size="small" />
+      </Col>
+    </Row>
+  )
 }
