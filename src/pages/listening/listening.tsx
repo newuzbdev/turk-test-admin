@@ -35,6 +35,7 @@ export default function Listening() {
         setDeleteTestId(id);
         setDeleteModalOpen(true);
     };
+    const readingData = (data?.data || []).filter((item: any) => item.type === 'LISTENING');
 
 
 
@@ -140,7 +141,7 @@ export default function Listening() {
                     <Table
                         rowKey="id"
                         loading={isLoading}
-                        dataSource={data?.data || []}
+                        dataSource={readingData}
                         columns={columns}
                         pagination={{
                             current: page,

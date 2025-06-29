@@ -30,6 +30,12 @@ export interface TestPartDto {
     sections: TestSectionDto[];
 }
 
+export interface TestPartDtoAudio {
+    number: number;
+    title: string;
+    sections: TestSectionDto[];
+}
+
 export interface TestItem {
     id: string;
     title: string;
@@ -39,12 +45,28 @@ export interface TestItem {
     updatedAt: string;
     parts: TestPartDto[];
 }
+export interface TestItemAudio {
+    id: string;
+    title: string;
+    type: string;
+    ieltsId: string;
+    createdAt: string;
+    updatedAt: string;
+    parts: TestPartDtoAudio[];
+}
+
 
 export interface CreateTestDto {
     title: string;
     type: string;
     ieltsId: string;
     parts: TestPartDto[];
+}
+export interface CreateTestDtoAudio {
+    title: string;
+    type: string;
+    ieltsId: string;
+    parts: TestPartDtoAudio[];
 }
 
 export interface SubmitAnswerDto {
@@ -53,15 +75,22 @@ export interface SubmitAnswerDto {
 }
 
 
-export const useGetTestList = (page: number = 1, limit: number = 10) => {
+export const useGetTestList = (
+    page: number = 1,
+    limit: number = 10,
+    type?: string // qo‘shimcha
+) => {
     return useQuery({
-        queryKey: ['test', page, limit],
+        queryKey: ['test', page, limit, type],
         queryFn: async () => {
-            const { data } = await api.get(`${testEndpoint}?page=${page}&limit=${limit}`);
+            const url = `${testEndpoint}?page=${page}&limit=${limit}${type ? `&type=${type}` : ''
+                }`;
+            const { data } = await api.get(url);
             return data;
         },
     });
 };
+
 
 export const useGetOneTest = (id: string) => {
     return useQuery({
