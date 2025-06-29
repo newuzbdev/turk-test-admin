@@ -4,7 +4,7 @@ import { api } from '..';
 import { notification } from 'antd';
 
 export interface TestAnswerDto {
-  variant: string;
+  variantText: string;
   answer: string;
   correct: boolean;
 }

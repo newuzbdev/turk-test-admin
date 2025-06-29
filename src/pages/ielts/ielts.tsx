@@ -16,6 +16,8 @@ import {
     useDeleteIelts,
     type IeltsItem,
 } from '../../config/querys/Ielts-query';
+import { CopyOutlined } from '@ant-design/icons';
+import { message } from 'antd';
 
 const { Title } = Typography;
 
@@ -56,9 +58,20 @@ export default function IELTSPage() {
             dataIndex: 'id',
             key: 'id',
             render: (text: string) => (
-                <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{text}</span>
+                <Space>
+                    <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{text}</span>
+                    <Button
+                        type="text"
+                        icon={<CopyOutlined />}
+                        onClick={() => {
+                            navigator.clipboard.writeText(text);
+                            message.success('ID nusxalandi!');
+                        }}
+                    />
+                </Space>
             ),
         },
+
         {
             title: 'Sarlavha',
             dataIndex: 'title',

@@ -18,7 +18,7 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
     };
 
     const addAnswer = () => {
-        onChange({ ...question, answers: [...question.answers, { variant: '', answer: '', correct: false }] });
+        onChange({ ...question, answers: [...question.answers, { variantText: '', answer: '', correct: false }] });
     };
 
     const removeAnswer = (index: number) => {

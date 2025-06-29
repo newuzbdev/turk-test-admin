@@ -1,4 +1,4 @@
-import { Input, Checkbox, Space, Button } from 'antd';
+import { Input, Checkbox, Button, Col, Row } from 'antd';
 import type { TestAnswerDto } from '../../config/querys/test-query';
 
 type Props = {
@@ -9,20 +9,34 @@ type Props = {
 
 export default function AnswerForm({ answer, onChange, onRemove }: Props) {
     return (
-        <Space style={{ display: 'flex', marginBottom: 8 }}>
-            <Input
-                placeholder='Variant (A, B, ...)' value={answer.variant}
-                onChange={(e) => onChange('variant', e.target.value)}
-            />
-            <Input
-                placeholder='Javob matni' value={answer.answer}
-                onChange={(e) => onChange('answer', e.target.value)}
-            />
-            <Checkbox
-                checked={answer.correct}
-                onChange={(e) => onChange('correct', e.target.checked)}
-            >To'g'ri</Checkbox>
-            <Button danger onClick={onRemove}>O'chirish</Button>
-        </Space>
+        <Row gutter={8} style={{ marginBottom: 8 }}>
+            <Col span={4}>
+                <Input
+                    placeholder='Variant (A, B, ...)'
+                    value={answer.variantText}
+                    onChange={(e) => onChange('variantText', e.target.value)}
+                />
+            </Col>
+            <Col span={16}>
+                <Input
+                    placeholder='Javob matni'
+                    value={answer.answer}
+                    onChange={(e) => onChange('answer', e.target.value)}
+                />
+            </Col>
+            <Col span={2}>
+                <Checkbox
+                    checked={answer.correct}
+                    onChange={(e) => onChange('correct', e.target.checked)}
+                >
+                    ✅
+                </Checkbox>
+            </Col>
+            <Col span={2}>
+                <Button danger onClick={onRemove}>
+                    🗑
+                </Button>
+            </Col>
+        </Row>
     );
 }

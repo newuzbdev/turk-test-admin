@@ -1,4 +1,4 @@
-import { Input, Button, Space, Typography } from 'antd';
+import { Button, Card, Col, Divider, Input, Row, Space, Typography } from 'antd';
 import SectionForm from './SectionForm';
 import type { TestPartDto, TestSectionDto } from '../../config/querys/test-query';
 
@@ -33,37 +33,45 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
   };
 
   return (
-    <div style={{ marginBottom: 24, padding: 16, border: '2px solid #bbb', borderRadius: 8 }}>
+    <Card
+      title={`🎧 Part #${part.number}`}
+      extra={<Button danger type='text' onClick={onRemove}>🗑 Partni o‘chirish</Button>}
+      style={{ marginBottom: 24, border: '1px solid #ddd', borderRadius: 8 }}
+    >
+      <Row gutter={[16, 16]}>
+        <Col span={12}>
+          <Input
+            placeholder='Part sarlavhasi'
+            value={part.title}
+            onChange={(e) => onChange({ ...part, title: e.target.value })}
+            size='large'
+          />
+        </Col>
+        <Col span={12}>
+          <Input
+            placeholder='Audio URL'
+            value={part.audioUrl}
+            onChange={(e) => onChange({ ...part, audioUrl: e.target.value })}
+            size='large'
+          />
+        </Col>
+      </Row>
+
+      <Divider orientation='left'>📚 Bo‘limlar</Divider>
+
       <Space direction='vertical' style={{ width: '100%' }}>
-        <Title level={3}>Part #{part.number}</Title>
-
-        <Input
-          placeholder='Part sarlavhasi'
-          value={part.title}
-          onChange={(e) => onChange({ ...part, title: e.target.value })}
-        />
-
-        <Input
-          placeholder='Audio URL'
-          value={part.audioUrl}
-          onChange={(e) => onChange({ ...part, audioUrl: e.target.value })}
-        />
-
-        <div>
-          <Title level={4}>Bo‘limlar</Title>
-          {part.sections.map((section, i) => (
-            <SectionForm
-              key={i}
-              section={section}
-              onChange={(updated) => updateSection(i, updated)}
-              onRemove={() => removeSection(i)}
-            />
-          ))}
-          <Button type='dashed' onClick={addSection}>+ Bo‘lim qo‘shish</Button>
-        </div>
-
-        <Button danger type='text' onClick={onRemove}>❌ Partni o‘chirish</Button>
+        {part.sections.map((section, i) => (
+          <SectionForm
+            key={i}
+            section={section}
+            onChange={(updated) => updateSection(i, updated)}
+            onRemove={() => removeSection(i)}
+          />
+        ))}
+        <Button type='dashed' onClick={addSection} style={{ width: '100%' }}>
+          ➕ Bo‘lim qo‘shish
+        </Button>
       </Space>
-    </div>
+    </Card>
   );
 }
