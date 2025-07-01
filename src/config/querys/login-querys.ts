@@ -1,78 +1,111 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/api/hooks/useAdminAuth.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { api } from "..";
 import { authEndpoints } from "../endpoint";
+import { useNavigate } from "react-router-dom";
 
 type LoginInput = {
-    name: string;
-    password: string;
+  name: string;
+  password: string;
 };
 
 type TokenResponse = {
-    accessToken: string;
-    refreshToken: string;
+  accessToken: string;
+  refreshToken: string;
+};
+
+type ErrorResponse = {
+  success: boolean;
+  data: null;
+  error: string;
 };
 
 export const useAdminLogin = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async (credentials: LoginInput) => {
-            const { data } = await api.post<TokenResponse>(authEndpoints.login, credentials);
-            localStorage.setItem("accessToken", data.accessToken);
-            localStorage.setItem("refreshToken", data.refreshToken);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries(); // kerakli auth-related querylarni yangilash
-            notification.success({
-                message: "Muvaffaqiyatli tizimga kirildi",
-                placement: "bottomRight",
-            });
-        },
-        onError: () => {
-            notification.error({
-                message: "Login xatoligi: foydalanuvchi nomi yoki parol noto‘g‘ri",
-                placement: "bottomRight",
-            });
-        },
-    });
+  return useMutation({
+    mutationFn: async (credentials: LoginInput) => {
+      try {
+        const { data } = await api.post<TokenResponse>(
+          authEndpoints.login,
+          credentials
+        );
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        return data;
+      } catch (error: any) {
+        const errorResponse = error?.response?.data as ErrorResponse;
+        throw new Error(errorResponse?.error || "Authentication failed");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      notification.success({
+        message: "Muvaffaqiyatli tizimga kirildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: (error: Error) => {
+      notification.error({
+        message: `Login xatoligi: ${error.message}`,
+        placement: "bottomRight",
+      });
+    },
+  });
 };
 
 export const useAdminRefresh = () => {
-    return useMutation({
-        mutationFn: async () => {
-            const refreshToken = localStorage.getItem("refreshToken");
-            const { data } = await api.post<TokenResponse>(authEndpoints.refresh, { refreshToken });
-            localStorage.setItem("accessToken", data.accessToken);
-            localStorage.setItem("refreshToken", data.refreshToken);
-            return data;
-        },
-    });
+  return useMutation({
+    mutationFn: async () => {
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) {
+          throw new Error("BEARER_TOKEN_NOT_PROVIDED");
+        }
+        const { data } = await api.post<TokenResponse>(authEndpoints.refresh, {
+          refreshToken,
+        });
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        return data;
+      } catch (error: any) {
+        const errorResponse = error?.response?.data as ErrorResponse;
+        throw new Error(errorResponse?.error || "Token refresh failed");
+      }
+    },
+  });
 };
 
 export const useAdminLogout = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-    return useMutation({
-        mutationFn: async () => {
-            await api.post(authEndpoints.logout);
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-        },
-        onSuccess: () => {
-            queryClient.clear();
-            notification.success({
-                message: "Tizimdan muvaffaqiyatli chiqildi",
-                placement: "bottomRight",
-            });
-        },
-        onError: () => {
-            notification.error({
-                message: "Logout jarayonida xatolik yuz berdi",
-                placement: "bottomRight",
-            });
-        },
-    });
+  return useMutation({
+    mutationFn: async () => {
+      try {
+        await api.post(authEndpoints.logout);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        navigate("/login");
+      } catch (error: any) {
+        const errorResponse = error?.response?.data as ErrorResponse;
+        throw new Error(errorResponse?.error || "Logout failed");
+      }
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      notification.success({
+        message: "Tizimdan muvaffaqiyatli chiqildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: (error: Error) => {
+      notification.error({
+        message: `Logout jarayonida xatolik: ${error.message}`,
+        placement: "bottomRight",
+      });
+    },
+  });
 };

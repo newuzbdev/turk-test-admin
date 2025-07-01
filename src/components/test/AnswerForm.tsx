@@ -1,19 +1,18 @@
-"use client"
-
-import { Input, Button, Col, Row, Tag } from "antd"
-import { DeleteOutlined } from "@ant-design/icons"
-import type { TestAnswerDto } from "../../config/querys/test-query"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Input, Button, Col, Row, Tag } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import type { TestAnswerDto } from "../../config/querys/test-query";
 
 type Props = {
-  answer: TestAnswerDto
-  onChange: (field: keyof TestAnswerDto, value: any) => void
-  onRemove: () => void
-}
+  answer: TestAnswerDto;
+  onChange: (field: keyof TestAnswerDto, value: any) => void;
+  onRemove: () => void;
+};
 
 export default function AnswerForm({ answer, onChange, onRemove }: Props) {
   const handleCorrectToggle = () => {
-    onChange("correct", !answer.correct)
-  }
+    onChange("correct", !answer.correct);
+  };
 
   return (
     <Row gutter={8} style={{ marginBottom: 8, alignItems: "center" }}>
@@ -27,10 +26,10 @@ export default function AnswerForm({ answer, onChange, onRemove }: Props) {
               answer.variantText === "A"
                 ? "#3b82f6"
                 : answer.variantText === "B"
-                  ? "#3b82f6"
-                  : answer.variantText === "C"
-                    ? "#3b82f6"
-                    : "#e5e7eb",
+                ? "#3b82f6"
+                : answer.variantText === "C"
+                ? "#3b82f6"
+                : "#e5e7eb",
             color: "white",
             display: "flex",
             alignItems: "center",
@@ -78,8 +77,14 @@ export default function AnswerForm({ answer, onChange, onRemove }: Props) {
         </Tag>
       </Col>
       <Col span={2}>
-        <Button danger type="text" icon={<DeleteOutlined />} onClick={onRemove} size="small" />
+        <Button
+          danger
+          type="text"
+          icon={<DeleteOutlined />}
+          onClick={onRemove}
+          size="small"
+        />
       </Col>
     </Row>
-  )
+  );
 }
