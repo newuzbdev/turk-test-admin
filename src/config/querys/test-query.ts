@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "..";
 import { notification } from "antd";
@@ -77,7 +76,7 @@ export interface SubmitAnswerDto {
 export const useGetTestList = (
   page: number = 1,
   limit: number = 10,
-  type?: string // qo‘shimcha
+  type?: string 
 ) => {
   return useQuery({
     queryKey: ["test", page, limit, type],

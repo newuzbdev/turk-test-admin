@@ -198,17 +198,17 @@ export default function Reading() {
             initialData={
               editingTest
                 ? {
-                    title: editingTest.title,
-                    type: editingTest.type,
-                    ieltsId: editingTest.ieltsId,
-                    parts: editingTest.parts.map(
-                      ({ number, title, sections }) => ({
-                        number,
-                        title,
-                        sections,
-                      })
-                    ),
-                  }
+                  title: editingTest.title,
+                  type: editingTest.type,
+                  ieltsId: editingTest.ieltsId,
+                  parts: editingTest.parts.map(
+                    ({ number, title, sections }) => ({
+                      number,
+                      title,
+                      sections,
+                    })
+                  ),
+                }
                 : undefined
             }
             onSubmit={handleSubmit}
