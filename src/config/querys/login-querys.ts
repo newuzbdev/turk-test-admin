@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { api } from "..";
 import { authEndpoints } from "../endpoint";
-import { useNavigate } from "react-router-dom";
+import axiosPrivate from "../api";
 
 type LoginInput = {
   name: string;
@@ -80,16 +80,19 @@ export const useAdminRefresh = () => {
 
 export const useAdminLogout = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
       try {
-        await api.post(authEndpoints.logout);
+        await axiosPrivate.post(authEndpoints.logout);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        navigate("/login");
+        window.location.href = "/login";
       } catch (error: any) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login";
+
         const errorResponse = error?.response?.data as ErrorResponse;
         throw new Error(errorResponse?.error || "Logout failed");
       }
@@ -102,6 +105,7 @@ export const useAdminLogout = () => {
       });
     },
     onError: (error: Error) => {
+      queryClient.clear();
       notification.error({
         message: `Logout jarayonida xatolik: ${error.message}`,
         placement: "bottomRight",

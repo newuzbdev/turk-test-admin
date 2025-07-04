@@ -25,7 +25,12 @@ export default function Sidebar() {
       width={280}
       className="h-screen flex flex-col"
     >
-      <h1 style={{ color: "black" }}>TURKTEST</h1>
+      <h1
+        style={{ color: "red" }}
+        className="text-center p-4 text-2xl font-bold"
+      >
+        TURKTEST
+      </h1>
 
       <Menu
         style={{

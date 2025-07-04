@@ -1,13 +1,12 @@
 export const readingEndpoints = {
-    all: '/reading',
-    one: (id: string) => `/reading/${id}`
-}
-
+  all: "/reading",
+  one: (id: string) => `/reading/${id}`,
+};
 
 export const authEndpoints = {
-    login: "/api/admin/login",
-    refresh: "/api/admin/refresh",
-    logout: "/api/admin/logout",
+  login: "/api/admin/login",
+  refresh: "/api/admin/refresh",
+  logout: "/api/admin/logout",
 };
-export const ieltsEndpoint = '/api/ielts';
-export const testEndpoint = '/api/test';
+export const ieltsEndpoint = "/api/ielts";
+export const testEndpoint = "/api/test/with";

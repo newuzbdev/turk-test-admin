@@ -25,6 +25,7 @@ export default function Reading() {
   const [deleteTestId, setDeleteTestId] = useState<string | null>(null);
 
   const { data, isLoading } = useGetTestList(page, limit, "READING");
+
   const createMutation = useCreateTest();
   const updateMutation = useUpdateTest();
   const deleteMutation = useDeleteTest();
@@ -131,7 +132,6 @@ export default function Reading() {
               size="large"
               style={{
                 borderRadius: "8px",
-                background: "#10b981",
                 borderColor: "#10b981",
                 height: "44px",
                 paddingLeft: "20px",

@@ -8,6 +8,7 @@ import {
   Steps,
   Layout,
   Space,
+  Select,
 } from "antd";
 import { useState } from "react";
 import {
@@ -20,6 +21,7 @@ import type {
   TestPartDtoAudio,
 } from "../../../config/querys/test-query";
 import ReadingPartForm from "./reading-part-form";
+import { useGetIeltsList } from "../../../config/querys/Ielts-query";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -62,6 +64,7 @@ export default function ReadingForm({
       status: currentStep === 1 ? "process" : "wait",
     },
   ];
+  const { data, isLoading } = useGetIeltsList();
 
   const updatePart = (index: number, updated: TestPartDtoAudio) => {
     const newParts = [...formData.parts];
@@ -108,14 +111,24 @@ export default function ReadingForm({
             </Col>
             <Col span={12}>
               <label>IELTS ID</label>
-              <Input
-                placeholder="IELTS ID ni kiriting"
+              <Select
+                placeholder="IELTS testni tanlang"
                 value={formData.ieltsId}
-                onChange={(e) =>
-                  setFormData({ ...formData, ieltsId: e.target.value })
+                onChange={(value) =>
+                  setFormData({ ...formData, ieltsId: value })
                 }
                 size="large"
-              />
+                style={{ width: "100%" }}
+                loading={isLoading}
+              >
+                {data?.data?.map(
+                  (test: { id: string | number; title: string }) => (
+                    <Select.Option key={test.id} value={test.id}>
+                      {test.title}
+                    </Select.Option>
+                  )
+                )}
+              </Select>
             </Col>
           </Row>
         </Card>

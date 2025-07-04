@@ -1,5 +1,19 @@
-import { Button, Card, Col, Input, Row, Space, Typography, Badge } from "antd";
-import { DeleteOutlined, PlusOutlined, AudioOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Row,
+  Space,
+  Typography,
+  Badge,
+  Upload,
+} from "antd";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import type {
   TestPartDto,
   TestSectionDto,
@@ -123,16 +137,26 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
         <Col span={12}>
           <div style={{ marginBottom: "8px" }}>
             <label style={{ fontWeight: 600, fontSize: "14px" }}>
-              🎵 Audio URL
+              🎵 Audio fayl
             </label>
           </div>
-          <Input
-            placeholder="https://example.com/audio.mp3"
-            value={part.audioUrl}
-            onChange={(e) => onChange({ ...part, audioUrl: e.target.value })}
-            size="large"
-            prefix={<AudioOutlined style={{ color: "#10b981" }} />}
-          />
+
+          <Upload
+            maxCount={1}
+            accept="audio/*"
+            beforeUpload={(file) => {
+              onChange({ ...part, audioUrl: URL.createObjectURL(file) });
+              return false;
+            }}
+          >
+            <Button
+              size="large"
+              icon={<UploadOutlined style={{ color: "#10b981" }} />}
+              style={{ width: "100%" }}
+            >
+              Audio faylni yuklash
+            </Button>
+          </Upload>
         </Col>
       </Row>
 
