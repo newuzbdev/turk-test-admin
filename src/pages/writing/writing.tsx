@@ -122,9 +122,10 @@ export default function writing() {
                             size="large"
                             style={{
                                 borderRadius: "8px",
-                                background: "#10b981",
                                 borderColor: "#10b981",
                                 height: "44px",
+                                paddingLeft: "20px",
+                                paddingRight: "20px",
                             }}
                             onClick={() => {
                                 setEditingTest(null);

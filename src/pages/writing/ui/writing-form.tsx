@@ -31,13 +31,13 @@ export default function WritingForm({ initialValues, onSubmit, onCancel }: Props
                 <Input />
             </Form.Item>
             <Form.Item name="task1" label="Task 1 matni" rules={[{ required: true }]}>
-                <Input.TextArea rows={4} />
+                <Input.TextArea rows={2} />
             </Form.Item>
             <Form.Item name="task2Title" label="Task 2 sarlavhasi" rules={[{ required: true }]}>
                 <Input />
             </Form.Item>
             <Form.Item name="task2" label="Task 2 matni" rules={[{ required: true }]}>
-                <Input.TextArea rows={4} />
+                <Input.TextArea rows={2} />
             </Form.Item>
             <Form.Item name="instruction" label="Ko‘rsatma" rules={[{ required: true }]}>
                 <Input.TextArea rows={2} />
