@@ -201,7 +201,7 @@ export default function ReadingPartForm({ part, onChange, onRemove }: Props) {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            ➕ Yangi bo'lim qo'shish
+            Yangi bo'lim qo'shish
           </Button>
         </Space>
       </div>

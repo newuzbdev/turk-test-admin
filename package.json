@@ -12,7 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/query-sync-storage-persister": "^5.81.5",
-    "@tanstack/react-query": "^5.81.4",
+    "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@tanstack/react-query-persist-client": "^5.81.5",
     "antd": "^5.26.2",

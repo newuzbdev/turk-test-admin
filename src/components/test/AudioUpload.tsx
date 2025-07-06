@@ -13,7 +13,7 @@ export default function AudioUpload({ part, onChange, onRemove }: Props) {
         const formData = new FormData();
         formData.append("file", file);
 
-        fetch("/api/upload/audio", {
+        fetch("/api/file/upload", {
             method: "POST",
             body: formData,
         })
@@ -52,7 +52,7 @@ export default function AudioUpload({ part, onChange, onRemove }: Props) {
                     showUploadList={false}
                     beforeUpload={(file) => {
                         handleAudioUpload(file);
-                        return false; // Ant Design avtomatik yuklashni to‘xtatadi
+                        return false;
                     }}
                     accept="audio/*"
                 >

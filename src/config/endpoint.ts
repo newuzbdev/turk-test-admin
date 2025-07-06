@@ -13,5 +13,6 @@ export const authEndpoints = {
   logout: "/api/admin/logout",
 };
 
+export const speakingEndpoint = "/api/speaking-test";
 export const ieltsEndpoint = "/api/ielts";
 export const testEndpoint = "/api/test";

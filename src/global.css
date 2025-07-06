@@ -1,5 +1,1 @@
 @import "tailwindcss";
-
-.ant-modal-wrap {
-    overflow: hidden !important;
-}
