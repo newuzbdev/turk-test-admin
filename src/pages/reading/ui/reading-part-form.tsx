@@ -46,7 +46,6 @@ export default function ReadingPartForm({ part, onChange, onRemove }: Props) {
         overflow: "hidden",
       }}
     >
-      {/* Header */}
       <div
         style={{
           background: "linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)",
@@ -105,7 +104,6 @@ export default function ReadingPartForm({ part, onChange, onRemove }: Props) {
         </div>
       </div>
 
-      {/* Form Fields */}
       <Row gutter={[20, 20]} style={{ marginBottom: "28px" }}>
         <Col span={24}>
           <div style={{ marginBottom: "8px" }}>
@@ -122,7 +120,6 @@ export default function ReadingPartForm({ part, onChange, onRemove }: Props) {
         </Col>
       </Row>
 
-      {/* Sections */}
       <div
         style={{
           background: "white",

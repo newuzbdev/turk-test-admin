@@ -60,7 +60,6 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
         overflow: "hidden",
       }}
     >
-      {/* Header */}
       <div
         style={{
           background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
@@ -119,7 +118,6 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
         </div>
       </div>
 
-      {/* Form Fields */}
       <Row gutter={[20, 20]} style={{ marginBottom: "28px" }}>
         <Col span={12}>
           <div style={{ marginBottom: "8px" }}>
@@ -160,7 +158,6 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
         </Col>
       </Row>
 
-      {/* Sections */}
       <div
         style={{
           background: "white",
