@@ -16,7 +16,6 @@ import type {
   SpeakingTestPayload,
   SpeakingSection,
   SpeakingSubPart,
-  SpeakingSubQuestion,
 } from "../../../config/querys/speaking-query";
 
 const { TextArea } = Input;

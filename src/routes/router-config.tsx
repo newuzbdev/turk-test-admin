@@ -1,5 +1,5 @@
 import { IELTS, Listening, Reading, Speaking, Writing } from "./lazy-pages";
-import { Book, BookAudioIcon, Headphones, MessageCircleIcon, Speaker, SpeakerIcon } from "lucide-react";
+import { Book, BookAudioIcon, Headphones, MessageCircleIcon, Speaker } from "lucide-react";
 
 export interface RouterConfig {
   title: string;
