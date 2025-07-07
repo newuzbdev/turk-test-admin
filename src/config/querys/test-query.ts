@@ -4,33 +4,51 @@ import { notification } from "antd";
 import { testEndpoint } from "../endpoint";
 
 export interface TestAnswerDto {
+  id?: string;
+  questionId?: string;
   variantText: string;
   answer: string;
   correct: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TestQuestionDto {
+  id?: string;
+  sectionId?: string;
   number: number;
   type: string;
+  title?: string;
   text: string;
   answers: TestAnswerDto[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TestSectionDto {
+  id?: string;
+  partId?: string;
   title: string;
   content: string;
   imageUrl: string;
+  hasBullets?: boolean;
   questions: TestQuestionDto[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TestPartDto {
+  id?: string;
+  testId?: string;
   number: number;
-  audioUrl: string;
   title: string;
+  audioUrl: string;
   sections: TestSectionDto[];
+  createdAt?: string;
+  updatedAt?: string;
 }
-
 export interface TestPartDtoAudio {
+  id?: string;
   number: number;
   title: string;
   sections: TestSectionDto[];
@@ -45,6 +63,7 @@ export interface TestItem {
   updatedAt: string;
   parts: TestPartDto[];
 }
+
 export interface TestItemAudio {
   id: string;
   title: string;
@@ -54,13 +73,14 @@ export interface TestItemAudio {
   updatedAt: string;
   parts: TestPartDtoAudio[];
 }
-
 export interface CreateTestDto {
+  id?: string;
   title: string;
   type: string;
   ieltsId: string;
   parts: TestPartDto[];
 }
+
 export interface CreateTestDtoAudio {
   title: string;
   type: string;
@@ -76,7 +96,7 @@ export interface SubmitAnswerDto {
 export const useGetTestList = (
   page: number = 1,
   limit: number = 10,
-  type?: string 
+  type?: string
 ) => {
   return useQuery({
     queryKey: ["test", page, limit, type],
@@ -196,6 +216,120 @@ export const useSubmitTestAnswers = () => {
           placement: "bottomRight",
         });
       }
+    },
+  });
+};
+
+export const useUpdatePart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: Partial<TestPartDto> & { id: string }) => {
+      if (!id) throw new Error("Part ID is required for update");
+      const { data } = await api.patch(`/api/parts/${id}`, values);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      // Update specific test cache if testId is available
+      if (variables.testId) {
+        queryClient.invalidateQueries({ queryKey: ["test", variables.testId] });
+      }
+      notification.success({
+        message: "Part muvaffaqiyatli yangilandi",
+        placement: "bottomRight",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Part update error:", error);
+      notification.error({
+        message: "Part yangilashda xatolik yuz berdi",
+        description: error?.response?.data?.message || "Noma'lum xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useUpdateSection = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: Partial<TestSectionDto> & { id: string }) => {
+      if (!id) throw new Error("Section ID is required for update");
+      const { data } = await api.patch(`/api/section/${id}`, values);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Bo‘lim yangilandi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Bo‘lim yangilashda xatolik yuz berdi",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useUpdateQuestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: Partial<TestQuestionDto> & { id: string }) => {
+      if (!id) throw new Error("Question ID is required for update");
+      const { data } = await api.patch(`/api/question/${id}`, values);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      // Update specific test cache if sectionId is available
+      if (variables.sectionId) {
+        queryClient.invalidateQueries({ queryKey: ["test"] });
+      }
+      notification.success({
+        message: "Savol muvaffaqiyatli yangilandi",
+        placement: "bottomRight",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Question update error:", error);
+      notification.error({
+        message: "Savolni yangilashda xatolik yuz berdi",
+        description: error?.response?.data?.message || "Noma'lum xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useUpdateAnswer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...values }: Partial<TestAnswerDto> & { id: string }) => {
+      if (!id) throw new Error("Answer ID is required for update");
+      const { data } = await api.patch(`/api/answer/${id}`, values);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      // Update specific test cache if questionId is available
+      if (variables.questionId) {
+        queryClient.invalidateQueries({ queryKey: ["test"] });
+      }
+      notification.success({
+        message: "Javob muvaffaqiyatli yangilandi",
+        placement: "bottomRight",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Answer update error:", error);
+      notification.error({
+        message: "Javobni yangilashda xatolik yuz berdi",
+        description: error?.response?.data?.message || "Noma'lum xatolik",
+        placement: "bottomRight",
+      });
     },
   });
 };

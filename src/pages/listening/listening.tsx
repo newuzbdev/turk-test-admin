@@ -5,7 +5,6 @@ import {
   useCreateTest,
   useDeleteTest,
   useGetTestList,
-  useUpdateTest,
   type CreateTestDto,
   type TestItem,
 } from "../../config/querys/test-query";
@@ -24,27 +23,24 @@ export default function Listening() {
 
   const { data, isLoading } = useGetTestList(page, limit);
   const createMutation = useCreateTest();
-  const updateMutation = useUpdateTest();
   const deleteMutation = useDeleteTest();
 
   const handleEdit = (record: TestItem) => {
     setEditingTest(record);
     setIsModalOpen(true);
   };
+
   const handleDelete = (id: string) => {
     setDeleteTestId(id);
     setDeleteModalOpen(true);
   };
-  const readingData = (data?.data || []).filter(
+
+  const listeningData = (data?.data || []).filter(
     (item: any) => item.type === "LISTENING"
   );
 
-  const handleSubmit = (data: CreateTestDto) => {
-    if (editingTest) {
-      updateMutation.mutate({ id: editingTest.id, ...data });
-    } else {
-      createMutation.mutate(data);
-    }
+  const handleSubmit = () => {
+    // PATCH lar allaqachon ListeningForm ichida bo‘ladi
     setIsModalOpen(false);
     setEditingTest(null);
   };
@@ -60,7 +56,6 @@ export default function Listening() {
       title: "Turi",
       dataIndex: "type",
       key: "type",
-      render: (type: string) => <span>{type}</span>,
     },
     {
       title: "IELTS ID",
@@ -136,7 +131,7 @@ export default function Listening() {
           <Table
             rowKey="id"
             loading={isLoading}
-            dataSource={readingData}
+            dataSource={listeningData}
             columns={columns}
             pagination={{
               current: page,
@@ -150,6 +145,8 @@ export default function Listening() {
             }}
           />
         </Card>
+
+        {/* Delete Modal */}
         <Modal
           open={deleteModalOpen}
           title="Testni o'chirmoqchimisiz?"
@@ -170,6 +167,7 @@ export default function Listening() {
           <p>Bu amalni bekor qilib bo'lmaydi.</p>
         </Modal>
 
+        {/* ListeningForm Modal */}
         <Modal
           title={null}
           open={isModalOpen}

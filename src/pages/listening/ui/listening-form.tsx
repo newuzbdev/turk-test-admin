@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
   Card,
@@ -23,6 +22,12 @@ import type {
 } from "../../../config/querys/test-query";
 import PartForm from "../../../components/test/part-form";
 import { useGetIeltsList } from "../../../config/querys/Ielts-query";
+import {
+  useUpdatePart,
+  useUpdateSection,
+  useUpdateQuestion,
+  useUpdateAnswer,
+} from "../../../config/querys/test-query";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -57,6 +62,11 @@ export default function ListeningForm({
 
   const { data, isLoading } = useGetIeltsList();
 
+  const updatePart = useUpdatePart();
+  const updateSection = useUpdateSection();
+  const updateQuestion = useUpdateQuestion();
+  const updateAnswer = useUpdateAnswer();
+
   const steps = [
     {
       title: "Basic info",
@@ -70,7 +80,7 @@ export default function ListeningForm({
     },
   ];
 
-  const updatePart = (index: number, updated: TestPartDto) => {
+  const updatePartData = (index: number, updated: TestPartDto) => {
     const newParts = [...formData.parts];
     newParts[index] = updated;
     setFormData({ ...formData, parts: newParts });
@@ -91,8 +101,119 @@ export default function ListeningForm({
     setFormData({ ...formData, parts: newParts });
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
+  const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
+
+  const handleSubmit = async () => {
+    if (!initialData) return;
+
+    const updatedParts = formData.parts;
+
+    for (let i = 0; i < updatedParts.length; i++) {
+      const updatedPart = updatedParts[i];
+      const originalPart = initialData.parts[i];
+      const partId = (updatedPart as any).id;
+
+      if (partId && !deepEqual(updatedPart, originalPart)) {
+        if (
+          !deepEqual(
+            {
+              title: updatedPart.title,
+              number: updatedPart.number,
+              audioUrl: updatedPart.audioUrl,
+            },
+            {
+              title: originalPart.title,
+              number: originalPart.number,
+              audioUrl: originalPart.audioUrl,
+            }
+          )
+        ) {
+          await updatePart.mutateAsync({
+            id: partId,
+            title: updatedPart.title,
+            number: updatedPart.number,
+            audioUrl: updatedPart.audioUrl,
+          });
+        }
+
+        for (let j = 0; j < updatedPart.sections.length; j++) {
+          const updatedSection = updatedPart.sections[j];
+          const originalSection = originalPart.sections[j];
+          const sectionId = (updatedSection as any).id;
+
+          if (sectionId && !deepEqual(updatedSection, originalSection)) {
+            if (
+              !deepEqual(
+                {
+                  title: updatedSection.title,
+                  content: updatedSection.content,
+                  imageUrl: updatedSection.imageUrl,
+                },
+                {
+                  title: originalSection.title,
+                  content: originalSection.content,
+                  imageUrl: originalSection.imageUrl,
+                }
+              )
+            ) {
+              await updateSection.mutateAsync({
+                id: sectionId,
+                title: updatedSection.title,
+                content: updatedSection.content,
+                imageUrl: updatedSection.imageUrl,
+              });
+            }
+
+            for (let k = 0; k < updatedSection.questions.length; k++) {
+              const updatedQuestion = updatedSection.questions[k];
+              const originalQuestion = originalSection.questions[k];
+              const questionId = (updatedQuestion as any).id;
+
+              if (questionId && !deepEqual(updatedQuestion, originalQuestion)) {
+                if (
+                  !deepEqual(
+                    {
+                      number: updatedQuestion.number,
+                      text: updatedQuestion.text,
+                      type: updatedQuestion.type,
+                    },
+                    {
+                      number: originalQuestion.number,
+                      text: originalQuestion.text,
+                      type: originalQuestion.type,
+                    }
+                  )
+                ) {
+                  await updateQuestion.mutateAsync({
+                    id: questionId,
+                    number: updatedQuestion.number,
+                    text: updatedQuestion.text,
+                    type: updatedQuestion.type,
+                  });
+                }
+
+                for (let l = 0; l < updatedQuestion.answers.length; l++) {
+                  const updatedAnswer = updatedQuestion.answers[l];
+                  const originalAnswer = originalQuestion.answers[l];
+                  const answerId = (updatedAnswer as any).id;
+
+                  if (answerId && !deepEqual(updatedAnswer, originalAnswer)) {
+                    await updateAnswer.mutateAsync({
+                      id: answerId,
+                      variantText: updatedAnswer.variantText,
+                      answer: updatedAnswer.answer,
+                      correct: updatedAnswer.correct,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    onSubmit(formData); // eng oxirida qaytaramiz
   };
 
   const renderStepContent = () => {
@@ -154,7 +275,7 @@ export default function ListeningForm({
               <PartForm
                 key={i}
                 part={part}
-                onChange={(updated) => updatePart(i, updated)}
+                onChange={(updated) => updatePartData(i, updated)}
                 onRemove={() => removePart(i)}
               />
             ))}
@@ -181,11 +302,7 @@ export default function ListeningForm({
 
   return (
     <Layout style={{ background: "transparent", minHeight: "80vh" }}>
-      <div
-        style={{
-          padding: "16px 24px",
-        }}
-      >
+      <div style={{ padding: "16px 24px" }}>
         <div
           style={{
             display: "flex",
@@ -224,9 +341,7 @@ export default function ListeningForm({
               <Button
                 icon={<ArrowLeftOutlined />}
                 onClick={() => setCurrentStep(currentStep - 1)}
-                style={{
-                  borderRadius: "6px",
-                }}
+                style={{ borderRadius: "6px" }}
               >
                 Orqaga
               </Button>
