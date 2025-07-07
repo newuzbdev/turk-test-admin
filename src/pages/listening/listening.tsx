@@ -40,7 +40,6 @@ export default function Listening() {
   );
 
   const handleSubmit = () => {
-    // PATCH lar allaqachon ListeningForm ichida bo‘ladi
     setIsModalOpen(false);
     setEditingTest(null);
   };

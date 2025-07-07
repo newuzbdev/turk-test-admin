@@ -7,7 +7,6 @@ import {
   useDeleteTest,
   useGetTestList,
   useUpdateTest,
-  type CreateTestDto,
   type CreateTestDtoAudio,
   type TestItem,
 } from "../../config/querys/test-query";
@@ -25,10 +24,13 @@ export default function Reading() {
   const [deleteTestId, setDeleteTestId] = useState<string | null>(null);
 
   const { data, isLoading } = useGetTestList(page, limit, "READING");
-
   const createMutation = useCreateTest();
   const updateMutation = useUpdateTest();
   const deleteMutation = useDeleteTest();
+
+  const readingData = (data?.data || []).filter(
+    (item: any) => item.type === "READING"
+  );
 
   const handleEdit = (record: TestItem) => {
     setEditingTest(record);
@@ -39,25 +41,8 @@ export default function Reading() {
     setDeleteTestId(id);
     setDeleteModalOpen(true);
   };
-  const readingData = (data?.data || []).filter(
-    (item: any) => item.type === "READING"
-  );
 
-  const handleSubmit = (data: CreateTestDtoAudio) => {
-    const prepared: CreateTestDto = {
-      ...data,
-      parts: data.parts.map((p, i) => ({
-        ...p,
-        audioUrl: "",
-        number: i + 1,
-      })),
-    };
-
-    if (editingTest) {
-      updateMutation.mutate({ id: editingTest.id, ...prepared });
-    } else {
-      createMutation.mutate(prepared);
-    }
+  const handleSubmit = () => {
     setIsModalOpen(false);
     setEditingTest(null);
   };
@@ -164,6 +149,7 @@ export default function Reading() {
           />
         </Card>
 
+        {/* Delete confirmation */}
         <Modal
           open={deleteModalOpen}
           title="Ishonchingiz komilmi?"
@@ -188,7 +174,10 @@ export default function Reading() {
         <Modal
           title={null}
           open={isModalOpen}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => {
+            setIsModalOpen(false);
+            setEditingTest(null);
+          }}
           footer={null}
           width={1400}
           style={{ top: 20 }}
@@ -198,21 +187,18 @@ export default function Reading() {
             initialData={
               editingTest
                 ? {
-                  title: editingTest.title,
-                  type: editingTest.type,
-                  ieltsId: editingTest.ieltsId,
-                  parts: editingTest.parts.map(
-                    ({ number, title, sections }) => ({
-                      number,
-                      title,
-                      sections,
-                    })
-                  ),
-                }
+                    title: editingTest.title,
+                    type: editingTest.type,
+                    ieltsId: editingTest.ieltsId,
+                    parts: editingTest.parts,
+                  }
                 : undefined
             }
             onSubmit={handleSubmit}
-            onCancel={() => setIsModalOpen(false)}
+            onCancel={() => {
+              setIsModalOpen(false);
+              setEditingTest(null);
+            }}
           />
         </Modal>
       </Content>
