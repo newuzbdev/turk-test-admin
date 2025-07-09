@@ -9,6 +9,7 @@ import {
   Col,
   Select,
   Card,
+  notification,
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useState } from "react";
@@ -24,13 +25,15 @@ import {
   useDeleteSubPart,
   useDeleteSpeakingSection,
   useCreateSpeakingSection,
-  useCreateQuestion,
   useCreateSubPart,
+  useCreateQuestion,
+  useCreateSpeakingPoint,
 } from "../../../config/querys/speaking-query";
 
 const { TextArea } = Input;
 const { Title } = Typography;
 const { Panel } = Collapse;
+
 const sectionTypes = ["PART1", "PART2", "PART3"];
 
 interface Props {
@@ -48,189 +51,242 @@ export default function SpeakingForm({
     initialData || { title: "", ieltsId: "", sections: [] }
   );
 
-  const updateTest = useUpdateSpeakingTest();
-  const createSection = useCreateSpeakingSection();
   const updateSection = useUpdateSpeakingSection();
-  const deleteSection = useDeleteSpeakingSection();
-  const createQuestion = useCreateQuestion();
-  const updateQuestion = useUpdateQuestion();
-  const deleteQuestion = useDeleteQuestion();
-  const createSubPart = useCreateSubPart();
   const updateSubPart = useUpdateSubPart();
+  const updateQuestion = useUpdateQuestion();
+  const updateTest = useUpdateSpeakingTest();
+  const deleteQuestion = useDeleteQuestion();
   const deleteSubPart = useDeleteSubPart();
+  const deleteSection = useDeleteSpeakingSection();
+  const createSection = useCreateSpeakingSection();
+  const createSubPart = useCreateSubPart();
+  const createQuestion = useCreateQuestion();
+  const createPoint = useCreateSpeakingPoint();
 
   const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
 
   const handleSubmit = async () => {
-    const updatedTest = form;
-    const testId = (initialData as any)?.id;
-
-    if (!initialData) return onSubmit(form);
-
-    if (
-      updatedTest.title !== initialData.title ||
-      updatedTest.ieltsId !== initialData.ieltsId
-    ) {
-      await updateTest.mutateAsync({
-        id: testId,
-        title: updatedTest.title,
-        ieltsId: updatedTest.ieltsId,
-        sections: [],
-      });
-    }
-
-    const currentSectionIds = updatedTest.sections.map((s) => s.id);
-    const originalSections = initialData.sections || [];
-
-    for (const origSection of originalSections) {
-      if (!currentSectionIds.includes(origSection.id)) {
-        await deleteSection.mutateAsync(origSection.id!);
+    try {
+      if (!initialData) {
+        onSubmit(form);
+        return;
       }
-    }
 
-    for (let i = 0; i < updatedTest.sections.length; i++) {
-      const section = updatedTest.sections[i];
-      const origSection = originalSections.find((s) => s.id === section.id);
-      let sectionId = section.id;
+      const updatedTest = form;
+      const testId = initialData?.speakingTestId;
 
-      if (!sectionId) {
-        const created = await createSection.mutateAsync({
-          speakingTestId: testId,
-          order: section.order,
-          type: section.type,
-          title: section.title,
-          description: section.description,
-          content: section.content,
-          images: section.images,
+      if (!testId) throw new Error("Test ID topilmadi");
+
+      if (
+        updatedTest.title !== initialData.title ||
+        updatedTest.ieltsId !== initialData.ieltsId
+      ) {
+        await updateTest.mutateAsync({
+          id: testId,
+          title: updatedTest.title,
+          ieltsId: updatedTest.ieltsId,
+          sections: [],
         });
-        sectionId = created.id;
-      } else if (!deepEqual(section, origSection)) {
-        const { questions, subParts, ...rest } = section;
-        await updateSection.mutateAsync({ id: sectionId, ...rest });
       }
 
-      // Questions
-      const origQuestions = origSection?.questions || [];
-      for (const origQ of origQuestions) {
-        if (!section.questions.find((q) => q.id === origQ.id)) {
-          await deleteQuestion.mutateAsync(origQ.id!);
-        }
-      }
+      for (let i = 0; i < updatedTest.sections.length; i++) {
+        const section = updatedTest.sections[i];
+        const origSection = initialData.sections[i];
+        const sectionId = (section as any).id;
 
-      for (const q of section.questions) {
-        if (!q.id) {
-          await createQuestion.mutateAsync({
-            speakingSectionId: sectionId!,
-            order: q.order,
-            question: q.question,
-          });
+        if (sectionId) {
+          const { questions, subParts, ...sectionRest } = section;
+          await updateSection.mutateAsync({ id: sectionId, ...sectionRest });
+
+          for (let q = 0; q < questions.length; q++) {
+            const qId = (questions[q] as any).id;
+            if (qId) {
+              if (!deepEqual(questions[q], origSection?.questions?.[q])) {
+                await updateQuestion.mutateAsync({ id: qId, ...questions[q] });
+              }
+            } else {
+              await createQuestion.mutateAsync({
+                speakingSectionId: sectionId,
+                ...questions[q],
+              });
+            }
+          }
+
+          for (let s = 0; s < subParts.length; s++) {
+            const sub = subParts[s];
+            const origSub = origSection?.subParts?.[s];
+            const subId = (sub as any).id;
+
+            if (subId) {
+              const { questions: subQs, ...subRest } = sub;
+              await updateSubPart.mutateAsync({ id: subId, ...subRest });
+
+              for (let sq = 0; sq < sub.questions.length; sq++) {
+                const sqId = (sub.questions[sq] as any).id;
+                if (sqId) {
+                  if (!deepEqual(sub.questions[sq], origSub?.questions?.[sq])) {
+                    await updateQuestion.mutateAsync({
+                      id: sqId,
+                      ...sub.questions[sq],
+                    });
+                  }
+                } else {
+                  await createQuestion.mutateAsync({
+                    speakingSectionId: sectionId,
+                    ...sub.questions[sq],
+                  });
+                }
+              }
+            } else {
+              const newSub = await createSubPart.mutateAsync({
+                speakingSectionId: sectionId,
+                label: sub.label,
+                description: sub.description,
+              });
+
+              for (const q of sub.questions) {
+                await createQuestion.mutateAsync({
+                  speakingSectionId: sectionId,
+                  order: q.order,
+                  question: q.question,
+                });
+              }
+            }
+          }
+
+          // PART3 pointlar uchun
+          if (section.type === "PART3") {
+            for (let idx = 0; idx < section.advantages.length; idx++) {
+              await createPoint.mutateAsync({
+                speakingSectionId: sectionId,
+                order: idx + 1,
+                type: "ADVANTAGE",
+                question: section.advantages[idx],
+              });
+            }
+            for (let idx = 0; idx < section.disadvantages.length; idx++) {
+              await createPoint.mutateAsync({
+                speakingSectionId: sectionId,
+                order: idx + 1,
+                type: "DISADVANTAGE",
+                question: section.disadvantages[idx],
+              });
+            }
+          }
         } else {
-          const oldQ = origQuestions.find((oq) => oq.id === q.id);
-          if (!deepEqual(q, oldQ)) {
-            await updateQuestion.mutateAsync({ id: q.id, ...q });
-          }
-        }
-      }
-
-      // SubParts
-      const origSubParts = origSection?.subParts || [];
-      for (const origSP of origSubParts) {
-        if (!section.subParts.find((sp) => sp.id === origSP.id)) {
-          await deleteSubPart.mutateAsync(origSP.id!);
-        }
-      }
-
-      for (const sp of section.subParts) {
-        let subPartId = sp.id;
-        const origSP = origSubParts.find((o) => o.id === sp.id);
-
-        if (!subPartId) {
-          const created = await createSubPart.mutateAsync({
-            speakingSectionId: sectionId!,
-            label: sp.label,
-            description: sp.description,
+          // Yangi bo‘limni yaratish
+          const newSec = await createSection.mutateAsync({
+            speakingTestId: testId,
+            order: section.order,
+            type: section.type,
+            title: section.title,
+            description: section.description,
+            content: section.content,
+            images: section.images,
           });
-          subPartId = created.id;
-        } else if (!deepEqual(sp, origSP)) {
-          const { questions, ...rest } = sp;
-          await updateSubPart.mutateAsync({ id: subPartId, ...rest });
-        }
 
-        const origQs = origSP?.questions || [];
-        for (const oq of origQs) {
-          if (!sp.questions.find((q) => q.id === oq.id)) {
-            await deleteQuestion.mutateAsync(oq.id!);
-          }
-        }
-
-        for (const q of sp.questions) {
-          if (!q.id) {
+          for (let q of section.questions) {
             await createQuestion.mutateAsync({
-              speakingSectionId: sectionId!,
+              speakingSectionId: newSec.id,
               order: q.order,
               question: q.question,
             });
-          } else {
-            const oldQ = origQs.find((oq) => oq.id === q.id);
-            if (!deepEqual(q, oldQ)) {
-              await updateQuestion.mutateAsync({ id: q.id, ...q });
+          }
+
+          for (const sp of section.subParts) {
+            const newSP = await createSubPart.mutateAsync({
+              speakingSectionId: newSec.id,
+              label: sp.label,
+              description: sp.description,
+            });
+
+            for (const q of sp.questions) {
+              await createQuestion.mutateAsync({
+                speakingSectionId: newSec.id,
+                order: q.order,
+                question: q.question,
+              });
+            }
+          }
+
+          if (section.type === "PART3") {
+            for (let idx = 0; idx < section.advantages.length; idx++) {
+              await createPoint.mutateAsync({
+                speakingSectionId: newSec.id,
+                order: idx + 1,
+                type: "ADVANTAGE",
+                question: section.advantages[idx],
+              });
+            }
+            for (let idx = 0; idx < section.disadvantages.length; idx++) {
+              await createPoint.mutateAsync({
+                speakingSectionId: newSec.id,
+                order: idx + 1,
+                type: "DISADVANTAGE",
+                question: section.disadvantages[idx],
+              });
             }
           }
         }
       }
+
+      notification.success({ message: "Saqlash muvaffaqiyatli yakunlandi" });
+      onSubmit(updatedTest);
+    } catch (error: any) {
+      notification.error({ message: "Xatolik", description: error.message });
+      console.error(error);
     }
-
-    onSubmit(updatedTest);
-  };
-
-  const updateSectionState = (
-    index: number,
-    updatedSection: SpeakingSection
-  ) => {
-    const updated = [...form.sections];
-    updated[index] = updatedSection;
-    setForm({ ...form, sections: updated });
-  };
-
-  const removeSection = async (index: number) => {
-    const section = form.sections[index];
-    if (section?.id) await deleteSection.mutateAsync(section.id);
-    const updatedSections = form.sections.filter((_, i) => i !== index);
-    setForm({ ...form, sections: updatedSections });
-  };
-
-  const removeQuestion = async (sIndex: number, qIndex: number) => {
-    const question = form.sections[sIndex].questions[qIndex];
-    if (question?.id) await deleteQuestion.mutateAsync(question.id);
-    const updated = [...form.sections];
-    updated[sIndex].questions.splice(qIndex, 1);
-    setForm({ ...form, sections: updated });
-  };
-
-  const removeSubPart = async (sIndex: number, spIndex: number) => {
-    const subPart = form.sections[sIndex].subParts[spIndex];
-    if (subPart?.id) await deleteSubPart.mutateAsync(subPart.id);
-    const updated = [...form.sections];
-    updated[sIndex].subParts.splice(spIndex, 1);
-    setForm({ ...form, sections: updated });
   };
 
   const addSection = () => {
     const newSection: SpeakingSection = {
       order: form.sections.length + 1,
-      type: "PART1",
       title: "",
+      type: "PART1",
       description: "",
       content: "",
       images: [],
       advantages: [],
       disadvantages: [],
-      questions: [],
       subParts: [],
+      questions: [],
     };
     setForm({ ...form, sections: [...form.sections, newSection] });
   };
 
+  const removeSection = async (index: number) => {
+    const section = form.sections[index];
+
+    if ((section as any)?.id) {
+      await deleteSection.mutateAsync((section as any).id);
+    }
+
+    const updatedSections = form.sections.filter((_, i) => i !== index);
+    setForm({ ...form, sections: updatedSections });
+  };
+  const removeQuestion = async (sectionIndex: number, qIndex: number) => {
+    const updated = [...form.sections];
+    const question = updated[sectionIndex].questions[qIndex];
+
+    if ((question as any)?.id) {
+      await deleteQuestion.mutateAsync((question as any).id);
+    }
+
+    updated[sectionIndex].questions.splice(qIndex, 1);
+    setForm({ ...form, sections: updated });
+  };
+
+  const removeSubPart = async (sectionIndex: number, spIndex: number) => {
+    const updated = [...form.sections];
+    const subPart = updated[sectionIndex].subParts[spIndex];
+
+    if ((subPart as any)?.id) {
+      await deleteSubPart.mutateAsync((subPart as any).id);
+    }
+
+    updated[sectionIndex].subParts.splice(spIndex, 1);
+    setForm({ ...form, sections: updated });
+  };
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       <Title level={4}>📋 Asosiy ma'lumotlar</Title>
@@ -550,6 +606,7 @@ export default function SpeakingForm({
       </Button>
 
       <Divider />
+
       <Space>
         <Button onClick={onCancel}>Bekor qilish</Button>
         <Button type="primary" onClick={handleSubmit}>

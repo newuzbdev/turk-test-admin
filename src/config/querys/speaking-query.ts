@@ -19,6 +19,7 @@ export interface SpeakingSubPart {
 export interface SpeakingSection {
   id?: string;
   order: number;
+  speakingTestId: string;
   type: string;
   title: string;
   description?: string;
@@ -42,7 +43,9 @@ export interface SpeakingTest {
 export type SpeakingTestPayload = Omit<
   SpeakingTest,
   "id" | "createdAt" | "updatedAt"
->;
+> & {
+  speakingTestId?: string;
+};
 
 interface PaginatedSpeakingResponse {
   total: number;

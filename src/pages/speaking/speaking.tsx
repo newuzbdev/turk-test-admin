@@ -193,6 +193,7 @@ export default function Speaking() {
             initialData={
               editingTest
                 ? {
+                    speakingTestId: editingTest.id,
                     title: editingTest.title,
                     ieltsId: editingTest.ielts?.id || "",
                     sections: editingTest.sections || [],
