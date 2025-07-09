@@ -10,21 +10,21 @@ type Props = {
 };
 
 export default function AnswerForm({ answer, onChange, onRemove }: Props) {
-  const { mutateAsync: updateAnswer } = useUpdateAnswer();
+  // const { mutateAsync: updateAnswer } = useUpdateAnswer();
 
   const handleFieldChange = async (field: keyof TestAnswerDto, value: any) => {
     onChange(field, value);
 
-    if (answer.id) {
-      try {
-        const updated = { ...answer, [field]: value } as TestAnswerDto & {
-          id: string;
-        };
-        await updateAnswer(updated);
-      } catch (error) {
-        message.error("Javobni yangilashda xatolik yuz berdi");
-      }
-    }
+    // if (answer.id) {
+    //   try {
+    //     const updated = { ...answer, [field]: value } as TestAnswerDto & {
+    //       id: string;
+    //     };
+    //     await updateAnswer(updated);
+    //   } catch (error) {
+    //     message.error("Javobni yangilashda xatolik yuz berdi");
+    //   }
+    // }
   };
 
   const handleCorrectToggle = () => {

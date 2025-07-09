@@ -18,17 +18,17 @@ type Props = {
 };
 
 export default function SectionForm({ section, onChange, onRemove }: Props) {
-  const updateQuestionApi = useUpdateQuestion();
-  const updateAnswerApi = useUpdateAnswer();
+  // const updateQuestionApi = useUpdateQuestion();
+  // const updateAnswerApi = useUpdateAnswer();
 
   const updateQuestion = (index: number, updated: TestQuestionDto) => {
     const newQuestions = [...section.questions];
     newQuestions[index] = updated;
     onChange({ ...section, questions: newQuestions });
 
-    if (updated.id) {
-      updateQuestionApi.mutate({ ...updated, id: updated.id });
-    }
+    // if (updated.id) {
+    //   updateQuestionApi.mutate({ ...updated, id: updated.id });
+    // }
   };
 
   const addQuestion = () => {
@@ -46,20 +46,39 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
     onChange({ ...section, questions: newQuestions });
   };
 
+  // const updateAnswer = (
+  //   qIndex: number,
+  //   aIndex: number,
+  //   updated: TestAnswerDto
+  // ) => {
+  //   const newQuestions = [...section.questions];
+  //   const answers = [...newQuestions[qIndex].answers];
+  //   answers[aIndex] = updated;
+  //   newQuestions[qIndex].answers = answers;
+  //   onChange({ ...section, questions: newQuestions });
+
+  //   // if (updated.id) {
+  //   //   updateAnswerApi.mutate({ ...updated, id: updated.id });
+  //   // }
+  // };
+
   const updateAnswer = (
     qIndex: number,
     aIndex: number,
     updated: TestAnswerDto
   ) => {
     const newQuestions = [...section.questions];
-    const answers = [...newQuestions[qIndex].answers];
-    answers[aIndex] = updated;
-    newQuestions[qIndex].answers = answers;
-    onChange({ ...section, questions: newQuestions });
-
-    if (updated.id) {
-      updateAnswerApi.mutate({ ...updated, id: updated.id });
-    }
+    const newAnswers = [...newQuestions[qIndex].answers]; // DEEP COPY
+    newAnswers[aIndex] = { ...updated }; // YANGI OBJECT
+    newQuestions[qIndex] = {
+      ...newQuestions[qIndex],
+      answers: newAnswers,
+    };
+    const newSection = {
+      ...section,
+      questions: newQuestions,
+    };
+    onChange(newSection);
   };
 
   const addAnswer = (qIndex: number) => {

@@ -92,7 +92,16 @@ export default function ListeningForm({
     setFormData({ ...formData, parts: newParts });
   };
 
-  const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
+  const deepEqual = (a: any, b: any): boolean => {
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+  const deepEqualAnswer = (a: any, b: any): boolean => {
+    return (
+      a.variantText === b.variantText &&
+      a.answer === b.answer &&
+      a.correct === b.correct
+    );
+  };
 
   const handleSave = async () => {
     if (initialData) {
@@ -145,7 +154,11 @@ export default function ListeningForm({
                     const originalAnswer = originalQuestion.answers[l];
                     const answerId = (updatedAnswer as any).id;
 
-                    if (answerId && !deepEqual(updatedAnswer, originalAnswer)) {
+                    if (
+                      answerId &&
+                      !deepEqualAnswer(updatedAnswer, originalAnswer)
+                    ) {
+                      console.log("YANGILANMOQDA: ", updatedAnswer);
                       await updateAnswer.mutateAsync({
                         id: answerId,
                         variantText: updatedAnswer.variantText,
@@ -163,6 +176,7 @@ export default function ListeningForm({
     }
 
     onSubmit(formData);
+    onCancel();
   };
 
   const renderStepContent = () => {

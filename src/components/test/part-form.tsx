@@ -176,9 +176,23 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
             </Button>
           </Upload>
           {part.audioUrl && (
-            <audio src={part.audioUrl} controls>
-              <source src={part.audioUrl} type="" />
-            </audio>
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "12px",
+                background: "#f9fafb",
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Text strong style={{ display: "block", marginBottom: "8px" }}>
+                🎧 Yuklangan audio fayl:
+              </Text>
+              <audio controls style={{ width: "100%" }}>
+                <source src={part.audioUrl} type="audio/mpeg" />
+                Brauzeringiz audio playerni qo‘llab-quvvatlamaydi.
+              </audio>
+            </div>
           )}
         </Col>
       </Row>
