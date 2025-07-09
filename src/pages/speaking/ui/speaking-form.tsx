@@ -66,6 +66,32 @@ export default function SpeakingForm({
   const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
 
   const handleSubmit = async () => {
+    for (let section of form.sections) {
+      for (let q of section.questions) {
+        if (
+          !q.question ||
+          typeof q.question !== "string" ||
+          q.question.trim() === ""
+        ) {
+          throw new Error(
+            "Bo‘lim savollarida bo‘sh yoki noto‘g‘ri formatdagi savol mavjud."
+          );
+        }
+      }
+      for (let sp of section.subParts) {
+        for (let sq of sp.questions) {
+          if (
+            !sq.question ||
+            typeof sq.question !== "string" ||
+            sq.question.trim() === ""
+          ) {
+            throw new Error(
+              "SubPart savollarida bo‘sh yoki noto‘g‘ri formatdagi savol mavjud."
+            );
+          }
+        }
+      }
+    }
     try {
       if (!initialData) {
         onSubmit(form);
@@ -435,7 +461,7 @@ export default function SpeakingForm({
                   <TextArea
                     rows={2}
                     placeholder={`Savol ${qIndex + 1}`}
-                    value={q.question}
+                    value={q.questionText}
                     onChange={(e) => {
                       const updated = [...form.sections];
                       const questions = [...section.questions];
@@ -531,7 +557,7 @@ export default function SpeakingForm({
                       key={qIndex}
                       rows={2}
                       placeholder={`Savol ${qIndex + 1}`}
-                      value={q.question}
+                      value={q.questionText}
                       onChange={(e) => {
                         const questions = [...sp.questions];
                         questions[qIndex] = {

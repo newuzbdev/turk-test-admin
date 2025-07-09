@@ -6,7 +6,7 @@ import { speakingEndpoint } from "../endpoint";
 export interface SpeakingSubQuestion {
   id?: string;
   order: number;
-  question: string;
+  questionText: string;
 }
 
 export interface SpeakingSubPart {
