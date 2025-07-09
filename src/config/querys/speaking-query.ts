@@ -1,20 +1,23 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { api } from "..";
 import { speakingEndpoint } from "../endpoint";
 
 export interface SpeakingSubQuestion {
+  id?: string;
   order: number;
   question: string;
 }
 
 export interface SpeakingSubPart {
+  id?: string;
   label: string;
   description: string;
   questions: SpeakingSubQuestion[];
 }
 
 export interface SpeakingSection {
+  id?: string;
   order: number;
   type: string;
   title: string;
@@ -140,20 +143,86 @@ export const useDeleteSpeakingTest = () => {
 export const useUpdateSpeakingSection = () => {
   return useMutation({
     mutationFn: ({ id, ...rest }: any) =>
-      api.patch(`api/speaking-section/${id}`, rest).then((res) => res.data),
+      api.patch(`/api/speaking-section/${id}`, rest).then((res) => res.data),
+  });
+};
+
+export const useDeleteSpeakingSection = () => {
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete(`/api/speaking-section/${id}`).then((res) => res.data),
   });
 };
 
 export const useUpdateSubPart = () => {
   return useMutation({
     mutationFn: ({ id, ...rest }: any) =>
-      api.patch(`api/speaking-sub-part/${id}`, rest).then((res) => res.data),
+      api.patch(`/api/speaking-sub-part/${id}`, rest).then((res) => res.data),
+  });
+};
+
+export const useDeleteSubPart = () => {
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete(`/api/speaking-sub-part/${id}`).then((res) => res.data),
   });
 };
 
 export const useUpdateQuestion = () => {
   return useMutation({
     mutationFn: ({ id, ...rest }: any) =>
-      api.patch(`api/speaking-question/${id}`, rest).then((res) => res.data),
+      api.patch(`/api/speaking-question/${id}`, rest).then((res) => res.data),
+  });
+};
+
+export const useDeleteQuestion = () => {
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete(`/api/speaking-question/${id}`).then((res) => res.data),
+  });
+};
+
+export const useCreateSpeakingSection = () => {
+  return useMutation({
+    mutationFn: (payload: {
+      speakingTestId: string;
+      order: number;
+      type: string;
+      title: string;
+      description?: string;
+      content?: string;
+      images: string[];
+    }) => api.post("/api/speaking-section", payload).then((res) => res.data),
+  });
+};
+
+export const useCreateSubPart = () => {
+  return useMutation({
+    mutationFn: (payload: {
+      speakingSectionId: string;
+      label: string;
+      description: string;
+    }) => api.post("/api/speaking-sub-part", payload).then((res) => res.data),
+  });
+};
+
+export const useCreateQuestion = () => {
+  return useMutation({
+    mutationFn: (payload: {
+      speakingSectionId: string;
+      order: number;
+      question: string;
+    }) => api.post("/api/speaking-question", payload).then((res) => res.data),
+  });
+};
+
+export const useCreateSpeakingPoint = () => {
+  return useMutation({
+    mutationFn: (payload: {
+      speakingSectionId: string;
+      order: number;
+      type: "ADVANTAGE" | "DISADVANTAGE";
+      question: string;
+    }) => api.post("/api/speaking-point", payload).then((res) => res.data),
   });
 };

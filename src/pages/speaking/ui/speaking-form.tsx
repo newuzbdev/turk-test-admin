@@ -20,6 +20,12 @@ import {
   useUpdateSubPart,
   useUpdateQuestion,
   useUpdateSpeakingTest,
+  useDeleteQuestion,
+  useDeleteSubPart,
+  useDeleteSpeakingSection,
+  useCreateSpeakingSection,
+  useCreateQuestion,
+  useCreateSubPart,
 } from "../../../config/querys/speaking-query";
 
 const { TextArea } = Input;
@@ -43,10 +49,18 @@ export default function SpeakingForm({
     initialData || { title: "", ieltsId: "", sections: [] }
   );
 
-  const updateSection = useUpdateSpeakingSection();
-  const updateSubPart = useUpdateSubPart();
-  const updateQuestion = useUpdateQuestion();
   const updateTest = useUpdateSpeakingTest();
+  const createSection = useCreateSpeakingSection();
+  const updateSection = useUpdateSpeakingSection();
+  const deleteSection = useDeleteSpeakingSection();
+
+  const createQuestion = useCreateQuestion();
+  const updateQuestion = useUpdateQuestion();
+  const deleteQuestion = useDeleteQuestion();
+
+  const createSubPart = useCreateSubPart();
+  const updateSubPart = useUpdateSubPart();
+  const deleteSubPart = useDeleteSubPart();
 
   const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
   const handleSubmit = async () => {
@@ -56,62 +70,131 @@ export default function SpeakingForm({
     }
 
     const updatedTest = form;
+    const testId = (initialData as any).id;
 
-    // 🔁 Testning asosiy ma'lumotlarini yangilash
     if (
       updatedTest.title !== initialData.title ||
       updatedTest.ieltsId !== initialData.ieltsId
     ) {
       await updateTest.mutateAsync({
-        id: (initialData as any).id,
+        id: testId,
         title: updatedTest.title,
         ieltsId: updatedTest.ieltsId,
         sections: [],
       });
     }
 
-    // 🔁 Har bir bo‘lim (section) va ichidagi qismlarni tekshirish va yangilash
+    const initialSectionIds = initialData.sections.map((s: any) => s.id);
+    const currentSectionIds = updatedTest.sections.map((s: any) => s.id);
+
+    for (const section of initialData.sections) {
+      if (!currentSectionIds.includes(section.id)) {
+        await deleteSection.mutateAsync(section.id);
+      }
+    }
+
     for (let i = 0; i < updatedTest.sections.length; i++) {
       const section = updatedTest.sections[i];
-      const origSection = initialData.sections[i];
-      const sectionId = (section as any).id;
+      const origSection = initialData.sections.find(
+        (s: any) => s.id === section.id
+      );
 
-      if (sectionId && !deepEqual(section, origSection)) {
+      let sectionId = section.id;
+
+      if (!sectionId) {
+        const created = await createSection.mutateAsync({
+          speakingTestId: testId,
+          order: section.order,
+          type: section.type,
+          title: section.title,
+          description: section.description,
+          content: section.content,
+          images: section.images,
+        });
+        sectionId = created.id;
+      } else if (!deepEqual(section, origSection)) {
         const { questions, subParts, ...sectionRest } = section;
-
         await updateSection.mutateAsync({ id: sectionId, ...sectionRest });
+      }
 
-        // 🔁 Savollarni yangilash
-        for (let q = 0; q < questions.length; q++) {
-          const qId = (questions[q] as any).id;
-          if (qId && !deepEqual(questions[q], origSection?.questions[q])) {
-            await updateQuestion.mutateAsync({ id: qId, ...questions[q] });
+      const origQuestions = origSection?.questions || [];
+      const origQuestionIds = origQuestions.map((q: any) => q.id);
+      const currentQuestionIds = section.questions.map((q: any) => q.id);
+
+      for (const oq of origQuestions) {
+        if (!currentQuestionIds.includes(oq.id)) {
+          await deleteQuestion.mutateAsync(oq.id);
+        }
+      }
+
+      for (const q of section.questions) {
+        if (!q.id) {
+          await createQuestion.mutateAsync({
+            speakingSectionId: sectionId!,
+            order: q.order,
+            question: q.question,
+          });
+        } else {
+          const oldQ = origQuestions.find((oq: any) => oq.id === q.id);
+          if (!deepEqual(q, oldQ)) {
+            await updateQuestion.mutateAsync({ id: q.id, ...q });
+          }
+        }
+      }
+
+      const origSubParts = origSection?.subParts || [];
+      const origSubIds = origSubParts.map((sp: any) => sp.id);
+      const currentSubIds = section.subParts.map((sp: any) => sp.id);
+
+      for (const sp of origSubParts) {
+        if (!currentSubIds.includes(sp.id)) {
+          await deleteSubPart.mutateAsync(sp.id);
+        }
+      }
+
+      for (const sp of section.subParts) {
+        let subPartId = sp.id;
+        const origSP = origSubParts.find((osp: any) => osp.id === sp.id);
+
+        if (!subPartId) {
+          const created = await createSubPart.mutateAsync({
+            speakingSectionId: sectionId!,
+            label: sp.label,
+            description: sp.description,
+          });
+          subPartId = created.id;
+        } else if (!deepEqual(sp, origSP)) {
+          const { questions, ...subRest } = sp;
+          await updateSubPart.mutateAsync({ id: subPartId, ...subRest });
+        }
+
+        const origSPQuestions = origSP?.questions || [];
+        const origSPQIds = origSPQuestions.map((q: any) => q.id);
+        const currentSPQIds = sp.questions.map((q: any) => q.id);
+
+        for (const oq of origSPQuestions) {
+          if (!currentSPQIds.includes(oq.id)) {
+            await deleteQuestion.mutateAsync(oq.id);
           }
         }
 
-        // 🔁 SubPartlarni yangilash
-        for (let s = 0; s < subParts.length; s++) {
-          const sub = subParts[s];
-          const origSub = origSection?.subParts[s];
-          const subId = (sub as any).id;
-
-          if (subId && !deepEqual(sub, origSub)) {
-            const { questions: subQs, ...subRest } = sub;
-            await updateSubPart.mutateAsync({ id: subId, ...subRest });
-
-            // 🔁 SubPart ichidagi savollarni yangilash
-            for (let sq = 0; sq < subQs.length; sq++) {
-              const qId = (subQs[sq] as any).id;
-              if (qId && !deepEqual(subQs[sq], origSub?.questions[sq])) {
-                await updateQuestion.mutateAsync({ id: qId, ...subQs[sq] });
-              }
+        for (const q of sp.questions) {
+          if (!q.id) {
+            await createQuestion.mutateAsync({
+              speakingSectionId: sectionId!,
+              order: q.order,
+              question: q.question,
+            });
+          } else {
+            const oldQ = origSPQuestions.find((oq: any) => oq.id === q.id);
+            if (!deepEqual(q, oldQ)) {
+              await updateQuestion.mutateAsync({ id: q.id, ...q });
             }
           }
         }
       }
     }
 
-    // 🔚 Yakuniy submit
     onSubmit(updatedTest);
   };
 
@@ -131,9 +214,38 @@ export default function SpeakingForm({
     setForm({ ...form, sections: [...form.sections, newSection] });
   };
 
-  const removeSection = (index: number) => {
+  const removeSection = async (index: number) => {
+    const section = form.sections[index];
+
+    if ((section as any)?.id) {
+      await deleteSection.mutateAsync((section as any).id);
+    }
+
     const updatedSections = form.sections.filter((_, i) => i !== index);
     setForm({ ...form, sections: updatedSections });
+  };
+  const removeQuestion = async (sectionIndex: number, qIndex: number) => {
+    const updated = [...form.sections];
+    const question = updated[sectionIndex].questions[qIndex];
+
+    if ((question as any)?.id) {
+      await deleteQuestion.mutateAsync((question as any).id);
+    }
+
+    updated[sectionIndex].questions.splice(qIndex, 1);
+    setForm({ ...form, sections: updated });
+  };
+
+  const removeSubPart = async (sectionIndex: number, spIndex: number) => {
+    const updated = [...form.sections];
+    const subPart = updated[sectionIndex].subParts[spIndex];
+
+    if ((subPart as any)?.id) {
+      await deleteSubPart.mutateAsync((subPart as any).id);
+    }
+
+    updated[sectionIndex].subParts.splice(spIndex, 1);
+    setForm({ ...form, sections: updated });
   };
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -203,7 +315,6 @@ export default function SpeakingForm({
                 />
               </Col>
             </Row>
-
             {section.type === "PART3" && (
               <Row gutter={16} style={{ marginTop: 12 }}>
                 <Col span={12}>
@@ -280,22 +391,30 @@ export default function SpeakingForm({
             </Title>
             <Space direction="vertical" style={{ width: "100%" }}>
               {section.questions.map((q, qIndex) => (
-                <TextArea
-                  key={qIndex}
-                  rows={2}
-                  placeholder={`Savol ${qIndex + 1}`}
-                  value={q.question}
-                  onChange={(e) => {
-                    const updated = [...form.sections];
-                    const questions = [...section.questions];
-                    questions[qIndex] = {
-                      ...questions[qIndex],
-                      question: e.target.value,
-                    };
-                    updated[index] = { ...section, questions };
-                    setForm({ ...form, sections: updated });
-                  }}
-                />
+                <div key={qIndex} style={{ position: "relative" }}>
+                  <TextArea
+                    rows={2}
+                    placeholder={`Savol ${qIndex + 1}`}
+                    value={q.question}
+                    onChange={(e) => {
+                      const updated = [...form.sections];
+                      const questions = [...section.questions];
+                      questions[qIndex] = {
+                        ...questions[qIndex],
+                        question: e.target.value,
+                      };
+                      updated[index] = { ...section, questions };
+                      setForm({ ...form, sections: updated });
+                    }}
+                  />
+                  <Button
+                    type="text"
+                    icon={<DeleteOutlined />}
+                    danger
+                    style={{ position: "absolute", top: 0, right: 0 }}
+                    onClick={() => removeQuestion(index, qIndex)}
+                  />
+                </div>
               ))}
               <Button
                 type="dashed"
@@ -325,6 +444,14 @@ export default function SpeakingForm({
                 size="small"
                 title={`SubPart ${spIndex + 1}`}
                 style={{ marginBottom: 12 }}
+                extra={
+                  <Button
+                    danger
+                    type="text"
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeSubPart(index, spIndex)}
+                  />
+                }
               >
                 <Row gutter={16}>
                   <Col span={12}>

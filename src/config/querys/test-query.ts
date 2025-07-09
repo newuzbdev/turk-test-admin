@@ -223,14 +223,16 @@ export const useSubmitTestAnswers = () => {
 export const useUpdatePart = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...values }: Partial<TestPartDto> & { id: string }) => {
+    mutationFn: async ({
+      id,
+      ...values
+    }: Partial<TestPartDto> & { id: string }) => {
       if (!id) throw new Error("Part ID is required for update");
       const { data } = await api.patch(`/api/parts/${id}`, values);
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["test"] });
-      // Update specific test cache if testId is available
       if (variables.testId) {
         queryClient.invalidateQueries({ queryKey: ["test", variables.testId] });
       }
@@ -253,7 +255,10 @@ export const useUpdatePart = () => {
 export const useUpdateSection = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...values }: Partial<TestSectionDto> & { id: string }) => {
+    mutationFn: async ({
+      id,
+      ...values
+    }: Partial<TestSectionDto> & { id: string }) => {
       if (!id) throw new Error("Section ID is required for update");
       const { data } = await api.patch(`/api/section/${id}`, values);
       return data;
@@ -277,14 +282,16 @@ export const useUpdateSection = () => {
 export const useUpdateQuestion = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...values }: Partial<TestQuestionDto> & { id: string }) => {
+    mutationFn: async ({
+      id,
+      ...values
+    }: Partial<TestQuestionDto> & { id: string }) => {
       if (!id) throw new Error("Question ID is required for update");
       const { data } = await api.patch(`/api/question/${id}`, values);
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["test"] });
-      // Update specific test cache if sectionId is available
       if (variables.sectionId) {
         queryClient.invalidateQueries({ queryKey: ["test"] });
       }
@@ -307,14 +314,16 @@ export const useUpdateQuestion = () => {
 export const useUpdateAnswer = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...values }: Partial<TestAnswerDto> & { id: string }) => {
+    mutationFn: async ({
+      id,
+      ...values
+    }: Partial<TestAnswerDto> & { id: string }) => {
       if (!id) throw new Error("Answer ID is required for update");
       const { data } = await api.patch(`/api/answer/${id}`, values);
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["test"] });
-      // Update specific test cache if questionId is available
       if (variables.questionId) {
         queryClient.invalidateQueries({ queryKey: ["test"] });
       }
