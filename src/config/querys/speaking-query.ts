@@ -36,7 +36,10 @@ export interface SpeakingTest {
   sections: SpeakingSection[];
 }
 
-export type SpeakingTestPayload = Omit<SpeakingTest, "id" | "createdAt" | "updatedAt">;
+export type SpeakingTestPayload = Omit<
+  SpeakingTest,
+  "id" | "createdAt" | "updatedAt"
+>;
 
 interface PaginatedSpeakingResponse {
   total: number;
@@ -87,25 +90,27 @@ export const useCreateSpeakingTest = () => {
 export const useUpdateSpeakingTest = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<SpeakingTest, Error, SpeakingTestPayload & { id: string }>({
-    mutationFn: async ({ id, ...rest }) => {
-      const { data } = await api.patch(`${endpoint}/${id}`, rest);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      notification.success({
-        message: "Speaking Test yangilandi",
-        placement: "bottomRight",
-      });
-    },
-    onError: () => {
-      notification.error({
-        message: "Speaking Test yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
-    },
-  });
+  return useMutation<SpeakingTest, Error, SpeakingTestPayload & { id: string }>(
+    {
+      mutationFn: async ({ id, ...rest }) => {
+        const { data } = await api.patch(`${endpoint}/${id}`, rest);
+        return data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey });
+        notification.success({
+          message: "Speaking Test yangilandi",
+          placement: "bottomRight",
+        });
+      },
+      onError: () => {
+        notification.error({
+          message: "Speaking Test yangilashda xatolik yuz berdi",
+          placement: "bottomRight",
+        });
+      },
+    }
+  );
 };
 
 export const useDeleteSpeakingTest = () => {
@@ -129,5 +134,26 @@ export const useDeleteSpeakingTest = () => {
         placement: "bottomRight",
       });
     },
+  });
+};
+
+export const useUpdateSpeakingSection = () => {
+  return useMutation({
+    mutationFn: ({ id, ...rest }: any) =>
+      api.patch(`api/speaking-section/${id}`, rest).then((res) => res.data),
+  });
+};
+
+export const useUpdateSubPart = () => {
+  return useMutation({
+    mutationFn: ({ id, ...rest }: any) =>
+      api.patch(`api/speaking-sub-part/${id}`, rest).then((res) => res.data),
+  });
+};
+
+export const useUpdateQuestion = () => {
+  return useMutation({
+    mutationFn: ({ id, ...rest }: any) =>
+      api.patch(`api/speaking-question/${id}`, rest).then((res) => res.data),
   });
 };

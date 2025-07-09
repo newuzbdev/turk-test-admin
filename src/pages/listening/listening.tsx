@@ -166,7 +166,6 @@ export default function Listening() {
           <p>Bu amalni bekor qilib bo'lmaydi.</p>
         </Modal>
 
-        {/* ListeningForm Modal */}
         <Modal
           title={null}
           open={isModalOpen}

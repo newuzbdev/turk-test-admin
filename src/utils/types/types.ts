@@ -1,31 +1,29 @@
 export interface ApiResponse<T> {
-    data: T
-    status: number
-    pagination: null | {
-        page: number
-        limit: number
-        totalItems: number
-        offset: number
-        totalPages: number
-    }
-    date: string
+  data: T;
+  status: number;
+  pagination: null | {
+    page: number;
+    limit: number;
+    totalItems: number;
+    offset: number;
+    totalPages: number;
+  };
+  date: string;
 }
 
 export interface ApiResponse<T> {
-    success: boolean;
-    data: T;
-    error?: string;
+  success: boolean;
+  data: T;
+  error?: string;
 }
 
 export interface PaginatedResponse<T> {
-    success: boolean;
-    data: T[];
-    total: number;
-    page: number;
-    limit: number;
+  success: boolean;
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
 }
-
-
 export interface SpeakingSubQuestion {
   order: number;
   question: string;
@@ -50,13 +48,24 @@ export interface SpeakingSection {
   questions: SpeakingSubQuestion[];
 }
 
+export interface IELTS {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SpeakingTest {
   id: string;
   title: string;
   ieltsId: string;
+  ielts?: IELTS; // 💡 optional qilib qo'yildi
   createdAt: string;
   updatedAt: string;
   sections: SpeakingSection[];
 }
 
-export type CreateSpeakingTest = Omit<SpeakingTest, "id" | "createdAt" | "updatedAt">;
+export type CreateSpeakingTest = Omit<
+  SpeakingTest,
+  "id" | "createdAt" | "updatedAt"
+>;
