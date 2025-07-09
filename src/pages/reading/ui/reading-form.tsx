@@ -1,4 +1,3 @@
-// ReadingForm.tsx
 import {
   Button,
   Card,
@@ -157,7 +156,6 @@ export default function ReadingForm({
 
           if (!questionId) continue;
 
-          // QUESTION UPDATE
           if (
             !deepEqual(
               {
@@ -187,7 +185,6 @@ export default function ReadingForm({
 
             if (!answerId) continue;
 
-            // ANSWER UPDATE
             if (
               !deepEqual(
                 {
@@ -214,8 +211,7 @@ export default function ReadingForm({
       }
     }
 
-    // ✅ End: faqat kerakli PATCH'lar bo'ldi, test update qilinmadi
-    onSubmit(formData); // faqat modaldan chiqish uchun
+    onSubmit(formData);
   };
 
   const steps = [

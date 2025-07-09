@@ -30,7 +30,11 @@ interface Props {
   onCancel: () => void;
 }
 
-export default function SpeakingForm({ initialData, onSubmit, onCancel }: Props) {
+export default function SpeakingForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: Props) {
   const [form, setForm] = useState<SpeakingTestPayload>(
     initialData || { title: "", ieltsId: "", sections: [] }
   );
@@ -125,34 +129,36 @@ export default function SpeakingForm({ initialData, onSubmit, onCancel }: Props)
               </Col>
             </Row>
 
-            <Row gutter={16} style={{ marginTop: 12 }}>
-              <Col span={12}>
-                <label>Afzalliklar</label>
-                <Input
-                  value={section.advantages.join(",")}
-                  placeholder="Afzalliklarni vergul bilan ajrating"
-                  onChange={(e) =>
-                    updateSection(index, {
-                      ...section,
-                      advantages: e.target.value.split(","),
-                    })
-                  }
-                />
-              </Col>
-              <Col span={12}>
-                <label>Kamchiliklar</label>
-                <Input
-                  value={section.disadvantages.join(",")}
-                  placeholder="Kamchiliklarni vergul bilan ajrating"
-                  onChange={(e) =>
-                    updateSection(index, {
-                      ...section,
-                      disadvantages: e.target.value.split(","),
-                    })
-                  }
-                />
-              </Col>
-            </Row>
+            {section.type === "PART3" && (
+              <Row gutter={16} style={{ marginTop: 12 }}>
+                <Col span={12}>
+                  <label>Afzalliklar</label>
+                  <Input
+                    value={section.advantages.join(",")}
+                    placeholder="Afzalliklarni vergul bilan ajrating"
+                    onChange={(e) =>
+                      updateSection(index, {
+                        ...section,
+                        advantages: e.target.value.split(","),
+                      })
+                    }
+                  />
+                </Col>
+                <Col span={12}>
+                  <label>Kamchiliklar</label>
+                  <Input
+                    value={section.disadvantages.join(",")}
+                    placeholder="Kamchiliklarni vergul bilan ajrating"
+                    onChange={(e) =>
+                      updateSection(index, {
+                        ...section,
+                        disadvantages: e.target.value.split(","),
+                      })
+                    }
+                  />
+                </Col>
+              </Row>
+            )}
 
             <label style={{ marginTop: 12 }}>Savol matni</label>
             <TextArea
@@ -168,7 +174,10 @@ export default function SpeakingForm({ initialData, onSubmit, onCancel }: Props)
               rows={2}
               value={section.description}
               onChange={(e) =>
-                updateSection(index, { ...section, description: e.target.value })
+                updateSection(index, {
+                  ...section,
+                  description: e.target.value,
+                })
               }
             />
 
@@ -326,7 +335,7 @@ export default function SpeakingForm({ initialData, onSubmit, onCancel }: Props)
       </Collapse>
 
       <Button icon={<PlusOutlined />} onClick={addSection} block>
-         Bo‘lim qo‘shish
+        Bo‘lim qo‘shish
       </Button>
 
       <Divider />
