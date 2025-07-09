@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Input, Button, Col, Row, Tag } from "antd";
+import { Input, Button, Col, Row, Tag, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import type { TestAnswerDto } from "../../config/querys/test-query";
+import { useUpdateAnswer } from "../../config/querys/test-query";
 
 type Props = {
   answer: TestAnswerDto;
@@ -10,8 +10,25 @@ type Props = {
 };
 
 export default function AnswerForm({ answer, onChange, onRemove }: Props) {
+  const { mutateAsync: updateAnswer } = useUpdateAnswer();
+
+  const handleFieldChange = async (field: keyof TestAnswerDto, value: any) => {
+    onChange(field, value);
+
+    if (answer.id) {
+      try {
+        const updated = { ...answer, [field]: value } as TestAnswerDto & {
+          id: string;
+        };
+        await updateAnswer(updated);
+      } catch (error) {
+        message.error("Javobni yangilashda xatolik yuz berdi");
+      }
+    }
+  };
+
   const handleCorrectToggle = () => {
-    onChange("correct", !answer.correct);
+    handleFieldChange("correct", !answer.correct);
   };
 
   return (
@@ -22,14 +39,7 @@ export default function AnswerForm({ answer, onChange, onRemove }: Props) {
             width: "32px",
             height: "32px",
             borderRadius: "50%",
-            background:
-              answer.variantText === "A"
-                ? "#3b82f6"
-                : answer.variantText === "B"
-                ? "#3b82f6"
-                : answer.variantText === "C"
-                ? "#3b82f6"
-                : "#e5e7eb",
+            background: answer.correct ? "#10b981" : "#e5e7eb",
             color: "white",
             display: "flex",
             alignItems: "center",
@@ -45,7 +55,7 @@ export default function AnswerForm({ answer, onChange, onRemove }: Props) {
         <Input
           placeholder="A"
           value={answer.variantText}
-          onChange={(e) => onChange("variantText", e.target.value)}
+          onChange={(e) => handleFieldChange("variantText", e.target.value)}
           style={{
             textAlign: "center",
             borderRadius: "6px",
@@ -58,7 +68,7 @@ export default function AnswerForm({ answer, onChange, onRemove }: Props) {
         <Input
           placeholder="Javob matni"
           value={answer.answer}
-          onChange={(e) => onChange("answer", e.target.value)}
+          onChange={(e) => handleFieldChange("answer", e.target.value)}
           style={{ borderRadius: "6px" }}
         />
       </Col>

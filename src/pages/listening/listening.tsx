@@ -21,7 +21,7 @@ export default function Listening() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTestId, setDeleteTestId] = useState<string | null>(null);
 
-  const { data, isLoading } = useGetTestList(page, limit);
+  const { data, isLoading } = useGetTestList(page, limit, "LISTENING");
   const createMutation = useCreateTest();
   const deleteMutation = useDeleteTest();
 
@@ -35,13 +35,16 @@ export default function Listening() {
     setDeleteModalOpen(true);
   };
 
-  const listeningData = (data?.data || []).filter(
-    (item: any) => item.type === "LISTENING"
-  );
-
-  const handleSubmit = () => {
-    setIsModalOpen(false);
-    setEditingTest(null);
+  const handleSubmit = (formData: CreateTestDto) => {
+    if (editingTest) {
+      // Update code if needed later
+    } else {
+      createMutation.mutate(formData, {
+        onSuccess: () => {
+          setIsModalOpen(false);
+        },
+      });
+    }
   };
 
   const columns = [
@@ -106,7 +109,7 @@ export default function Listening() {
               marginBottom: "24px",
             }}
           >
-            <Title level={3}>🎧 Listening Testlar</Title>
+            <Title level={3}>🎿 Listening Testlar</Title>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -130,7 +133,7 @@ export default function Listening() {
           <Table
             rowKey="id"
             loading={isLoading}
-            dataSource={listeningData}
+            dataSource={data?.data || []}
             columns={columns}
             pagination={{
               current: page,
@@ -145,7 +148,6 @@ export default function Listening() {
           />
         </Card>
 
-        {/* Delete Modal */}
         <Modal
           open={deleteModalOpen}
           title="Testni o'chirmoqchimisiz?"
@@ -167,7 +169,7 @@ export default function Listening() {
         </Modal>
 
         <Modal
-          title={null}
+          title={editingTest ? "Testni tahrirlash" : "Yangi Listening Test"}
           open={isModalOpen}
           onCancel={() => setIsModalOpen(false)}
           footer={null}

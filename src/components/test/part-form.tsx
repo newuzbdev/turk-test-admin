@@ -8,6 +8,7 @@ import {
   Typography,
   Badge,
   Upload,
+  message,
 } from "antd";
 import {
   DeleteOutlined,
@@ -19,6 +20,8 @@ import type {
   TestSectionDto,
 } from "../../config/querys/test-query";
 import SectionForm from "../../pages/reading/ui/section-form";
+import { api } from "../../config";
+import type { RcFile } from "antd/es/upload";
 
 const { Title, Text } = Typography;
 
@@ -48,6 +51,30 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
   const removeSection = (index: number) => {
     const newSections = part.sections.filter((_, i) => i !== index);
     onChange({ ...part, sections: newSections });
+  };
+
+  const handleAudioUpload = async (file: RcFile) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const { data } = await api.post("api/file/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const audioUrl = data?.path;
+      if (audioUrl) {
+        onChange({ ...part, audioUrl });
+        message.success("Audio fayl yuklandi");
+      } else {
+        message.error("Yuklashda xatolik");
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Audio yuklashda xatolik");
+    }
   };
 
   return (
@@ -120,11 +147,9 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
 
       <Row gutter={[20, 20]} style={{ marginBottom: "28px" }}>
         <Col span={12}>
-          <div style={{ marginBottom: "8px" }}>
-            <label style={{ fontWeight: 600, fontSize: "14px" }}>
-              📝 Part sarlavhasi
-            </label>
-          </div>
+          <label style={{ fontWeight: 600, fontSize: "14px" }}>
+            📝 Part sarlavhasi
+          </label>
           <Input
             placeholder="Masalan: Kundalik suhbat"
             value={part.title}
@@ -133,19 +158,14 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
           />
         </Col>
         <Col span={12}>
-          <div style={{ marginBottom: "8px" }}>
-            <label style={{ fontWeight: 600, fontSize: "14px" }}>
-              🎵 Audio fayl
-            </label>
-          </div>
-
+          <label style={{ fontWeight: 600, fontSize: "14px" }}>
+            🎵 Audio fayl
+          </label>
           <Upload
             maxCount={1}
             accept="audio/*"
-            beforeUpload={(file) => {
-              onChange({ ...part, audioUrl: URL.createObjectURL(file) });
-              return false;
-            }}
+            customRequest={({ file }) => handleAudioUpload(file as RcFile)}
+            showUploadList={false}
           >
             <Button
               size="large"
@@ -155,6 +175,11 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
               Audio faylni yuklash
             </Button>
           </Upload>
+          {part.audioUrl && (
+            <audio src={part.audioUrl} controls>
+              <source src={part.audioUrl} type="" />
+            </audio>
+          )}
         </Col>
       </Row>
 

@@ -6,6 +6,8 @@ import type {
   TestSectionDto,
 } from "../../../config/querys/test-query";
 import AnswerForm from "../../../components/test/AnswerForm";
+import { useUpdateQuestion } from "../../../config/querys/test-query";
+import { useUpdateAnswer } from "../../../config/querys/test-query";
 
 const { Text } = Typography;
 
@@ -16,10 +18,17 @@ type Props = {
 };
 
 export default function SectionForm({ section, onChange, onRemove }: Props) {
+  const updateQuestionApi = useUpdateQuestion();
+  const updateAnswerApi = useUpdateAnswer();
+
   const updateQuestion = (index: number, updated: TestQuestionDto) => {
     const newQuestions = [...section.questions];
     newQuestions[index] = updated;
     onChange({ ...section, questions: newQuestions });
+
+    if (updated.id) {
+      updateQuestionApi.mutate({ ...updated, id: updated.id });
+    }
   };
 
   const addQuestion = () => {
@@ -33,9 +42,7 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
   };
 
   const removeQuestion = (index: number) => {
-    const newQuestions = section.questions.filter(
-      (_: any, i: number) => i !== index
-    );
+    const newQuestions = section.questions.filter((_, i) => i !== index);
     onChange({ ...section, questions: newQuestions });
   };
 
@@ -44,29 +51,33 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
     aIndex: number,
     updated: TestAnswerDto
   ) => {
-    const questions = [...section.questions];
-    const answers = [...questions[qIndex].answers];
+    const newQuestions = [...section.questions];
+    const answers = [...newQuestions[qIndex].answers];
     answers[aIndex] = updated;
-    questions[qIndex].answers = answers;
-    onChange({ ...section, questions });
+    newQuestions[qIndex].answers = answers;
+    onChange({ ...section, questions: newQuestions });
+
+    if (updated.id) {
+      updateAnswerApi.mutate({ ...updated, id: updated.id });
+    }
   };
 
   const addAnswer = (qIndex: number) => {
-    const questions = [...section.questions];
-    questions[qIndex].answers.push({
+    const newQuestions = [...section.questions];
+    newQuestions[qIndex].answers.push({
       answer: "",
       correct: false,
       variantText: "",
     });
-    onChange({ ...section, questions });
+    onChange({ ...section, questions: newQuestions });
   };
 
   const removeAnswer = (qIndex: number, aIndex: number) => {
-    const questions = [...section.questions];
-    questions[qIndex].answers = questions[qIndex].answers.filter(
-      (_: any, i: number) => i !== aIndex
+    const newQuestions = [...section.questions];
+    newQuestions[qIndex].answers = newQuestions[qIndex].answers.filter(
+      (_, i) => i !== aIndex
     );
-    onChange({ ...section, questions });
+    onChange({ ...section, questions: newQuestions });
   };
 
   return (
@@ -158,8 +169,7 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
               >
                 <Tag color="blue">Savol #{q.number}</Tag>
                 <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                  Do the following statements agree with the information given
-                  in Reading Passage Number?
+                  Matnli savol
                 </Text>
               </div>
               <Button
@@ -172,7 +182,7 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
             </div>
 
             <Input.TextArea
-              placeholder="Let's ask a question"
+              placeholder="Savol matni"
               value={q.text}
               onChange={(e) =>
                 updateQuestion(qIdx, { ...q, text: e.target.value })
@@ -183,7 +193,7 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
 
             <div style={{ marginBottom: "12px" }}>
               <Text strong style={{ fontSize: "13px", color: "#374151" }}>
-                Choice
+                Javoblar
               </Text>
             </div>
 
