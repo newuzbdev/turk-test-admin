@@ -17,18 +17,17 @@ export interface SpeakingSubPart {
 }
 
 export interface SpeakingSection {
-  id?: string;
-  order: number;
   speakingTestId: string;
-  type: string;
+  order: number;
   title: string;
-  description?: string;
-  content?: string;
+  type: string;
+  description: string;
+  content: string;
   images: string[];
   advantages: string[];
   disadvantages: string[];
-  subParts: SpeakingSubPart[];
   questions: SpeakingSubQuestion[];
+  subParts: SpeakingSubPart[];
 }
 
 export interface SpeakingTest {
@@ -214,7 +213,7 @@ export const useCreateQuestion = () => {
     mutationFn: (payload: {
       speakingSectionId: string;
       order: number;
-      question: string;
+      questionText: string;
     }) => api.post("/api/speaking-question", payload).then((res) => res.data),
   });
 };
@@ -225,7 +224,7 @@ export const useCreateSpeakingPoint = () => {
       speakingSectionId: string;
       order: number;
       type: "ADVANTAGE" | "DISADVANTAGE";
-      question: string;
+      questionText: string;
     }) => api.post("/api/speaking-point", payload).then((res) => res.data),
   });
 };

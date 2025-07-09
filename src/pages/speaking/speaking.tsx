@@ -7,8 +7,8 @@ import {
   useCreateSpeakingTest,
   useUpdateSpeakingTest,
   useDeleteSpeakingTest,
+  type SpeakingTest,
 } from "../../config/querys/speaking-query";
-import type { SpeakingTest } from "../../utils/types/types";
 import SpeakingForm from "./ui/speaking-form";
 
 const { Title } = Typography;
@@ -43,7 +43,7 @@ export default function Speaking() {
         {
           id: editingTest.id,
           ...form,
-          ieltsId: form.ieltsId ?? editingTest.ielts?.id,
+          ieltsId: form.ieltsId || editingTest.ieltsId,
         },
         {
           onSuccess: () => {
@@ -176,7 +176,6 @@ export default function Speaking() {
           <p>Bu amalni qaytarib bo‘lmaydi.</p>
         </Modal>
 
-        {/* Form modal */}
         <Modal
           title={
             editingTest
@@ -195,8 +194,11 @@ export default function Speaking() {
                 ? {
                     speakingTestId: editingTest.id,
                     title: editingTest.title,
-                    ieltsId: editingTest.ielts?.id || "",
-                    sections: editingTest.sections || [],
+                    ieltsId: editingTest.ieltsId,
+                    sections: editingTest.sections.map((section) => ({
+                      ...section,
+                      speakingTestId: editingTest.id,
+                    })),
                   }
                 : undefined
             }

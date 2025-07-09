@@ -64,43 +64,51 @@ export default function SpeakingForm({
   const createPoint = useCreateSpeakingPoint();
 
   const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
-
+  const deepEqualWithoutId = (a: any, b: any) => {
+    const clean = (obj: any) =>
+      JSON.parse(
+        JSON.stringify(obj, (key, value) =>
+          key === "id" || key === "__typename" ? undefined : value
+        )
+      );
+    return JSON.stringify(clean(a)) === JSON.stringify(clean(b));
+  };
   const handleSubmit = async () => {
-    for (let section of form.sections) {
-      for (let q of section.questions) {
-        if (
-          !q.question ||
-          typeof q.question !== "string" ||
-          q.question.trim() === ""
-        ) {
-          throw new Error(
-            "Bo‘lim savollarida bo‘sh yoki noto‘g‘ri formatdagi savol mavjud."
-          );
-        }
-      }
-      for (let sp of section.subParts) {
-        for (let sq of sp.questions) {
+    try {
+      for (let section of form.sections) {
+        for (let q of section.questions) {
           if (
-            !sq.question ||
-            typeof sq.question !== "string" ||
-            sq.question.trim() === ""
+            !q.questionText ||
+            typeof q.questionText !== "string" ||
+            q.questionText.trim() === ""
           ) {
             throw new Error(
-              "SubPart savollarida bo‘sh yoki noto‘g‘ri formatdagi savol mavjud."
+              "Bo‘lim savollarida bo‘sh yoki noto‘g‘ri formatdagi savol mavjud."
             );
           }
         }
+        for (let sp of section.subParts) {
+          for (let sq of sp.questions) {
+            if (
+              !sq.questionText ||
+              typeof sq.questionText !== "string" ||
+              sq.questionText.trim() === ""
+            ) {
+              throw new Error(
+                "SubPart savollarida bo‘sh yoki noto‘g‘ri formatdagi savol mavjud."
+              );
+            }
+          }
+        }
       }
-    }
-    try {
+
       if (!initialData) {
         onSubmit(form);
         return;
       }
 
       const updatedTest = form;
-      const testId = initialData?.speakingTestId;
-
+      const testId = initialData.speakingTestId;
       if (!testId) throw new Error("Test ID topilmadi");
 
       if (
@@ -113,25 +121,42 @@ export default function SpeakingForm({
           ieltsId: updatedTest.ieltsId,
           sections: [],
         });
+        console.log("🔁 updateTest:", {
+          id: testId,
+          title: updatedTest.title,
+          ieltsId: updatedTest.ieltsId,
+          sections: [],
+        });
       }
 
       for (let i = 0; i < updatedTest.sections.length; i++) {
         const section = updatedTest.sections[i];
         const origSection = initialData.sections[i];
-        const sectionId = (section as any).id;
+        const sectionId = (section as any)?.id;
+
+        const { questions, subParts, ...sectionRest } = section;
 
         if (sectionId) {
-          const { questions, subParts, ...sectionRest } = section;
-          await updateSection.mutateAsync({ id: sectionId, ...sectionRest });
+          if (!deepEqualWithoutId(sectionRest, origSection)) {
+            await updateSection.mutateAsync({ id: sectionId, ...sectionRest });
+            console.log("🔁 updateSection:", { id: sectionId, ...sectionRest });
+          }
 
           for (let q = 0; q < questions.length; q++) {
-            const qId = (questions[q] as any).id;
+            const qId = (questions[q] as any)?.id;
+            const originalQ = origSection?.questions?.[q];
+
             if (qId) {
-              if (!deepEqual(questions[q], origSection?.questions?.[q])) {
+              if (!deepEqualWithoutId(questions[q], originalQ)) {
+                console.log("🔁 updateQuestion:", { id: qId, ...questions[q] });
                 await updateQuestion.mutateAsync({ id: qId, ...questions[q] });
               }
             } else {
               await createQuestion.mutateAsync({
+                speakingSectionId: sectionId,
+                ...questions[q],
+              });
+              console.log("🆕 createQuestion (section):", {
                 speakingSectionId: sectionId,
                 ...questions[q],
               });
@@ -141,17 +166,26 @@ export default function SpeakingForm({
           for (let s = 0; s < subParts.length; s++) {
             const sub = subParts[s];
             const origSub = origSection?.subParts?.[s];
-            const subId = (sub as any).id;
+            const subId = (sub as any)?.id;
+            const { questions: subQs, ...subRest } = sub;
 
             if (subId) {
-              const { questions: subQs, ...subRest } = sub;
-              await updateSubPart.mutateAsync({ id: subId, ...subRest });
+              if (!deepEqualWithoutId(subRest, origSub)) {
+                console.log("🔁 updateSubPart:", { id: subId, ...subRest });
+                await updateSubPart.mutateAsync({ id: subId, ...subRest });
+              }
 
               for (let sq = 0; sq < sub.questions.length; sq++) {
-                const sqId = (sub.questions[sq] as any).id;
+                const sqId = (sub.questions[sq] as any)?.id;
+                const originalSQ = origSub?.questions?.[sq];
+
                 if (sqId) {
-                  if (!deepEqual(sub.questions[sq], origSub?.questions?.[sq])) {
+                  if (!deepEqualWithoutId(sub.questions[sq], originalSQ)) {
                     await updateQuestion.mutateAsync({
+                      id: sqId,
+                      ...sub.questions[sq],
+                    });
+                    console.log("🔁 updateQuestion (subpart):", {
                       id: sqId,
                       ...sub.questions[sq],
                     });
@@ -169,57 +203,71 @@ export default function SpeakingForm({
                 label: sub.label,
                 description: sub.description,
               });
-
+              console.log("🆕 createSubPart:", {
+                speakingSectionId: sectionId,
+                label: sub.label,
+                description: sub.description,
+              });
               for (const q of sub.questions) {
+                console.log("🆕 createQuestion (subPart):", {
+                  speakingSectionId: sectionId,
+                  order: q.order,
+                  questionText: q.questionText,
+                });
                 await createQuestion.mutateAsync({
                   speakingSectionId: sectionId,
                   order: q.order,
-                  question: q.question,
+                  questionText: q.questionText,
                 });
               }
             }
           }
 
-          // PART3 pointlar uchun
           if (section.type === "PART3") {
             for (let idx = 0; idx < section.advantages.length; idx++) {
+              console.log("🆕 createPoint (ADV):", {
+                speakingSectionId: sectionId,
+                order: idx + 1,
+                type: "ADVANTAGE",
+                questionText: section.advantages[idx],
+              });
               await createPoint.mutateAsync({
                 speakingSectionId: sectionId,
                 order: idx + 1,
                 type: "ADVANTAGE",
-                question: section.advantages[idx],
+                questionText: section.advantages[idx],
               });
             }
             for (let idx = 0; idx < section.disadvantages.length; idx++) {
+              console.log("🆕 createPoint (DISADV):", {
+                speakingSectionId: sectionId,
+                order: idx + 1,
+                type: "DISADVANTAGE",
+                questionText: section.disadvantages[idx],
+              });
               await createPoint.mutateAsync({
                 speakingSectionId: sectionId,
                 order: idx + 1,
                 type: "DISADVANTAGE",
-                question: section.disadvantages[idx],
+                questionText: section.disadvantages[idx],
               });
             }
           }
         } else {
-          // Yangi bo‘limni yaratish
           const newSec = await createSection.mutateAsync({
+            ...sectionRest,
             speakingTestId: testId,
-            order: section.order,
-            type: section.type,
-            title: section.title,
-            description: section.description,
-            content: section.content,
-            images: section.images,
           });
 
-          for (let q of section.questions) {
+          for (const q of questions) {
             await createQuestion.mutateAsync({
               speakingSectionId: newSec.id,
               order: q.order,
-              question: q.question,
+              questionText: q.questionText,
             });
           }
 
-          for (const sp of section.subParts) {
+          for (const sp of subParts) {
             const newSP = await createSubPart.mutateAsync({
               speakingSectionId: newSec.id,
               label: sp.label,
@@ -230,7 +278,7 @@ export default function SpeakingForm({
               await createQuestion.mutateAsync({
                 speakingSectionId: newSec.id,
                 order: q.order,
-                question: q.question,
+                questionText: q.questionText,
               });
             }
           }
@@ -241,7 +289,7 @@ export default function SpeakingForm({
                 speakingSectionId: newSec.id,
                 order: idx + 1,
                 type: "ADVANTAGE",
-                question: section.advantages[idx],
+                questionText: section.advantages[idx],
               });
             }
             for (let idx = 0; idx < section.disadvantages.length; idx++) {
@@ -249,7 +297,7 @@ export default function SpeakingForm({
                 speakingSectionId: newSec.id,
                 order: idx + 1,
                 type: "DISADVANTAGE",
-                question: section.disadvantages[idx],
+                questionText: section.disadvantages[idx],
               });
             }
           }
@@ -276,7 +324,9 @@ export default function SpeakingForm({
       disadvantages: [],
       subParts: [],
       questions: [],
+      speakingTestId: initialData?.speakingTestId || "",
     };
+
     setForm({ ...form, sections: [...form.sections, newSection] });
   };
 
@@ -467,7 +517,7 @@ export default function SpeakingForm({
                       const questions = [...section.questions];
                       questions[qIndex] = {
                         ...questions[qIndex],
-                        question: e.target.value,
+                        questionText: e.target.value,
                       };
                       updated[index] = { ...section, questions };
                       setForm({ ...form, sections: updated });
@@ -491,7 +541,7 @@ export default function SpeakingForm({
                     ...section,
                     questions: [
                       ...section.questions,
-                      { order: section.questions.length + 1, question: "" },
+                      { order: section.questions.length + 1, questionText: "" },
                     ],
                   };
                   setForm({ ...form, sections: updated });
@@ -562,7 +612,7 @@ export default function SpeakingForm({
                         const questions = [...sp.questions];
                         questions[qIndex] = {
                           ...questions[qIndex],
-                          question: e.target.value,
+                          questionText: e.target.value,
                         };
                         const subParts = [...section.subParts];
                         subParts[spIndex] = { ...sp, questions };
@@ -584,7 +634,7 @@ export default function SpeakingForm({
                         ...sp,
                         questions: [
                           ...sp.questions,
-                          { order: sp.questions.length + 1, question: "" },
+                          { order: sp.questions.length + 1, questionText: "" },
                         ],
                       };
                       const updated = [...form.sections];
