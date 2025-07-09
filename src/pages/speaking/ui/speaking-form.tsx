@@ -31,7 +31,6 @@ import {
 const { TextArea } = Input;
 const { Title } = Typography;
 const { Panel } = Collapse;
-
 const sectionTypes = ["PART1", "PART2", "PART3"];
 
 interface Props {
@@ -53,24 +52,20 @@ export default function SpeakingForm({
   const createSection = useCreateSpeakingSection();
   const updateSection = useUpdateSpeakingSection();
   const deleteSection = useDeleteSpeakingSection();
-
   const createQuestion = useCreateQuestion();
   const updateQuestion = useUpdateQuestion();
   const deleteQuestion = useDeleteQuestion();
-
   const createSubPart = useCreateSubPart();
   const updateSubPart = useUpdateSubPart();
   const deleteSubPart = useDeleteSubPart();
 
   const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
-  const handleSubmit = async () => {
-    if (!initialData) {
-      onSubmit(form);
-      return;
-    }
 
+  const handleSubmit = async () => {
     const updatedTest = form;
-    const testId = (initialData as any).id;
+    const testId = (initialData as any)?.id;
+
+    if (!initialData) return onSubmit(form);
 
     if (
       updatedTest.title !== initialData.title ||
@@ -84,21 +79,18 @@ export default function SpeakingForm({
       });
     }
 
-    const initialSectionIds = initialData.sections.map((s: any) => s.id);
-    const currentSectionIds = updatedTest.sections.map((s: any) => s.id);
+    const currentSectionIds = updatedTest.sections.map((s) => s.id);
+    const originalSections = initialData.sections || [];
 
-    for (const section of initialData.sections) {
-      if (!currentSectionIds.includes(section.id)) {
-        await deleteSection.mutateAsync(section.id);
+    for (const origSection of originalSections) {
+      if (!currentSectionIds.includes(origSection.id)) {
+        await deleteSection.mutateAsync(origSection.id!);
       }
     }
 
     for (let i = 0; i < updatedTest.sections.length; i++) {
       const section = updatedTest.sections[i];
-      const origSection = initialData.sections.find(
-        (s: any) => s.id === section.id
-      );
-
+      const origSection = originalSections.find((s) => s.id === section.id);
       let sectionId = section.id;
 
       if (!sectionId) {
@@ -113,17 +105,15 @@ export default function SpeakingForm({
         });
         sectionId = created.id;
       } else if (!deepEqual(section, origSection)) {
-        const { questions, subParts, ...sectionRest } = section;
-        await updateSection.mutateAsync({ id: sectionId, ...sectionRest });
+        const { questions, subParts, ...rest } = section;
+        await updateSection.mutateAsync({ id: sectionId, ...rest });
       }
 
+      // Questions
       const origQuestions = origSection?.questions || [];
-      const origQuestionIds = origQuestions.map((q: any) => q.id);
-      const currentQuestionIds = section.questions.map((q: any) => q.id);
-
-      for (const oq of origQuestions) {
-        if (!currentQuestionIds.includes(oq.id)) {
-          await deleteQuestion.mutateAsync(oq.id);
+      for (const origQ of origQuestions) {
+        if (!section.questions.find((q) => q.id === origQ.id)) {
+          await deleteQuestion.mutateAsync(origQ.id!);
         }
       }
 
@@ -135,26 +125,24 @@ export default function SpeakingForm({
             question: q.question,
           });
         } else {
-          const oldQ = origQuestions.find((oq: any) => oq.id === q.id);
+          const oldQ = origQuestions.find((oq) => oq.id === q.id);
           if (!deepEqual(q, oldQ)) {
             await updateQuestion.mutateAsync({ id: q.id, ...q });
           }
         }
       }
 
+      // SubParts
       const origSubParts = origSection?.subParts || [];
-      const origSubIds = origSubParts.map((sp: any) => sp.id);
-      const currentSubIds = section.subParts.map((sp: any) => sp.id);
-
-      for (const sp of origSubParts) {
-        if (!currentSubIds.includes(sp.id)) {
-          await deleteSubPart.mutateAsync(sp.id);
+      for (const origSP of origSubParts) {
+        if (!section.subParts.find((sp) => sp.id === origSP.id)) {
+          await deleteSubPart.mutateAsync(origSP.id!);
         }
       }
 
       for (const sp of section.subParts) {
         let subPartId = sp.id;
-        const origSP = origSubParts.find((osp: any) => osp.id === sp.id);
+        const origSP = origSubParts.find((o) => o.id === sp.id);
 
         if (!subPartId) {
           const created = await createSubPart.mutateAsync({
@@ -164,17 +152,14 @@ export default function SpeakingForm({
           });
           subPartId = created.id;
         } else if (!deepEqual(sp, origSP)) {
-          const { questions, ...subRest } = sp;
-          await updateSubPart.mutateAsync({ id: subPartId, ...subRest });
+          const { questions, ...rest } = sp;
+          await updateSubPart.mutateAsync({ id: subPartId, ...rest });
         }
 
-        const origSPQuestions = origSP?.questions || [];
-        const origSPQIds = origSPQuestions.map((q: any) => q.id);
-        const currentSPQIds = sp.questions.map((q: any) => q.id);
-
-        for (const oq of origSPQuestions) {
-          if (!currentSPQIds.includes(oq.id)) {
-            await deleteQuestion.mutateAsync(oq.id);
+        const origQs = origSP?.questions || [];
+        for (const oq of origQs) {
+          if (!sp.questions.find((q) => q.id === oq.id)) {
+            await deleteQuestion.mutateAsync(oq.id!);
           }
         }
 
@@ -186,7 +171,7 @@ export default function SpeakingForm({
               question: q.question,
             });
           } else {
-            const oldQ = origSPQuestions.find((oq: any) => oq.id === q.id);
+            const oldQ = origQs.find((oq) => oq.id === q.id);
             if (!deepEqual(q, oldQ)) {
               await updateQuestion.mutateAsync({ id: q.id, ...q });
             }
@@ -198,55 +183,54 @@ export default function SpeakingForm({
     onSubmit(updatedTest);
   };
 
+  const updateSectionState = (
+    index: number,
+    updatedSection: SpeakingSection
+  ) => {
+    const updated = [...form.sections];
+    updated[index] = updatedSection;
+    setForm({ ...form, sections: updated });
+  };
+
+  const removeSection = async (index: number) => {
+    const section = form.sections[index];
+    if (section?.id) await deleteSection.mutateAsync(section.id);
+    const updatedSections = form.sections.filter((_, i) => i !== index);
+    setForm({ ...form, sections: updatedSections });
+  };
+
+  const removeQuestion = async (sIndex: number, qIndex: number) => {
+    const question = form.sections[sIndex].questions[qIndex];
+    if (question?.id) await deleteQuestion.mutateAsync(question.id);
+    const updated = [...form.sections];
+    updated[sIndex].questions.splice(qIndex, 1);
+    setForm({ ...form, sections: updated });
+  };
+
+  const removeSubPart = async (sIndex: number, spIndex: number) => {
+    const subPart = form.sections[sIndex].subParts[spIndex];
+    if (subPart?.id) await deleteSubPart.mutateAsync(subPart.id);
+    const updated = [...form.sections];
+    updated[sIndex].subParts.splice(spIndex, 1);
+    setForm({ ...form, sections: updated });
+  };
+
   const addSection = () => {
     const newSection: SpeakingSection = {
       order: form.sections.length + 1,
-      title: "",
       type: "PART1",
+      title: "",
       description: "",
       content: "",
       images: [],
       advantages: [],
       disadvantages: [],
-      subParts: [],
       questions: [],
+      subParts: [],
     };
     setForm({ ...form, sections: [...form.sections, newSection] });
   };
 
-  const removeSection = async (index: number) => {
-    const section = form.sections[index];
-
-    if ((section as any)?.id) {
-      await deleteSection.mutateAsync((section as any).id);
-    }
-
-    const updatedSections = form.sections.filter((_, i) => i !== index);
-    setForm({ ...form, sections: updatedSections });
-  };
-  const removeQuestion = async (sectionIndex: number, qIndex: number) => {
-    const updated = [...form.sections];
-    const question = updated[sectionIndex].questions[qIndex];
-
-    if ((question as any)?.id) {
-      await deleteQuestion.mutateAsync((question as any).id);
-    }
-
-    updated[sectionIndex].questions.splice(qIndex, 1);
-    setForm({ ...form, sections: updated });
-  };
-
-  const removeSubPart = async (sectionIndex: number, spIndex: number) => {
-    const updated = [...form.sections];
-    const subPart = updated[sectionIndex].subParts[spIndex];
-
-    if ((subPart as any)?.id) {
-      await deleteSubPart.mutateAsync((subPart as any).id);
-    }
-
-    updated[sectionIndex].subParts.splice(spIndex, 1);
-    setForm({ ...form, sections: updated });
-  };
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       <Title level={4}>📋 Asosiy ma'lumotlar</Title>
@@ -566,7 +550,6 @@ export default function SpeakingForm({
       </Button>
 
       <Divider />
-
       <Space>
         <Button onClick={onCancel}>Bekor qilish</Button>
         <Button type="primary" onClick={handleSubmit}>
