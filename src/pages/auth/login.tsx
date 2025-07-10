@@ -1,4 +1,9 @@
-import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  LockOutlined,
+  UserOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from "@ant-design/icons";
 import { Button, Form, Input, Alert } from "antd";
 import { useAdminLogin } from "../../config/querys/login-querys";
 import { useState } from "react";
@@ -11,6 +16,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { setAuthenticated } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleFinish = (values: { name: string; password: string }) => {
     setError(null);
@@ -26,58 +32,90 @@ export default function Login() {
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center bg-white px-4">
-      <div
-        className="w-full max-w-md shadow-2xl border-0 bg-white p-6"
-        style={{ borderRadius: "16px" }}
-      >
-        {error && (
-          <Alert message={error} type="error" showIcon className="mb-4" />
-        )}
+    <main className="flex items-center justify-center w-[100vw] h-screen overflow-hidden">
+      <div className="flex flex-col w-full max-w-2xl px-4 mx-auto sm:px-6">
+        <div className="flex items-center justify-center space-x-2">
+          <img
+            src="./turk-test.png"
+            alt="logo"
+            className="object-contain h-[200px] w-[150px]"
+          />
+          {/* <div className="text-2xl font-bold leading-none text-slate-900 whitespace-nowrap">
+            TURKCE TEST
+          </div> */}
+        </div>
+        {/* <div className="relative  z-[1]">
+          <h1 className="text-2xl font-medium tracking-tight text-center text-slate-900">
+            Kirish
+          </h1>
+        </div> */}
+        <div className="mx-2 z-[2] mt-10 flex-auto px-10 py-5 shadow-2xl shadow-slate-900/10 sm:mx-0 sm:flex-none sm:rounded-5xl sm:p-24 rounded-3xl w-full">
+          {error && (
+            <Alert message={error} type="error" showIcon className="mb-4" />
+          )}
 
-        <Form
-          form={form}
-          onFinish={handleFinish}
-          layout="vertical"
-          size="large"
-          autoComplete="off"
-        >
-          <Form.Item
-            name="name"
-            label={<span className="text-slate-700">Login</span>}
-            rules={[{ required: true, message: "Login kiriting" }]}
+          <Form
+            form={form}
+            onFinish={handleFinish}
+            layout="vertical"
+            size="large"
+            autoComplete="off"
           >
-            <Input
-              prefix={<UserOutlined className="text-slate-400" />}
-              placeholder="Login"
-              className="rounded-lg border-slate-200 hover:border-slate-400 bg-white"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            label={<span className="text-slate-700">Parol</span>}
-            rules={[{ required: true, message: "Parol kiriting" }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined className="text-slate-400" />}
-              placeholder="Parol"
-              className="rounded-lg border-slate-200 hover:border-slate-400 bg-white"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              className="h-12 bg-slate-800 hover:bg-slate-700 rounded-lg text-lg"
+            <Form.Item
+              name="name"
+              label="Username"
+              rules={[
+                { required: true, message: "Username kiritilishi shart" },
+              ]}
             >
-              Kirish
-            </Button>
-          </Form.Item>
-        </Form>
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Username kiriting"
+                className="h-10"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              label="Parol"
+              rules={[
+                { required: true, message: "Parol kiritilishi shart" },
+                {
+                  min: 4,
+                  message: "Parol kamida 4 ta belgidan iborat bo'lishi kerak",
+                },
+              ]}
+            >
+              <Input
+                prefix={<LockOutlined />}
+                type={showPassword ? "text" : "password"}
+                placeholder="Parolni kiriting"
+                className="h-10"
+                suffix={
+                  <div
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                  </div>
+                }
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                className="h-10"
+                style={{ backgroundColor: "#1677ff" }}
+              >
+                Kirish
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
