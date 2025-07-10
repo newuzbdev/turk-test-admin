@@ -1,4 +1,3 @@
-
 import { Button, Card, Layout, Typography, Table, Space, Modal } from "antd";
 import { useState } from "react";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -53,11 +52,7 @@ export default function Listening() {
         }
       );
     } else {
-      create.mutate(form, {
-        onSuccess: () => {
-          setIsModalOpen(false);
-        },
-      });
+      setIsModalOpen(false);
     }
   };
 

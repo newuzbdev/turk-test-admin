@@ -1,7 +1,6 @@
-import { Input, Button, Col, Row, Tag, message } from "antd";
+import { Input, Button, Col, Row, Tag } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import type { TestAnswerDto } from "../../config/querys/test-query";
-import { useUpdateAnswer } from "../../config/querys/test-query";
 
 type Props = {
   answer: TestAnswerDto;
@@ -10,21 +9,9 @@ type Props = {
 };
 
 export default function AnswerForm({ answer, onChange, onRemove }: Props) {
-  // const { mutateAsync: updateAnswer } = useUpdateAnswer();
 
   const handleFieldChange = async (field: keyof TestAnswerDto, value: any) => {
     onChange(field, value);
-
-    // if (answer.id) {
-    //   try {
-    //     const updated = { ...answer, [field]: value } as TestAnswerDto & {
-    //       id: string;
-    //     };
-    //     await updateAnswer(updated);
-    //   } catch (error) {
-    //     message.error("Javobni yangilashda xatolik yuz berdi");
-    //   }
-    // }
   };
 
   const handleCorrectToggle = () => {

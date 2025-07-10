@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, Card, Layout, Typography, Table, Space, Modal } from "antd";
 import { useState } from "react";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -170,7 +170,6 @@ export default function Reading() {
           <p>Bu amalni bekor qilib bo'lmaydi.</p>
         </Modal>
 
-        {/* Create / Edit Modal */}
         <Modal
           title={null}
           open={isModalOpen}

@@ -58,28 +58,33 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
 
   const addQuestion = async () => {
     const newQuestion: TestQuestionDto = {
-      number: localSection.questions.length + 1,
+      number: section.questions.length + 1,
       type: "MULTIPLE_CHOICE",
       text: "",
-      sectionId: localSection.id,
       answers: [],
     };
 
-    if (localSection.id) {
+    if (section.id) {
       try {
-        const res = await createQuestion.mutateAsync(newQuestion);
-        setLocalSection({
-          ...localSection,
-          questions: [...localSection.questions, res],
+        const res = await createQuestion.mutateAsync({
+          number: newQuestion.number,
+          type: newQuestion.type,
+          text: newQuestion.text,
+          sectionId: section.id,
         });
-      } catch {
-        message.error("Savolni yaratishda xatolik");
+
+        if (res?.id) {
+          const newQuestionWithId: TestQuestionDto = { ...res, answers: [] };
+          onChange({
+            ...section,
+            questions: [...section.questions, newQuestionWithId],
+          });
+        }
+      } catch (error) {
+        message.error("❌ Savol yaratishda xatolik yuz berdi");
       }
     } else {
-      setLocalSection({
-        ...localSection,
-        questions: [...localSection.questions, newQuestion],
-      });
+      onChange({ ...section, questions: [...section.questions, newQuestion] });
     }
   };
 
@@ -111,35 +116,40 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
       ...newQuestions[qIndex],
       answers: newAnswers,
     };
-    setLocalSection({
-      ...localSection,
-      questions: newQuestions,
-    });
+    setLocalSection({ ...localSection, questions: newQuestions });
   };
 
   const addAnswer = async (qIndex: number) => {
     const question = localSection.questions[qIndex];
 
     const newAnswer: TestAnswerDto = {
+      variantText: "Variant",
       answer: "Yangi javob",
       correct: false,
-      variantText: "Variant",
-      questionId: question.id,
     };
 
     if (question.id) {
       try {
-        const res = await createAnswer.mutateAsync(newAnswer);
+        const res = await createAnswer.mutateAsync({
+          ...newAnswer,
+          questionId: question.id,
+        });
+
         const newQuestions = [...localSection.questions];
-        newQuestions[qIndex].answers.push(res);
+        newQuestions[qIndex] = {
+          ...question,
+          answers: [...question.answers, res],
+        };
+
         setLocalSection({ ...localSection, questions: newQuestions });
       } catch {
-        message.error("Javobni yaratishda xatolik");
+        message.error("❌ Javobni yaratishda xatolik yuz berdi");
       }
     } else {
       const updatedAnswers = [...question.answers, newAnswer];
       const newQuestions = [...localSection.questions];
       newQuestions[qIndex] = { ...question, answers: updatedAnswers };
+
       setLocalSection({ ...localSection, questions: newQuestions });
     }
   };
@@ -173,8 +183,9 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
           imageUrl: localSection.imageUrl,
         });
 
-        for (let i = 0; i < localSection.questions.length; i++) {
-          const q = localSection.questions[i];
+        for (let qIdx = 0; qIdx < localSection.questions.length; qIdx++) {
+          const q = localSection.questions[qIdx];
+
           if (q.id) {
             await updateQuestion.mutateAsync({
               id: q.id,
@@ -183,8 +194,8 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
               type: q.type,
             });
 
-            for (let j = 0; j < q.answers.length; j++) {
-              const a = q.answers[j];
+            for (let aIdx = 0; aIdx < q.answers.length; aIdx++) {
+              const a = q.answers[aIdx];
               if (a.id) {
                 await updateAnswer.mutateAsync({
                   id: a.id,
@@ -196,13 +207,12 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
             }
           }
         }
-      }
 
-      onChange(localSection);
-      message.success("Bo‘lim saqlandi");
+        message.success("✅ Bo‘lim yangilandi");
+      }
     } catch (error) {
       console.error(error);
-      message.error("Bo‘limni saqlashda xatolik yuz berdi");
+      message.error("❌ Bo‘limni saqlashda xatolik yuz berdi");
     }
   };
 

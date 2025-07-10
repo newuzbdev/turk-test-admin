@@ -44,22 +44,31 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
   };
 
   const addSection = async () => {
-    if (!part.id) return message.warning("Part saqlanmagan!");
-
-    const newSection: Omit<TestSectionDto, "id" | "questions"> = {
+    const newSection: TestSectionDto = {
       title: "Yangi bo‘lim",
       content: "",
       imageUrl: "",
+      questions: [],
     };
 
-    const res = await createSection.mutateAsync({
-      ...newSection,
-      partId: part.id,
-    });
+    if (part.id) {
+      try {
+        const res = await createSection.mutateAsync({
+          title: newSection.title,
+          content: newSection.content,
+          imageUrl: newSection.imageUrl,
+          partId: part.id,
+        });
 
-    if (res?.id) {
-      const newSectionWithId: TestSectionDto = { ...res, questions: [] };
-      onChange({ ...part, sections: [...part.sections, newSectionWithId] });
+        if (res?.id) {
+          const newSectionWithId: TestSectionDto = { ...res, questions: [] };
+          onChange({ ...part, sections: [...part.sections, newSectionWithId] });
+        }
+      } catch (error) {
+        message.error("❌ Bo‘lim yaratishda xatolik yuz berdi");
+      }
+    } else {
+      onChange({ ...part, sections: [...part.sections, newSection] });
     }
   };
 

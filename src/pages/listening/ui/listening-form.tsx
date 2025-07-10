@@ -31,6 +31,7 @@ import {
   useCreatePart,
   useDeletePart,
   useCreateTest,
+  useUpdateTest,
 } from "../../../config/querys/test-query";
 
 const { Title } = Typography;
@@ -72,6 +73,7 @@ export default function ListeningForm({
   const createPart = useCreatePart();
   const deletePart = useDeletePart();
   const createTest = useCreateTest();
+  const updateTest = useUpdateTest();
 
   const steps = [
     { title: "Basic info", status: currentStep === 0 ? "process" : "finish" },
@@ -83,9 +85,9 @@ export default function ListeningForm({
     newParts[index] = updated;
     setFormData({ ...formData, parts: newParts });
   };
+
   const addPart = async () => {
     const isCreated = !!formData.id;
-
     const newPart = {
       number: formData.parts.length + 1,
       title: "",
@@ -142,7 +144,7 @@ export default function ListeningForm({
           title: formData.title,
           type: formData.type,
           ieltsId: formData.ieltsId,
-          parts: formData.parts,
+          parts: [],
         });
 
         const createdForm: CreateTestDto = {
@@ -155,74 +157,52 @@ export default function ListeningForm({
         return;
       }
 
-      for (let i = 0; i < formData.parts.length; i++) {
-        const updatedPart = formData.parts[i];
-        const originalPart = initialData.parts[i];
-        const partId = (updatedPart as any).id;
+      await updateTest.mutateAsync({
+        id: formData.id,
+        title: formData.title,
+        type: formData.type,
+        ieltsId: formData.ieltsId,
+        parts: [],
+      });
 
-        if (
-          partId &&
-          JSON.stringify(updatedPart) !== JSON.stringify(originalPart)
-        ) {
+      for (const part of formData.parts) {
+        if (part.id) {
           await updatePart.mutateAsync({
-            id: partId,
-            title: updatedPart.title,
-            number: updatedPart.number,
-            audioUrl: updatedPart.audioUrl,
+            id: part.id,
+            title: part.title,
+            number: part.number,
+            audioUrl: part.audioUrl,
           });
+        }
 
-          for (let j = 0; j < updatedPart.sections.length; j++) {
-            const updatedSection = updatedPart.sections[j];
-            const originalSection = originalPart.sections[j];
-            const sectionId = (updatedSection as any).id;
+        for (const section of part.sections) {
+          if (section.id) {
+            await updateSection.mutateAsync({
+              id: section.id,
+              title: section.title,
+              content: section.content,
+              imageUrl: section.imageUrl,
+            });
+          }
 
-            if (
-              sectionId &&
-              JSON.stringify(updatedSection) !== JSON.stringify(originalSection)
-            ) {
-              await updateSection.mutateAsync({
-                id: sectionId,
-                title: updatedSection.title,
-                content: updatedSection.content,
-                imageUrl: updatedSection.imageUrl,
+          for (const question of section.questions) {
+            if (question.id) {
+              await updateQuestion.mutateAsync({
+                id: question.id,
+                number: question.number,
+                text: question.text,
+                type: question.type,
               });
+            }
 
-              for (let k = 0; k < updatedSection.questions.length; k++) {
-                const updatedQuestion = updatedSection.questions[k];
-                const originalQuestion = originalSection.questions[k];
-                const questionId = (updatedQuestion as any).id;
-
-                if (
-                  questionId &&
-                  JSON.stringify(updatedQuestion) !==
-                    JSON.stringify(originalQuestion)
-                ) {
-                  await updateQuestion.mutateAsync({
-                    id: questionId,
-                    number: updatedQuestion.number,
-                    text: updatedQuestion.text,
-                    type: updatedQuestion.type,
-                  });
-
-                  for (let l = 0; l < updatedQuestion.answers.length; l++) {
-                    const updatedAnswer = updatedQuestion.answers[l];
-                    const originalAnswer = originalQuestion.answers[l];
-                    const answerId = (updatedAnswer as any).id;
-
-                    if (
-                      answerId &&
-                      JSON.stringify(updatedAnswer) !==
-                        JSON.stringify(originalAnswer)
-                    ) {
-                      await updateAnswer.mutateAsync({
-                        id: answerId,
-                        variantText: updatedAnswer.variantText,
-                        answer: updatedAnswer.answer,
-                        correct: updatedAnswer.correct,
-                      });
-                    }
-                  }
-                }
+            for (const answer of question.answers) {
+              if (answer.id) {
+                await updateAnswer.mutateAsync({
+                  id: answer.id,
+                  variantText: answer.variantText,
+                  answer: answer.answer,
+                  correct: answer.correct,
+                });
               }
             }
           }
