@@ -1,5 +1,11 @@
+import { IeltsTable } from "./ielts-table";
+
 const Ielts = () => {
-  return <div>Ielts</div>;
+  return (
+    <main>
+      <IeltsTable />
+    </main>
+  );
 };
 
 export default Ielts;

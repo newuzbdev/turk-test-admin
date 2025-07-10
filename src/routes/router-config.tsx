@@ -1,5 +1,19 @@
-import { IELTS, Listening, Reading, Speaking, Writing } from "./lazy-pages";
-import { Book, BookAudioIcon, Headphones, MessageCircleIcon, Speaker } from "lucide-react";
+import {
+  IELTS,
+  Listening,
+  Reading,
+  Speaking,
+  Test,
+  Writing,
+} from "./lazy-pages";
+import {
+  Book,
+  BookAudioIcon,
+  Headphones,
+  MessageCircleIcon,
+  Speaker,
+  TestTubeIcon,
+} from "lucide-react";
 
 export interface RouterConfig {
   title: string;
@@ -30,7 +44,7 @@ export const routerConfig: RouterConfig[] = [
     page: <Reading />,
     inMenu: true,
   },
-  { 
+  {
     title: "Speaking",
     label: "Speaking",
     icon: <Speaker />,
@@ -54,14 +68,14 @@ export const routerConfig: RouterConfig[] = [
     page: <IELTS />,
     inMenu: true,
   },
-  // {
-  //   title: "Test",
-  //   label: "Test",
-  //   icon: <TestTubeIcon />,
-  //   path: "test",
-  //   page: <Test />,
-  //   inMenu: true,
-  // },
+  {
+    title: "Test",
+    label: "Test",
+    icon: <TestTubeIcon />,
+    path: "test",
+    page: <Test />,
+    inMenu: true,
+  },
   // {
   //     title: 'Manage Ads',
   //     label: 'Manage Ads',
