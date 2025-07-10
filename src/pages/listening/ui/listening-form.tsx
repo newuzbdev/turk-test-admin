@@ -9,6 +9,7 @@ import {
   Layout,
   Space,
   Select,
+  message,
 } from "antd";
 import { useState } from "react";
 import {
@@ -27,6 +28,9 @@ import {
   useUpdateSection,
   useUpdateQuestion,
   useUpdateAnswer,
+  useCreatePart,
+  useDeletePart,
+  useCreateTest,
 } from "../../../config/querys/test-query";
 
 const { Title } = Typography;
@@ -65,6 +69,9 @@ export default function ListeningForm({
   const updateSection = useUpdateSection();
   const updateQuestion = useUpdateQuestion();
   const updateAnswer = useUpdateAnswer();
+  const createPart = useCreatePart();
+  const deletePart = useDeletePart();
+  const createTest = useCreateTest();
 
   const steps = [
     { title: "Basic info", status: currentStep === 0 ? "process" : "finish" },
@@ -76,43 +83,87 @@ export default function ListeningForm({
     newParts[index] = updated;
     setFormData({ ...formData, parts: newParts });
   };
+  const addPart = async () => {
+    const isCreated = !!formData.id;
 
-  const addPart = () => {
-    const newPart: TestPartDto = {
+    const newPart = {
       number: formData.parts.length + 1,
       title: "",
       audioUrl: "",
       sections: [],
     };
-    setFormData({ ...formData, parts: [...formData.parts, newPart] });
+
+    if (!isCreated) {
+      setFormData((prev) => ({
+        ...prev,
+        parts: [...prev.parts, newPart],
+      }));
+      return;
+    }
+
+    try {
+      const created = await createPart.mutateAsync({
+        ...newPart,
+        testId: formData.id,
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        parts: [...prev.parts, { ...newPart, id: created.id }],
+      }));
+
+      message.success("✅ Yangi Part yaratildi");
+    } catch (error: any) {
+      console.error("Xatolik: ", error?.response?.data || error);
+      message.error("❌ Part yaratishda xatolik");
+    }
   };
 
-  const removePart = (index: number) => {
-    const newParts = formData.parts.filter((_, i) => i !== index);
-    setFormData({ ...formData, parts: newParts });
-  };
-
-  const deepEqual = (a: any, b: any): boolean => {
-    return JSON.stringify(a) === JSON.stringify(b);
-  };
-  const deepEqualAnswer = (a: any, b: any): boolean => {
-    return (
-      a.variantText === b.variantText &&
-      a.answer === b.answer &&
-      a.correct === b.correct
-    );
+  const removePart = async (part: TestPartDto, index: number) => {
+    if (part.id) {
+      try {
+        await deletePart.mutateAsync(part.id);
+        message.success("Part o‘chirildi");
+      } catch {
+        message.error("Partni o‘chirishda xatolik yuz berdi");
+        return;
+      }
+    }
+    setFormData((prev) => ({
+      ...prev,
+      parts: prev.parts.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSave = async () => {
-    if (initialData) {
-      const updatedParts = formData.parts;
+    try {
+      if (!initialData) {
+        const created = await createTest.mutateAsync({
+          title: formData.title,
+          type: formData.type,
+          ieltsId: formData.ieltsId,
+          parts: formData.parts,
+        });
 
-      for (let i = 0; i < updatedParts.length; i++) {
-        const updatedPart = updatedParts[i];
+        const createdForm: CreateTestDto = {
+          ...formData,
+          id: created.id,
+        };
+
+        message.success("✅ Test yaratildi");
+        onSubmit(createdForm);
+        return;
+      }
+
+      for (let i = 0; i < formData.parts.length; i++) {
+        const updatedPart = formData.parts[i];
         const originalPart = initialData.parts[i];
         const partId = (updatedPart as any).id;
 
-        if (partId && !deepEqual(updatedPart, originalPart)) {
+        if (
+          partId &&
+          JSON.stringify(updatedPart) !== JSON.stringify(originalPart)
+        ) {
           await updatePart.mutateAsync({
             id: partId,
             title: updatedPart.title,
@@ -125,7 +176,10 @@ export default function ListeningForm({
             const originalSection = originalPart.sections[j];
             const sectionId = (updatedSection as any).id;
 
-            if (sectionId && !deepEqual(updatedSection, originalSection)) {
+            if (
+              sectionId &&
+              JSON.stringify(updatedSection) !== JSON.stringify(originalSection)
+            ) {
               await updateSection.mutateAsync({
                 id: sectionId,
                 title: updatedSection.title,
@@ -140,7 +194,8 @@ export default function ListeningForm({
 
                 if (
                   questionId &&
-                  !deepEqual(updatedQuestion, originalQuestion)
+                  JSON.stringify(updatedQuestion) !==
+                    JSON.stringify(originalQuestion)
                 ) {
                   await updateQuestion.mutateAsync({
                     id: questionId,
@@ -156,9 +211,9 @@ export default function ListeningForm({
 
                     if (
                       answerId &&
-                      !deepEqualAnswer(updatedAnswer, originalAnswer)
+                      JSON.stringify(updatedAnswer) !==
+                        JSON.stringify(originalAnswer)
                     ) {
-                      console.log("YANGILANMOQDA: ", updatedAnswer);
                       await updateAnswer.mutateAsync({
                         id: answerId,
                         variantText: updatedAnswer.variantText,
@@ -173,10 +228,13 @@ export default function ListeningForm({
           }
         }
       }
-    }
 
-    onSubmit(formData);
-    onCancel();
+      message.success("✅ Test yangilandi");
+      onSubmit(formData);
+    } catch (error: any) {
+      console.error(error);
+      message.error("❌ Saqlashda xatolik yuz berdi");
+    }
   };
 
   const renderStepContent = () => {
@@ -228,7 +286,7 @@ export default function ListeningForm({
                 key={i}
                 part={part}
                 onChange={(updated) => updatePartData(i, updated)}
-                onRemove={() => removePart(i)}
+                onRemove={() => removePart(part, i)}
               />
             ))}
             <Button

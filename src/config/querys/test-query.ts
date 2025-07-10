@@ -342,3 +342,187 @@ export const useUpdateAnswer = () => {
     },
   });
 };
+
+export const useCreatePart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<TestPartDto>) => {
+      const { data } = await api.post("/api/parts", payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Part yaratildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Part yaratishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useDeletePart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`/api/parts/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Part o'chirildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Part o'chirishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useCreateSection = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<TestSectionDto>) => {
+      const { data } = await api.post("/api/section", payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Bo‘lim yaratildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Bo‘lim yaratishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useDeleteSection = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`/api/section/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Bo‘lim o'chirildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Bo‘lim o'chirishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useCreateQuestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<TestQuestionDto>) => {
+      const { data } = await api.post("/api/question", payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Savol yaratildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Savol yaratishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useDeleteQuestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`/api/question/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Savol o'chirildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Savol o'chirishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useCreateAnswer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<TestAnswerDto>) => {
+      const { data } = await api.post("/api/answer", payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Javob yaratildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Javob yaratishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useDeleteAnswer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`/api/answer/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test"] });
+      notification.success({
+        message: "Javob o'chirildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: () => {
+      notification.error({
+        message: "Javob o'chirishda xatolik",
+        placement: "bottomRight",
+      });
+    },
+  });
+};

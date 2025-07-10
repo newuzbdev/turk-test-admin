@@ -15,9 +15,11 @@ import {
   PlusOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import type {
-  TestPartDto,
-  TestSectionDto,
+import {
+  useCreateSection,
+  useDeleteSection,
+  type TestPartDto,
+  type TestSectionDto,
 } from "../../config/querys/test-query";
 import SectionForm from "../../pages/reading/ui/section-form";
 import { api } from "../../config";
@@ -32,23 +34,39 @@ type Props = {
 };
 
 export default function PartForm({ part, onChange, onRemove }: Props) {
+  const createSection = useCreateSection();
+  const deleteSection = useDeleteSection();
+
   const updateSection = (index: number, updated: TestSectionDto) => {
     const newSections = [...part.sections];
     newSections[index] = updated;
     onChange({ ...part, sections: newSections });
   };
 
-  const addSection = () => {
-    const newSection: TestSectionDto = {
-      title: "",
+  const addSection = async () => {
+    if (!part.id) return message.warning("Part saqlanmagan!");
+
+    const newSection: Omit<TestSectionDto, "id" | "questions"> = {
+      title: "Yangi bo‘lim",
       content: "",
       imageUrl: "",
-      questions: [],
     };
-    onChange({ ...part, sections: [...part.sections, newSection] });
+
+    const res = await createSection.mutateAsync({
+      ...newSection,
+      partId: part.id,
+    });
+
+    if (res?.id) {
+      const newSectionWithId: TestSectionDto = { ...res, questions: [] };
+      onChange({ ...part, sections: [...part.sections, newSectionWithId] });
+    }
   };
 
-  const removeSection = (index: number) => {
+  const removeSection = async (index: number) => {
+    const section = part.sections[index];
+    if (section.id) await deleteSection.mutateAsync(section.id);
+
     const newSections = part.sections.filter((_, i) => i !== index);
     onChange({ ...part, sections: newSections });
   };

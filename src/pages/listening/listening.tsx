@@ -1,12 +1,14 @@
+
 import { Button, Card, Layout, Typography, Table, Space, Modal } from "antd";
 import { useState } from "react";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
-  useCreateTest,
-  useDeleteTest,
   useGetTestList,
-  type CreateTestDto,
+  useCreateTest,
+  useUpdateTest,
+  useDeleteTest,
   type TestItem,
+  type CreateTestDto,
 } from "../../config/querys/test-query";
 import ListeningForm from "./ui/listening-form";
 
@@ -22,8 +24,9 @@ export default function Listening() {
   const [deleteTestId, setDeleteTestId] = useState<string | null>(null);
 
   const { data, isLoading } = useGetTestList(page, limit, "LISTENING");
-  const createMutation = useCreateTest();
-  const deleteMutation = useDeleteTest();
+  const create = useCreateTest();
+  const update = useUpdateTest();
+  const remove = useDeleteTest();
 
   const handleEdit = (record: TestItem) => {
     setEditingTest(record);
@@ -35,11 +38,22 @@ export default function Listening() {
     setDeleteModalOpen(true);
   };
 
-  const handleSubmit = (formData: CreateTestDto) => {
+  const handleSubmit = (form: CreateTestDto) => {
     if (editingTest) {
-      // Update code if needed later
+      update.mutate(
+        {
+          id: editingTest.id,
+          ...form,
+        },
+        {
+          onSuccess: () => {
+            setIsModalOpen(false);
+            setEditingTest(null);
+          },
+        }
+      );
     } else {
-      createMutation.mutate(formData, {
+      create.mutate(form, {
         onSuccess: () => {
           setIsModalOpen(false);
         },
@@ -52,18 +66,18 @@ export default function Listening() {
       title: "Test nomi",
       dataIndex: "title",
       key: "title",
-      render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
-    },
-    {
-      title: "Turi",
-      dataIndex: "type",
-      key: "type",
     },
     {
       title: "IELTS ID",
       dataIndex: "ieltsId",
       key: "ieltsId",
-      render: (text: string) => <code>{text}</code>,
+      render: (id: string) => <code>{id}</code>,
+    },
+    {
+      title: "Bo‘limlar",
+      dataIndex: "parts",
+      key: "parts",
+      render: (parts: any[]) => parts?.length || 0,
     },
     {
       title: "Amallar",
@@ -74,7 +88,6 @@ export default function Listening() {
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            style={{ color: "#1890ff" }}
           >
             Tahrirlash
           </Button>
@@ -94,39 +107,18 @@ export default function Listening() {
   return (
     <Layout>
       <Content>
-        <Card
-          style={{
-            borderRadius: "12px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            border: "none",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "24px",
-            }}
-          >
-            <Title level={3}>🎿 Listening Testlar</Title>
+        <Card>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Title level={3}>🎧 Listening Testlar</Title>
             <Button
-              type="primary"
               icon={<PlusOutlined />}
-              size="large"
-              style={{
-                borderRadius: "8px",
-                borderColor: "#10b981",
-                height: "44px",
-                paddingLeft: "20px",
-                paddingRight: "20px",
-              }}
+              type="primary"
               onClick={() => {
                 setEditingTest(null);
                 setIsModalOpen(true);
               }}
             >
-              Listening test Yaratish
+              Listening test yaratish
             </Button>
           </div>
 
@@ -140,21 +132,16 @@ export default function Listening() {
               pageSize: limit,
               total: data?.total || 0,
               onChange: setPage,
-              showSizeChanger: false,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} / ${total} ta test`,
             }}
           />
         </Card>
 
         <Modal
           open={deleteModalOpen}
-          title="Testni o'chirmoqchimisiz?"
           onCancel={() => setDeleteModalOpen(false)}
           onOk={() => {
             if (deleteTestId) {
-              deleteMutation.mutate(deleteTestId, {
+              remove.mutate(deleteTestId, {
                 onSuccess: () => {
                   setDeleteModalOpen(false);
                   setDeleteTestId(null);
@@ -165,25 +152,23 @@ export default function Listening() {
           okText="Ha, o'chirish"
           cancelText="Bekor qilish"
         >
-          <p>Bu amalni bekor qilib bo'lmaydi.</p>
+          <p>Bu amalni qaytarib bo‘lmaydi.</p>
         </Modal>
 
         <Modal
-          title={editingTest ? "Testni tahrirlash" : "Yangi Listening Test"}
           open={isModalOpen}
           onCancel={() => setIsModalOpen(false)}
           footer={null}
-          width={1400}
-          style={{ top: 20 }}
-          bodyStyle={{ padding: 0 }}
+          width={1200}
         >
           <ListeningForm
             initialData={
               editingTest
                 ? {
+                    id: editingTest.id,
                     title: editingTest.title,
-                    type: editingTest.type,
                     ieltsId: editingTest.ieltsId,
+                    type: editingTest.type,
                     parts: editingTest.parts,
                   }
                 : undefined
