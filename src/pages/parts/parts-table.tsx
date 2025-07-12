@@ -1,11 +1,9 @@
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Space, Table, Modal, notification } from "antd";
+import { Table, Modal, notification } from "antd";
 import { usePartsModalStore } from "./utils/parts-modal-store";
 import { PartsModal } from "./ui/parts-modal";
 import { useGetAllParts } from "@/config/queries/parts/get-all.queries";
 import { useDeletePart } from "@/config/queries/parts/delete.queries";
 import { useNavigate } from "react-router-dom";
-import { Copy, Eye } from "lucide-react";
 import { useState } from "react";
 import { PartsColumns } from "./ui/parts-columns";
 
