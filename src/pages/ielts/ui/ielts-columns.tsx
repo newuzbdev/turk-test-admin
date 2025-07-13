@@ -20,6 +20,7 @@ export const IeltsColumns = ({
   {
     key: "#",
     title: "#",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render: (_: any, _rec: any, index: number) => index + 1,
   },
   {

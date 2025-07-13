@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Button, Input, Space, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { showNotification } from "../../../shared/utils/notification";
-import ListeningPartForm from "./listening-part-form";
+import ReadingPartForm from "./reading-part-form";
 import type {
   CreateTestDto,
   TestPartDto,
@@ -11,22 +11,22 @@ import type {
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-interface ListeningFormProps {
+interface ReadingFormProps {
   initialData?: CreateTestDto;
   onSave?: (data: CreateTestDto) => void;
   onCancel?: () => void;
 }
 
-export default function ListeningForm({
+export default function ReadingForm({
   initialData,
   onSave,
   onCancel,
-}: ListeningFormProps) {
+}: ReadingFormProps) {
   const [testData, setTestData] = useState<CreateTestDto>(
     initialData || {
       title: "",
       description: "",
-      type: "LISTENING",
+      type: "READING",
       ieltsId: "",
       parts: [],
     }
@@ -42,7 +42,6 @@ export default function ListeningForm({
     const newPart: TestPartDto = {
       number: testData.parts.length + 1,
       title: "",
-      audioUrl: "",
       sections: [],
     };
     setTestData({ ...testData, parts: [...testData.parts, newPart] });
@@ -81,7 +80,7 @@ export default function ListeningForm({
     if (onSave) {
       onSave(testData);
     } else {
-      console.log("Saving listening test:", testData);
+      console.log("Saving reading test:", testData);
       // TODO: Implement API call
     }
   };
@@ -95,15 +94,15 @@ export default function ListeningForm({
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
-        <Title level={2} style={{ color: "#1890ff", marginBottom: "24px" }}>
-          🎧 Listening Test Yaratish
+        <Title level={2} style={{ color: "#10b981", marginBottom: "24px" }}>
+          📖 Reading Test Yaratish
         </Title>
 
         <Space direction="vertical" style={{ width: "100%" }} size="large">
           <div>
             <Text strong>Test nomi:</Text>
             <Input
-              placeholder="Listening test nomini kiriting..."
+              placeholder="Reading test nomini kiriting..."
               value={testData.title}
               onChange={(e) =>
                 setTestData({ ...testData, title: e.target.value })
@@ -143,6 +142,7 @@ export default function ListeningForm({
             icon={<PlusOutlined />}
             onClick={addPart}
             size="large"
+            style={{ background: "#10b981", borderColor: "#10b981" }}
           >
             Yangi qism qo'shish
           </Button>
@@ -150,7 +150,7 @@ export default function ListeningForm({
 
         <Space direction="vertical" style={{ width: "100%" }} size="large">
           {testData.parts.map((part, index) => (
-            <ListeningPartForm
+            <ReadingPartForm
               key={index}
               part={part}
               onChange={(updated) => updatePart(index, updated)}
@@ -169,7 +169,11 @@ export default function ListeningForm({
                 icon={<PlusOutlined />}
                 onClick={addPart}
                 size="large"
-                style={{ marginTop: "16px" }}
+                style={{
+                  marginTop: "16px",
+                  borderColor: "#10b981",
+                  color: "#10b981",
+                }}
               >
                 Birinchi qismni qo'shish
               </Button>
@@ -190,6 +194,7 @@ export default function ListeningForm({
             size="large"
             onClick={handleSave}
             disabled={!testData.title || testData.parts.length === 0}
+            style={{ background: "#10b981", borderColor: "#10b981" }}
           >
             💾 Testni saqlash
           </Button>

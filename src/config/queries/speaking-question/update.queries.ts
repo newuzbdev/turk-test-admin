@@ -1,8 +1,8 @@
 import axiosPrivate from "@/config/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ApiResponse, SpeakingQuestion } from "@/utils/types/types";
 import { speakingQuestionEndpoints } from "@/config/endpoint";
 import { notification } from "antd";
+import type { ApiResponse, SpeakingQuestion } from "@/utils/types/types";
 
 export const useUpdateSpeakingQuestion = () => {
   const queryClient = useQueryClient();

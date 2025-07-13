@@ -1,18 +1,10 @@
-import {
-  IELTS,
-  Listening,
-  Reading,
-  Speaking,
-  Test,
-  Writing,
-} from "./lazy-pages";
+import { IELTS, Listening, Reading, Speaking, Writing } from "./lazy-pages";
 import {
   Book,
   BookAudioIcon,
   Headphones,
   MessageCircleIcon,
   Speaker,
-  TestTubeIcon,
 } from "lucide-react";
 
 export interface RouterConfig {
@@ -61,21 +53,14 @@ export const routerConfig: RouterConfig[] = [
     inMenu: true,
   },
   {
-    title: "MOCK TEST",
-    label: "Mock",
+    title: "TEST",
+    label: "TEST",
     icon: <BookAudioIcon />,
-    path: "mock",
+    path: "test",
     page: <IELTS />,
     inMenu: true,
   },
-  {
-    title: "Test",
-    label: "Test",
-    icon: <TestTubeIcon />,
-    path: "test",
-    page: <Test />,
-    inMenu: true,
-  },
+
   // {
   //     title: 'Manage Ads',
   //     label: 'Manage Ads',
