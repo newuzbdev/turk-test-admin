@@ -1,52 +1,85 @@
-import {
-  Button,
-  Card,
-  Col,
-  Input,
-  Row,
-  Space,
-  Typography,
-  Badge,
-  Upload,
-} from "antd";
-import {
-  DeleteOutlined,
-  PlusOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import type {
-  TestPartDto,
-  TestSectionDto,
-} from "../../config/querys/test-query";
-import SectionForm from "../../pages/reading/ui/section-form";
+import { Button, Card, Col, Input, Row, Space, Typography, Badge } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import type { Part, Section } from "../../utils/types/types";
+import type { TestSectionDto } from "../../config/queries";
+import SectionForm from "./section-form";
 
 const { Title, Text } = Typography;
 
 type Props = {
-  part: TestPartDto;
-  onChange: (part: TestPartDto) => void;
+  part: Part;
+  onChange: (part: Part) => void;
   onRemove: () => void;
 };
 
 export default function PartForm({ part, onChange, onRemove }: Props) {
+  // Convert Section to TestSectionDto for SectionForm
+  const convertSectionToDto = (section: Section): TestSectionDto => ({
+    id: section.id,
+    partId: section.partId,
+    title: section.title,
+    content: section.content || "",
+    imageUrl: "", // Default empty string for imageUrl
+    questions: (section.questions || []).map((q) => ({
+      id: q.id,
+      sectionId: q.sectionId,
+      number: q.order,
+      type: q.type,
+      text: q.question,
+      answers: (q.answers || []).map((a) => ({
+        id: a.id,
+        questionId: a.questionId,
+        variantText: a.answer,
+        answer: a.answer,
+        correct: a.isCorrect,
+      })),
+    })),
+  });
+
+  // Convert TestSectionDto back to Section
+  const convertDtoToSection = (
+    dto: TestSectionDto,
+    originalSection: Section
+  ): Section => ({
+    ...originalSection,
+    title: dto.title,
+    content: dto.content,
+    questions: dto.questions.map((q) => ({
+      id: q.id,
+      question: q.text,
+      type: q.type,
+      sectionId: originalSection.id || "",
+      order: q.number,
+      answers: q.answers.map((a) => ({
+        id: a.id,
+        answer: a.answer,
+        isCorrect: a.correct,
+        questionId: q.id || "",
+      })),
+    })),
+  });
+
   const updateSection = (index: number, updated: TestSectionDto) => {
-    const newSections = [...part.sections];
-    newSections[index] = updated;
+    const newSections = [...(part.sections || [])];
+    const originalSection = newSections[index];
+    const convertedSection = convertDtoToSection(updated, originalSection);
+    newSections[index] = convertedSection;
     onChange({ ...part, sections: newSections });
   };
 
   const addSection = () => {
-    const newSection: TestSectionDto = {
+    const newSection: Section = {
       title: "",
       content: "",
-      imageUrl: "",
+      partId: part.id || "",
+      order: (part.sections?.length || 0) + 1,
       questions: [],
     };
-    onChange({ ...part, sections: [...part.sections, newSection] });
+    onChange({ ...part, sections: [...(part.sections || []), newSection] });
   };
 
   const removeSection = (index: number) => {
-    const newSections = part.sections.filter((_, i) => i !== index);
+    const newSections = part.sections?.filter((_, i) => i !== index) || [];
     onChange({ ...part, sections: newSections });
   };
 
@@ -92,12 +125,12 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
             </div>
             <div>
               <Title level={4} style={{ margin: 0, color: "white" }}>
-                Part {part.number}
+                Part {part.order}
               </Title>
               <Text
                 style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}
               >
-                {part.sections.length} ta bo'lim
+                {part.sections?.length || 0} ta bo'lim
               </Text>
             </div>
           </div>
@@ -132,30 +165,6 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
             size="large"
           />
         </Col>
-        <Col span={12}>
-          <div style={{ marginBottom: "8px" }}>
-            <label style={{ fontWeight: 600, fontSize: "14px" }}>
-              🎵 Audio fayl
-            </label>
-          </div>
-
-          <Upload
-            maxCount={1}
-            accept="audio/*"
-            beforeUpload={(file) => {
-              onChange({ ...part, audioUrl: URL.createObjectURL(file) });
-              return false;
-            }}
-          >
-            <Button
-              size="large"
-              icon={<UploadOutlined style={{ color: "#10b981" }} />}
-              style={{ width: "100%" }}
-            >
-              Audio faylni yuklash
-            </Button>
-          </Upload>
-        </Col>
       </Row>
 
       <div
@@ -178,7 +187,7 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
             📚 Bo'limlar
           </Text>
           <Badge
-            count={part.sections.length}
+            count={part.sections?.length || 0}
             style={{
               background: "#10b981",
               color: "white",
@@ -188,7 +197,7 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
         </div>
 
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          {part.sections.map((section, i) => (
+          {part.sections?.map((section, i) => (
             <div
               key={i}
               style={{
@@ -199,10 +208,8 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
               }}
             >
               <SectionForm
-                section={section}
-                onChange={(updated: TestSectionDto) =>
-                  updateSection(i, updated)
-                }
+                section={convertSectionToDto(section)}
+                onChange={(updated) => updateSection(i, updated)}
                 onRemove={() => removeSection(i)}
               />
             </div>

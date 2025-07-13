@@ -12,6 +12,13 @@ export * from "./test/get-all.queries";
 export * from "./test/get-one.queries";
 export * from "./test/update.queries";
 
+// Listening queries
+export * from "./listening/create.queries";
+export * from "./listening/delete.queries";
+export * from "./listening/get-all.queries";
+export * from "./listening/get-one.queries";
+export * from "./listening/update.queries";
+
 // Parts queries
 export * from "./parts/create.queries";
 export * from "./parts/delete.queries";
