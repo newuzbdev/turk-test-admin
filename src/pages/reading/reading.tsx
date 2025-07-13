@@ -1,11 +1,5 @@
-import { ReadingTable } from "./ui/reading-table";
-
 const Reading = () => {
-  return (
-    <main>
-      <ReadingTable />
-    </main>
-  );
+  return <div>Reading</div>;
 };
 
 export default Reading;

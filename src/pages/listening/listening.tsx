@@ -1,11 +1,5 @@
-import { ListeningTable } from "./ui/listening-table";
-
 const Listening = () => {
-  return (
-    <main>
-      <ListeningTable />
-    </main>
-  );
+  return <div>Listening</div>;
 };
 
 export default Listening;

@@ -1,13 +1,5 @@
-import React from "react";
-import EnhancedSectionForm from "../../../shared/ui/test-creation/enhanced-section-form";
-import type { TestSectionDto } from "../../../config/querys/test-query";
+const SectionForm = () => {
+  return <div>SectionForm</div>;
+};
 
-interface ReadingSectionFormProps {
-  section: TestSectionDto;
-  onChange: (section: TestSectionDto) => void;
-  onRemove: () => void;
-}
-
-export default function ReadingSectionForm(props: ReadingSectionFormProps) {
-  return <EnhancedSectionForm {...props} testType="READING" />;
-}
+export default SectionForm;

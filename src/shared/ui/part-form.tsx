@@ -1,13 +1,12 @@
-import React from "react";
 import {
-  Card,
   Button,
+  Card,
+  Col,
   Input,
   Row,
-  Col,
   Space,
-  Badge,
   Typography,
+  Badge,
   Upload,
 } from "antd";
 import {
@@ -18,30 +17,18 @@ import {
 import type {
   TestPartDto,
   TestSectionDto,
-} from "../../../config/querys/test-query";
+} from "../../config/querys/test-query";
+import SectionForm from "../../pages/reading/ui/section-form";
 
 const { Title, Text } = Typography;
 
-interface BasePartFormProps {
+type Props = {
   part: TestPartDto;
   onChange: (part: TestPartDto) => void;
   onRemove: () => void;
-  testType: "LISTENING" | "READING";
-  sectionComponent: React.ComponentType<{
-    section: TestSectionDto;
-    onChange: (section: TestSectionDto) => void;
-    onRemove: () => void;
-    testType: "LISTENING" | "READING";
-  }>;
-}
+};
 
-export default function BasePartForm({
-  part,
-  onChange,
-  onRemove,
-  testType,
-  sectionComponent: SectionComponent,
-}: BasePartFormProps) {
+export default function PartForm({ part, onChange, onRemove }: Props) {
   const updateSection = (index: number, updated: TestSectionDto) => {
     const newSections = [...part.sections];
     newSections[index] = updated;
@@ -63,21 +50,6 @@ export default function BasePartForm({
     onChange({ ...part, sections: newSections });
   };
 
-  const getPartIcon = () => {
-    return testType === "LISTENING" ? "🎧" : "📖";
-  };
-
-  const getPartTypeText = () => {
-    return testType === "LISTENING" ? "Listening Part" : "Reading Part";
-  };
-
-  const getSectionCountText = () => {
-    const count = part.sections.length;
-    return testType === "LISTENING" 
-      ? `${count} ta bo'lim` 
-      : `${count} ta bo'lim`;
-  };
-
   return (
     <Card
       style={{
@@ -90,9 +62,7 @@ export default function BasePartForm({
     >
       <div
         style={{
-          background: testType === "LISTENING" 
-            ? "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"
-            : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+          background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
           margin: "-24px -24px 24px -24px",
           padding: "20px 24px",
           color: "white",
@@ -118,16 +88,16 @@ export default function BasePartForm({
                 fontSize: "18px",
               }}
             >
-              {getPartIcon()}
+              🎧
             </div>
             <div>
               <Title level={4} style={{ margin: 0, color: "white" }}>
-                {getPartTypeText()} {part.number}
+                Part {part.number}
               </Title>
               <Text
                 style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}
               >
-                {getSectionCountText()}
+                {part.sections.length} ta bo'lim
               </Text>
             </div>
           </div>
@@ -149,49 +119,43 @@ export default function BasePartForm({
       </div>
 
       <Row gutter={[20, 20]} style={{ marginBottom: "28px" }}>
-        <Col span={testType === "LISTENING" ? 12 : 24}>
+        <Col span={12}>
           <div style={{ marginBottom: "8px" }}>
             <label style={{ fontWeight: 600, fontSize: "14px" }}>
               📝 Part sarlavhasi
             </label>
           </div>
           <Input
-            placeholder={
-              testType === "LISTENING" 
-                ? "Masalan: Kundalik suhbat" 
-                : "Masalan: Academic Reading"
-            }
+            placeholder="Masalan: Kundalik suhbat"
             value={part.title}
             onChange={(e) => onChange({ ...part, title: e.target.value })}
             size="large"
           />
         </Col>
-        
-        {testType === "LISTENING" && (
-          <Col span={12}>
-            <div style={{ marginBottom: "8px" }}>
-              <label style={{ fontWeight: 600, fontSize: "14px" }}>
-                🎵 Audio fayl
-              </label>
-            </div>
-            <Upload
-              maxCount={1}
-              accept="audio/*"
-              beforeUpload={(file) => {
-                onChange({ ...part, audioUrl: URL.createObjectURL(file) });
-                return false;
-              }}
+        <Col span={12}>
+          <div style={{ marginBottom: "8px" }}>
+            <label style={{ fontWeight: 600, fontSize: "14px" }}>
+              🎵 Audio fayl
+            </label>
+          </div>
+
+          <Upload
+            maxCount={1}
+            accept="audio/*"
+            beforeUpload={(file) => {
+              onChange({ ...part, audioUrl: URL.createObjectURL(file) });
+              return false;
+            }}
+          >
+            <Button
+              size="large"
+              icon={<UploadOutlined style={{ color: "#10b981" }} />}
+              style={{ width: "100%" }}
             >
-              <Button
-                size="large"
-                icon={<UploadOutlined style={{ color: "#10b981" }} />}
-                style={{ width: "100%" }}
-              >
-                Audio faylni yuklash
-              </Button>
-            </Upload>
-          </Col>
-        )}
+              Audio faylni yuklash
+            </Button>
+          </Upload>
+        </Col>
       </Row>
 
       <div
@@ -234,11 +198,12 @@ export default function BasePartForm({
                 overflow: "hidden",
               }}
             >
-              <SectionComponent
+              <SectionForm
                 section={section}
-                onChange={(updated: TestSectionDto) => updateSection(i, updated)}
+                onChange={(updated: TestSectionDto) =>
+                  updateSection(i, updated)
+                }
                 onRemove={() => removeSection(i)}
-                testType={testType}
               />
             </div>
           ))}
@@ -249,20 +214,22 @@ export default function BasePartForm({
             onClick={addSection}
             style={{
               width: "100%",
-              height: "48px",
-              borderRadius: "8px",
+              height: "52px",
+              borderRadius: "12px",
+              borderColor: "#10b981",
+              color: "#10b981",
+              fontSize: "14px",
+              fontWeight: 600,
               background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
               border: "2px dashed #10b981",
-              color: "#059669",
-              fontWeight: 600,
-              fontSize: "14px",
               transition: "all 0.3s ease",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background =
                 "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(16, 185, 129, 0.2)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background =
