@@ -5,7 +5,7 @@ import {
   EyeInvisibleOutlined,
 } from "@ant-design/icons";
 import { Button, Form, Input, Alert } from "antd";
-import { useAdminLogin } from "../../config/querys/login-querys";
+import { useAdminLogin } from "../../config/queries/login-querys";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../providers/auth-provider";

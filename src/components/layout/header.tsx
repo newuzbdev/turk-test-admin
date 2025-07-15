@@ -5,7 +5,7 @@ import { useLocation } from "react-router";
 import { routerConfig, type RouterConfig } from "../../routes/router-config";
 import ThemeSwitcher from "../ui/theme-switcher";
 import { DoorOpen } from "lucide-react";
-import { useAdminLogout } from "../../config/querys/login-querys";
+import { useAdminLogout } from "../../config/queries/login-querys";
 
 export default function Header() {
   const location = useLocation();

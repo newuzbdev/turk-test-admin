@@ -1,10 +1,9 @@
-import { IELTS, Listening, Reading, Speaking, Writing } from "./lazy-pages";
+import { IELTS } from "./lazy-pages";
 import {
-  Book,
   BookAudioIcon,
-  Headphones,
-  MessageCircleIcon,
-  Speaker,
+  // Headphones,
+  // MessageCircleIcon,
+  // Speaker,
 } from "lucide-react";
 
 export interface RouterConfig {
@@ -20,38 +19,39 @@ export interface RouterConfig {
 }
 
 export const routerConfig: RouterConfig[] = [
-  {
-    title: "Listening",
-    label: "Listening",
-    icon: <Headphones />,
-    path: "listening",
-    page: <Listening />,
-    inMenu: true,
-  },
-  {
-    title: "Reading",
-    label: "Reading",
-    icon: <Book />,
-    path: "reading",
-    page: <Reading />,
-    inMenu: true,
-  },
-  {
-    title: "Speaking",
-    label: "Speaking",
-    icon: <Speaker />,
-    path: "speaking",
-    page: <Speaking />,
-    inMenu: true,
-  },
-  {
-    title: "Writing",
-    label: "Writing",
-    icon: <MessageCircleIcon />,
-    path: "writing",
-    page: <Writing />,
-    inMenu: true,
-  },
+  // {
+  //   title: "Listening",
+  //   label: "Listening",
+  //   icon: <Headphones />,
+  //   path: "listening",
+  //   page: <Listening />,
+  //   inMenu: true,
+  // },
+  // {
+  //   title: "Reading",
+  //   label: "Reading",
+  //   icon: <Book />,
+  //   path: "reading",
+  //   page: <Reading />,
+  //   inMenu: true,
+  // },
+  // {
+  //   title: "Speaking",
+  //   label: "Speaking",
+  //   icon: <Speaker />,
+  //   path: "speaking",
+  //   page: <Speaking />,
+  //   inMenu: true,
+  // },
+  // {
+  //   title: "Writing",
+  //   label: "Writing",
+  //   icon: <MessageCircleIcon />,
+  //   path: "writing",
+  //   page: <Writing />,
+  //   inMenu: true,
+  // },
+
   {
     title: "TEST",
     label: "TEST",

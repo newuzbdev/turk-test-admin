@@ -11,12 +11,12 @@ const localStoragePersister = createSyncStoragePersister({
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 5,
-      gcTime: 1000 * 5,
-      refetchOnWindowFocus: true,
+      staleTime: 1000 * 60 * 5, // 5 minutes instead of 5 seconds
+      gcTime: 1000 * 60 * 10, // 10 minutes instead of 5 seconds
+      refetchOnWindowFocus: false, // Disable refetch on window focus
       refetchOnReconnect: true,
-      refetchInterval: 1000 * 45,
-      refetchIntervalInBackground: true,
+      refetchInterval: false, // Disable automatic refetching
+      refetchIntervalInBackground: false,
       retry: 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
