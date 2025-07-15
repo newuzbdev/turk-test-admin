@@ -3,7 +3,8 @@ import { useIeltsModalStore } from "./utils/ielts-modal-store";
 import { IeltsModal } from "./ui/ielts-modal";
 import { useState } from "react";
 import { IeltsColumns } from "./ui/ielts-columns";
-import { useDeleteIelts, useGetAllIelts } from "@/config/queries";
+import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
+import { useDeleteIelts } from "@/config/queries/ielts/delete.queries";
 
 export const IeltsTable = () => {
   const { onOpen } = useIeltsModalStore();
