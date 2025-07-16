@@ -27,6 +27,14 @@ export const listeningEndpoints = {
   onlyOne: (id: string) => `/api/test/only/${id}`,
 };
 
+// Reading Test endpoints (using same API but with type filtering)
+export const readingEndpoints = {
+  all: "/api/test",
+  one: (id: string) => `/api/test/${id}`,
+  only: "/api/test/only",
+  onlyOne: (id: string) => `/api/test/only/${id}`,
+};
+
 // Reading Or Listening Parts endpoints
 export const partsEndpoints = {
   all: "/api/parts",

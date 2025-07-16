@@ -1,8 +1,10 @@
-import { Listening } from "@/pages";
+import { Listening, Reading } from "@/pages";
 import { IELTS } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
+import ReadingEditor from "@/pages/reading/reading-editor";
 import {
   BookAudioIcon,
+  BookOpenIcon,
   Headphones,
   // Headphones,
   // MessageCircleIcon,
@@ -36,6 +38,22 @@ export const routerConfig: RouterConfig[] = [
     icon: <Headphones />,
     path: "listening/:id/edit",
     page: <ListeningEditor />,
+    inMenu: false,
+  },
+  {
+    title: "Reading",
+    label: "Reading",
+    icon: <BookOpenIcon />,
+    path: "reading",
+    page: <Reading />,
+    inMenu: true,
+  },
+  {
+    title: "Reading Editor",
+    label: "Reading Editor",
+    icon: <BookOpenIcon />,
+    path: "reading/:id/edit",
+    page: <ReadingEditor />,
     inMenu: false,
   },
   // {

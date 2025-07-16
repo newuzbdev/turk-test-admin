@@ -24,9 +24,15 @@ type Props = {
   part: Part;
   onChange: (part: Part) => void;
   onRemove: () => void;
+  showAudioUpload?: boolean;
 };
 
-export default function PartForm({ part, onChange, onRemove }: Props) {
+export default function PartForm({
+  part,
+  onChange,
+  onRemove,
+  showAudioUpload = false,
+}: Props) {
   // Convert Section to TestSectionDto for SectionForm
   const convertSectionToDto = (section: Section): TestSectionDto => ({
     id: section.id,
@@ -179,37 +185,41 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
             size="large"
           />
         </Col>
-        <Col span={12}>
-          <div style={{ marginBottom: "8px" }}>
-            <label style={{ fontWeight: 600, fontSize: "14px" }}>
-              🎧 Audio File (for Listening Tests)
-            </label>
-          </div>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <Upload
-              accept=".mp3,.wav,.m4a,.ogg"
-              showUploadList={false}
-              beforeUpload={(file) => {
-                // Handle file upload here - you can integrate with your file upload API
-                console.log("Audio file selected:", file);
-                // For now, just set the file name as audioUrl
-                onChange({ ...part, audioUrl: file.name });
-                return false; // Prevent automatic upload
-              }}
-            >
-              <Button icon={<UploadOutlined />} size="large">
-                Upload Audio
-              </Button>
-            </Upload>
-            <Input
-              placeholder="Or enter audio URL"
-              value={part.audioUrl || ""}
-              onChange={(e) => onChange({ ...part, audioUrl: e.target.value })}
-              size="large"
-              style={{ flex: 1 }}
-            />
-          </div>
-        </Col>
+        {showAudioUpload && (
+          <Col span={12}>
+            <div style={{ marginBottom: "8px" }}>
+              <label style={{ fontWeight: 600, fontSize: "14px" }}>
+                🎧 Audio File (for Listening Tests)
+              </label>
+            </div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Upload
+                accept=".mp3,.wav,.m4a,.ogg"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  // Handle file upload here - you can integrate with your file upload API
+                  console.log("Audio file selected:", file);
+                  // For now, just set the file name as audioUrl
+                  onChange({ ...part, audioUrl: file.name });
+                  return false; // Prevent automatic upload
+                }}
+              >
+                <Button icon={<UploadOutlined />} size="large">
+                  Upload Audio
+                </Button>
+              </Upload>
+              <Input
+                placeholder="Or enter audio URL"
+                value={part.audioUrl || ""}
+                onChange={(e) =>
+                  onChange({ ...part, audioUrl: e.target.value })
+                }
+                size="large"
+                style={{ flex: 1 }}
+              />
+            </div>
+          </Col>
+        )}
       </Row>
 
       <div
