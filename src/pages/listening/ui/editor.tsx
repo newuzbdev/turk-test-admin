@@ -42,14 +42,6 @@ export function QuestionEditor() {
     updateQuestion(currentQuestion.id, { choices: updatedChoices });
   };
 
-  const handleExplanationChange = (value: string) => {
-    updateQuestion(currentQuestion.id, { explanation: value });
-  };
-
-  const handleLocatedPassageChange = (value: string) => {
-    updateQuestion(currentQuestion.id, { locatedPassage: value });
-  };
-
   return (
     <div className="flex-1 p-6 space-y-6 overflow-auto">
       <Card title="Question 1 - 3">
@@ -108,14 +100,15 @@ export function QuestionEditor() {
         >
           {currentQuestion.choices.map((choice) => (
             <div key={choice.id} className="flex items-center space-x-2 mb-2">
-              <Radio value={choice.id}>
-                <Input
-                  value={choice.text}
-                  onChange={(e) =>
-                    handleChoiceTextChange(choice.id, e.target.value)
-                  }
-                />
-              </Radio>
+              <Radio value={choice.id} />
+              <Input
+                value={choice.text}
+                onChange={(e) =>
+                  handleChoiceTextChange(choice.id, e.target.value)
+                }
+                placeholder="Enter choice text"
+                style={{ flex: 1 }}
+              />
               <Button
                 icon={<CloseOutlined />}
                 onClick={() => removeChoice(currentQuestion.id, choice.id)}
@@ -147,23 +140,6 @@ export function QuestionEditor() {
               {choice.text}
             </Button>
           ))}
-        </div>
-      </Card>
-
-      <Card title="Explanation">
-        <TextArea
-          placeholder="Add explanation..."
-          value={currentQuestion.explanation}
-          onChange={(e) => handleExplanationChange(e.target.value)}
-          rows={4}
-        />
-        <div className="flex items-center space-x-2 mt-4">
-          <Input
-            placeholder="Select locate passage..."
-            value={currentQuestion.locatedPassage}
-            onChange={(e) => handleLocatedPassageChange(e.target.value)}
-          />
-          <Button icon={<PlusOutlined />}>Select passage</Button>
         </div>
       </Card>
     </div>

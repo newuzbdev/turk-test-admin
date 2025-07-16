@@ -4,6 +4,7 @@ export { default as Ielts } from "./ielts/ielts";
 // export { default as Sections } from "./sections/sections";
 // export { default as Reading } from "./reading/reading";
 export { default as Listening } from "./listening/listening";
+export { default as ListeningEditor } from "./listening/listening-editor";
 // export { default as Speaking } from "./speaking/speaking";
 // export { default as Writing } from "./writing/writing";
 

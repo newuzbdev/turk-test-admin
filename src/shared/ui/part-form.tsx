@@ -1,8 +1,22 @@
-import { Button, Card, Col, Input, Row, Space, Typography, Badge } from "antd";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Row,
+  Space,
+  Typography,
+  Badge,
+  Upload,
+} from "antd";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import type { Part, Section } from "../../utils/types/types";
-import type { TestSectionDto } from "../../config/queries";
 import SectionForm from "./section-form";
+import type { TestSectionDto } from "@/config/queries/ielts/get-all.queries";
 
 const { Title, Text } = Typography;
 
@@ -164,6 +178,37 @@ export default function PartForm({ part, onChange, onRemove }: Props) {
             onChange={(e) => onChange({ ...part, title: e.target.value })}
             size="large"
           />
+        </Col>
+        <Col span={12}>
+          <div style={{ marginBottom: "8px" }}>
+            <label style={{ fontWeight: 600, fontSize: "14px" }}>
+              🎧 Audio File (for Listening Tests)
+            </label>
+          </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <Upload
+              accept=".mp3,.wav,.m4a,.ogg"
+              showUploadList={false}
+              beforeUpload={(file) => {
+                // Handle file upload here - you can integrate with your file upload API
+                console.log("Audio file selected:", file);
+                // For now, just set the file name as audioUrl
+                onChange({ ...part, audioUrl: file.name });
+                return false; // Prevent automatic upload
+              }}
+            >
+              <Button icon={<UploadOutlined />} size="large">
+                Upload Audio
+              </Button>
+            </Upload>
+            <Input
+              placeholder="Or enter audio URL"
+              value={part.audioUrl || ""}
+              onChange={(e) => onChange({ ...part, audioUrl: e.target.value })}
+              size="large"
+              style={{ flex: 1 }}
+            />
+          </div>
         </Col>
       </Row>
 

@@ -1,7 +1,7 @@
 import { Card, Input, Upload, Button, Space, message } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
-import type { TestPartDto } from "../../config/querys/test-query";
 import { useState } from "react";
+import type { TestPartDto } from "@/config/queries/ielts/get-all.queries";
 
 type Props = {
   part: TestPartDto;

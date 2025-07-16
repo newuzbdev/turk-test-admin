@@ -43,7 +43,7 @@ interface QuestionState {
   toggleCompactGuide: () => void;
 }
 
-export const useQuestionStore = create<QuestionState>((set, get) => ({
+export const useQuestionStore = create<QuestionState>((set) => ({
   questions: [
     {
       id: "q1",

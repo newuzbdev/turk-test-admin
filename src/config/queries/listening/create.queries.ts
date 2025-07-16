@@ -10,6 +10,34 @@ import type {
 import { listeningEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
 
+// DTO for creating test with full structure (matching API requirements)
+interface CreateTestWithAdditionDto {
+  title: string;
+  description: string;
+  type: string;
+  ieltsId: string;
+  parts: {
+    number: number;
+    title: string;
+    audioUrl: string;
+    sections: {
+      title: string;
+      content: string;
+      imageUrl: string;
+      questions: {
+        number: number;
+        type: string;
+        text: string;
+        answers: {
+          variantText: string;
+          answer: string;
+          correct: boolean;
+        }[];
+      }[];
+    }[];
+  }[];
+}
+
 export const useCreateListeningTest = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -32,6 +60,32 @@ export const useCreateListeningTest = () => {
     onError: () => {
       notification.error({
         message: "Listening test yaratishda xatolik yuz berdi",
+        placement: "bottomRight",
+      });
+    },
+  });
+};
+
+export const useCreateListeningTestWithAddition = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreateTestWithAdditionDto) => {
+      return (
+        await axiosPrivate.post<ApiResponse<Test>>(listeningEndpoints.all, data)
+      ).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [listeningEndpoints.all] });
+      notification.success({
+        message: "Listening test muvaffaqiyatli yaratildi",
+        placement: "bottomRight",
+      });
+    },
+    onError: (error: any) => {
+      console.error("API Error:", error.response?.data);
+      notification.error({
+        message: "Listening test yaratishda xatolik yuz berdi",
+        description: error.response?.data?.error || "Unknown error",
         placement: "bottomRight",
       });
     },

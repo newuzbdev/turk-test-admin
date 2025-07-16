@@ -52,8 +52,10 @@ export interface OnlyTest {
 export interface Part {
   id?: string;
   title: string;
-  testId: string;
-  order: number;
+  testId?: string;
+  order?: number;
+  number: number;
+  audioUrl?: string;
   createdAt?: string;
   updatedAt?: string;
   sections?: Section[];

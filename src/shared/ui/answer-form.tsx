@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Input, Button, Col, Row, Tag } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import type { TestAnswerDto } from "@/config/queries/ielts/get-all.queries";
 
 type Props = {
   answer: TestAnswerDto;

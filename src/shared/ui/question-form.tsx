@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Input, Button, Select, Card, Space, Tag, Divider } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+
+import AnswerForm from "./answer-form";
 import type {
   TestAnswerDto,
   TestQuestionDto,
-} from "../../config/querys/test-query";
-import AnswerForm from "./answer-form";
+} from "@/config/queries/ielts/get-all.queries";
 
 type Props = {
   question: TestQuestionDto;

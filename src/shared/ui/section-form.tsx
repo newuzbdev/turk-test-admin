@@ -7,7 +7,7 @@ import type {
   TestAnswerDto,
   TestQuestionDto,
   TestSectionDto,
-} from "@/config/queries";
+} from "@/config/queries/ielts/get-all.queries";
 
 const { Text } = Typography;
 
