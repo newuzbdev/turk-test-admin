@@ -6,7 +6,8 @@ export { default as Reading } from "./reading/reading";
 export { default as Listening } from "./listening/listening";
 export { default as ListeningEditor } from "./listening/listening-editor";
 export { default as ReadingEditor } from "./reading/reading-editor";
-// export { default as Speaking } from "./speaking/speaking";
+export { default as Speaking } from "./speaking/speaking";
+export { default as SpeakingEditor } from "./speaking/speaking-editor";
 // export { default as Writing } from "./writing/writing";
 
 // Table exports

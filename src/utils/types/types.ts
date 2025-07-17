@@ -177,16 +177,47 @@ export interface SpeakingQuestion {
   speakingSectionId?: string;
   createdAt?: string;
   updatedAt?: string;
-  points?: SpeakingPoint[];
 }
 
 export interface SpeakingPoint {
   id?: string;
   point: string;
-  speakingQuestionId: string;
+  type: string;
+  speakingSectionId: string;
   order: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Create DTOs for Speaking Tests
+export interface CreateSpeakingTestDTO {
+  title: string;
+  ieltsId: string;
+  sections: CreateSpeakingSectionDTO[];
+}
+
+export interface CreateOnlySpeakingTestDTO {
+  title: string;
+  ieltsId: string;
+}
+export interface CreateSpeakingSectionDTO {
+  order: number;
+  type: string;
+  title: string;
+  description: string;
+  content: string;
+  images: string[];
+  subParts: CreateSpeakingSubPartDTO[];
+}
+export interface CreateSpeakingSubPartDTO {
+  label: string;
+  description: string;
+  questions: CreateSpeakingQuestion[];
+}
+
+export interface CreateSpeakingQuestion {
+  order: number;
+  question: string;
 }
 
 // Writing Test Interfaces
@@ -235,26 +266,23 @@ export type CreatePart = Omit<Part, "id" | "createdAt" | "updatedAt">;
 export type CreateSection = Omit<Section, "id" | "createdAt" | "updatedAt">;
 export type CreateQuestion = Omit<Question, "id" | "createdAt" | "updatedAt">;
 export type CreateAnswer = Omit<Answer, "id" | "createdAt" | "updatedAt">;
-export type CreateSpeakingTest = Omit<
+export type CreateSpeakingTestType = Omit<
   SpeakingTest,
   "id" | "createdAt" | "updatedAt"
 >;
-export type CreateOnlySpeakingTest = Omit<
+export type CreateOnlySpeakingTestType = Omit<
   OnlySpeakingTest,
   "id" | "createdAt" | "updatedAt"
 >;
-export type CreateSpeakingSection = Omit<
+export type CreateSpeakingSectionType = Omit<
   SpeakingSection,
   "id" | "createdAt" | "updatedAt"
 >;
-export type CreateSpeakingSubPart = Omit<
+export type CreateSpeakingSubPartType = Omit<
   SpeakingSubPart,
   "id" | "createdAt" | "updatedAt"
 >;
-export type CreateSpeakingQuestion = Omit<
-  SpeakingQuestion,
-  "id" | "createdAt" | "updatedAt"
->;
+
 export type CreateSpeakingPoint = Omit<
   SpeakingPoint,
   "id" | "createdAt" | "updatedAt"
