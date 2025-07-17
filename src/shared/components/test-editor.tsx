@@ -1,14 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import {
-  Button,
-  Progress,
-  Card,
-  Input,
-  Space,
-  Row,
-  Col,
-  Badge,
-} from "antd";
+import { Button, Progress, Card, Input, Space, Row, Col, Badge } from "antd";
 import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import PartForm from "@/shared/ui/part-form";
@@ -19,13 +10,13 @@ const { TextArea } = Input;
 interface TestData {
   title: string;
   description: string;
-  type: "LISTENING" | "READING";
+  type: "LISTENING" | "READING" | "WRITING";
   ieltsId: string;
   parts: Part[];
 }
 
 interface TestEditorProps {
-  testType: "LISTENING" | "READING";
+  testType: "LISTENING" | "READING" | "WRITING";
   backUrl: string;
   useGetOneTest: (id: string) => any;
   useCreateTestWithAddition: () => any;
@@ -47,22 +38,21 @@ export default function TestEditor({
     description: "",
     type: testType,
     ieltsId: "",
-    parts: []
+    parts: [],
   });
-  
+
   // Check if this is a new test creation
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
   const initialTestData = location.state?.testData;
-  
-  const { mutateAsync: createTest, isPending: isCreating } = useCreateTestWithAddition();
-  const { data: test, isLoading } = useGetOneTest(
-    isNewTest ? "" : id || ""
-  );
+
+  const { mutateAsync: createTest, isPending: isCreating } =
+    useCreateTestWithAddition();
+  const { data: test, isLoading } = useGetOneTest(isNewTest ? "" : id || "");
 
   // Initialize test data from location state
   useEffect(() => {
     if (isNewTest && initialTestData) {
-      setTestData(prev => ({
+      setTestData((prev) => ({
         ...prev,
         title: initialTestData.title || "",
         ieltsId: initialTestData.ieltsId || "",
@@ -85,7 +75,7 @@ export default function TestEditor({
           return prev + 20;
         });
       }, 50);
-      
+
       return () => clearInterval(interval);
     }
   }, [isNewTest]);
@@ -96,27 +86,27 @@ export default function TestEditor({
       number: testData.parts.length + 1,
       title: `Part ${testData.parts.length + 1}`,
       audioUrl: testType === "LISTENING" ? "" : undefined,
-      sections: []
+      sections: [],
     };
-    setTestData(prev => ({
+    setTestData((prev) => ({
       ...prev,
-      parts: [...prev.parts, newPart]
+      parts: [...prev.parts, newPart],
     }));
   };
 
   // Update part
   const updatePart = (index: number, updatedPart: Part) => {
-    setTestData(prev => ({
+    setTestData((prev) => ({
       ...prev,
-      parts: prev.parts.map((part, i) => i === index ? updatedPart : part)
+      parts: prev.parts.map((part, i) => (i === index ? updatedPart : part)),
     }));
   };
 
   // Remove part
   const removePart = (index: number) => {
-    setTestData(prev => ({
+    setTestData((prev) => ({
       ...prev,
-      parts: prev.parts.filter((_, i) => i !== index)
+      parts: prev.parts.filter((_, i) => i !== index),
     }));
   };
 
@@ -215,7 +205,7 @@ export default function TestEditor({
       {/* Top Bar */}
       <header className="flex items-center justify-between h-16 px-6 border-b bg-white shadow-sm">
         <div className="flex items-center space-x-4">
-          <Button 
+          <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate(backUrl)}
             className="flex items-center space-x-2"
@@ -232,11 +222,7 @@ export default function TestEditor({
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Button 
-            type="primary" 
-            onClick={handleSave}
-            loading={isCreating}
-          >
+          <Button type="primary" onClick={handleSave} loading={isCreating}>
             Save Test
           </Button>
         </div>
@@ -257,7 +243,9 @@ export default function TestEditor({
                 <Input
                   placeholder="Enter test title"
                   value={testData.title}
-                  onChange={(e) => setTestData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setTestData((prev) => ({ ...prev, title: e.target.value }))
+                  }
                   size="large"
                 />
               </Col>
@@ -270,7 +258,12 @@ export default function TestEditor({
                 <TextArea
                   placeholder="Enter test description"
                   value={testData.description}
-                  onChange={(e) => setTestData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setTestData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   rows={3}
                 />
               </Col>
@@ -278,18 +271,18 @@ export default function TestEditor({
           </Card>
 
           {/* Parts Section */}
-          <Card 
+          <Card
             title={
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span>{testIcon} Test Parts</span>
-                  <Badge 
-                    count={testData.parts.length} 
-                    style={{ backgroundColor: '#10b981' }}
+                  <Badge
+                    count={testData.parts.length}
+                    style={{ backgroundColor: "#10b981" }}
                   />
                 </div>
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   icon={<PlusOutlined />}
                   onClick={addPart}
                 >
@@ -317,10 +310,13 @@ export default function TestEditor({
                   />
                 </div>
               ))}
-              
+
               {testData.parts.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  <p>No parts added yet. Click "Add Part" to create your first part.</p>
+                  <p>
+                    No parts added yet. Click "Add Part" to create your first
+                    part.
+                  </p>
                 </div>
               )}
             </Space>

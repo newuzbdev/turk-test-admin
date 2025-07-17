@@ -8,7 +8,8 @@ export { default as ListeningEditor } from "./listening/listening-editor";
 export { default as ReadingEditor } from "./reading/reading-editor";
 export { default as Speaking } from "./speaking/speaking";
 export { default as SpeakingEditor } from "./speaking/speaking-editor";
-// export { default as Writing } from "./writing/writing";
+export { default as Writing } from "./writing/writing";
+export { default as WritingEditor } from "./writing/writing-editor";
 
 // Table exports
 export { IeltsTable } from "./ielts/ielts-table";

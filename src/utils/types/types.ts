@@ -224,6 +224,7 @@ export interface CreateSpeakingQuestion {
 export interface WritingTest {
   id?: string;
   title: string;
+  instruction?: string;
   ieltsId: string;
   createdAt?: string;
   updatedAt?: string;

@@ -2,36 +2,33 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Modal } from "antd";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import SpeakingForm from "./speaking-form";
-import { useUpdateSpeakingTest } from "@/config/queries/speaking/update.queries";
-import { useSpeakingModalStore } from "../utils/speaking-modal-store";
+import WritingForm from "./writing-form";
+import { useUpdateWritingTest } from "@/config/queries/writing/update.queries";
+import { useWritingModalStore } from "../utils/writing-modal-store";
 
-interface SpeakingModalProps {
+interface WritingModalProps {
   hideAddButton?: boolean;
 }
 
-export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
+export const WritingModal = ({ hideAddButton = false }: WritingModalProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { open, data, onClose } = useSpeakingModalStore();
-  const { mutateAsync: updateSpeakingTest } = useUpdateSpeakingTest();
+  const { mutateAsync: updateWritingTest } = useUpdateWritingTest();
+  const { open, onClose, data } = useWritingModalStore();
+
+  const close = () => {
+    form.resetFields();
+    onClose();
+  };
 
   useEffect(() => {
     if (data) {
-      console.log("Speaking modal data:", data); // Debug log
       form.setFieldsValue({
         title: data.title,
         ieltsId: data.ieltsId,
       });
-    } else {
-      form.resetFields();
     }
   }, [data, form]);
-
-  const close = () => {
-    onClose();
-    form.resetFields();
-  };
 
   const onFinish = async (formData: { title: string; ieltsId: string }) => {
     try {
@@ -40,7 +37,7 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
         close();
         // Generate a temporary ID for the editor
         const tempId = `temp-${Date.now()}`;
-        navigate(`/speaking/${tempId}/edit`, {
+        navigate(`/writing/${tempId}/edit`, {
           state: {
             isNew: true,
             testData: {
@@ -50,9 +47,9 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
           },
         });
       } else {
-        // Update existing speaking test
+        // Update existing writing test
         if (data.id) {
-          await updateSpeakingTest({
+          await updateWritingTest({
             id: data.id,
             title: formData.title,
             ieltsId: formData.ieltsId,
@@ -61,7 +58,7 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
         close();
       }
     } catch (error) {
-      console.error("Error saving speaking test:", error);
+      console.error("Error saving writing test:", error);
     }
   };
 
@@ -71,9 +68,9 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => useSpeakingModalStore.getState().onOpen()}
+          onClick={() => useWritingModalStore.getState().onOpen()}
         >
-          Yangi Speaking Test
+          Yangi Writing Test
         </Button>
       )}
 
@@ -83,9 +80,7 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
         onCancel={close}
         destroyOnClose
         onOk={form.submit}
-        title={
-          data ? "Speaking testini tahrirlash" : "Yangi Speaking test qo'shish"
-        }
+        title={data ? "Writing testini tahrirlash" : "Yangi Writing test qo'shish"}
         okText={data ? "Saqlash" : "Qo'shish"}
         cancelText="Bekor qilish"
         modalRender={(node) => (
@@ -94,7 +89,7 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
           </Form>
         )}
       >
-        <SpeakingForm />
+        <WritingForm />
       </Modal>
     </div>
   );
