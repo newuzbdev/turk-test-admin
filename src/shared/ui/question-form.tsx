@@ -7,6 +7,7 @@ import type {
   TestAnswerDto,
   TestQuestionDto,
 } from "@/config/queries/ielts/get-all.queries";
+import { QuestionType } from "@/utils/types/types";
 
 type Props = {
   question: TestQuestionDto;
@@ -42,9 +43,17 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
 
   const getQuestionTypeLabel = (type: string) => {
     switch (type) {
-      case "MULTIPLE_CHOICE":
+      case QuestionType.TEXT_INPUT:
+        return "Matn kiritish";
+      case QuestionType.MULTIPLE_CHOICE:
         return "Ko'p tanlovli";
-      case "GAP_FILL":
+      case QuestionType.MULTI_SELECT:
+        return "Ko'p tanlash";
+      case QuestionType.MATCHING:
+        return "Moslashtirish";
+      case QuestionType.TRUE_FALSE:
+        return "To'g'ri/Noto'g'ri";
+      case QuestionType.FILL_BLANK:
         return "Bo'sh joyni to'ldirish";
       default:
         return type;
@@ -53,9 +62,17 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
 
   const getQuestionTypeColor = (type: string) => {
     switch (type) {
-      case "MULTIPLE_CHOICE":
+      case QuestionType.TEXT_INPUT:
+        return "#8b5cf6";
+      case QuestionType.MULTIPLE_CHOICE:
         return "#3b82f6";
-      case "GAP_FILL":
+      case QuestionType.MULTI_SELECT:
+        return "#06b6d4";
+      case QuestionType.MATCHING:
+        return "#f59e0b";
+      case QuestionType.TRUE_FALSE:
+        return "#ef4444";
+      case QuestionType.FILL_BLANK:
         return "#10b981";
       default:
         return "#6b7280";
@@ -155,9 +172,14 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
           onChange={(value) => onChange({ ...question, type: value })}
           style={{ width: "100%", maxWidth: "300px" }}
           size="large"
+          placeholder="Savol turini tanlang"
           options={[
-            { label: "Ko'p tanlovli savol", value: "MULTIPLE_CHOICE" },
-            { label: "Bo'sh joyni to'ldirish", value: "GAP_FILL" },
+            { label: "Matn kiritish", value: QuestionType.TEXT_INPUT },
+            { label: "Ko'p tanlovli", value: QuestionType.MULTIPLE_CHOICE },
+            { label: "Ko'p tanlash", value: QuestionType.MULTI_SELECT },
+            { label: "Moslashtirish", value: QuestionType.MATCHING },
+            { label: "To'g'ri/Noto'g'ri", value: QuestionType.TRUE_FALSE },
+            { label: "Bo'sh joyni to'ldirish", value: QuestionType.FILL_BLANK },
           ]}
         />
       </div>
@@ -179,6 +201,8 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
           <AnswerForm
             key={i}
             answer={a}
+            questionType={question.type}
+            answerIndex={i}
             onChange={(field, value) => updateAnswer(i, field, value)}
             onRemove={() => removeAnswer(i)}
           />

@@ -5,15 +5,19 @@ import { useState } from "react";
 import { ListeningColumns } from "./ui/listening-columns";
 import { useGetAllListeningTests } from "@/config/queries/listening/get-all.queries";
 import { useDeleteListeningTest } from "@/config/queries/listening/delete.queries";
+import { useSearchParams } from "react-router-dom";
 
 export const ListeningTable = () => {
   const { onOpen } = useListeningModalStore();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string>("");
 
-  const { data: listeningTests, isLoading: isListeningLoading } = useGetAllListeningTests();
+  const currentPage = parseInt(searchParams.get("page") || "1");
+  const pageSize = parseInt(searchParams.get("limit") || "10");
+
+  const { data: listeningTests, isLoading: isListeningLoading } =
+    useGetAllListeningTests();
   const { mutate: deleteListeningMutation } = useDeleteListeningTest();
 
   const handleDelete = (testId: string) => {
@@ -41,14 +45,17 @@ export const ListeningTable = () => {
     <>
       <Table
         pagination={{
-          total: listeningTests?.meta?.total || 0,
+          total:
+            listeningTests?.meta?.total || (listeningTests as any)?.total || 0,
           pageSize: pageSize,
           current: currentPage,
           showSizeChanger: true,
           pageSizeOptions: [5, 10, 20, 50, 100],
           onChange: (page, size) => {
-            setCurrentPage(page);
-            setPageSize(size);
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set("page", page.toString());
+            newParams.set("limit", size?.toString() || "10");
+            setSearchParams(newParams);
           },
         }}
         title={() => (

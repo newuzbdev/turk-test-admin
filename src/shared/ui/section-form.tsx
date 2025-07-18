@@ -1,5 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Card, Col, Input, Row, Space, Typography, Tag } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Row,
+  Space,
+  Typography,
+  Tag,
+  Select,
+} from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 import AnswerForm from "./answer-form";
@@ -8,6 +18,7 @@ import type {
   TestQuestionDto,
   TestSectionDto,
 } from "@/config/queries/ielts/get-all.queries";
+import { QuestionType } from "@/utils/types/types";
 
 const { Text } = Typography;
 
@@ -18,6 +29,44 @@ type Props = {
 };
 
 export default function SectionForm({ section, onChange, onRemove }: Props) {
+  const getQuestionTypeLabel = (type: string) => {
+    switch (type) {
+      case QuestionType.TEXT_INPUT:
+        return "Matn kiritish";
+      case QuestionType.MULTIPLE_CHOICE:
+        return "Ko'p tanlovli";
+      case QuestionType.MULTI_SELECT:
+        return "Ko'p tanlash";
+      case QuestionType.MATCHING:
+        return "Moslashtirish";
+      case QuestionType.TRUE_FALSE:
+        return "To'g'ri/Noto'g'ri";
+      case QuestionType.FILL_BLANK:
+        return "Bo'sh joyni to'ldirish";
+      default:
+        return type || "Tanlang";
+    }
+  };
+
+  const getQuestionTypeColor = (type: string) => {
+    switch (type) {
+      case QuestionType.TEXT_INPUT:
+        return "#8b5cf6";
+      case QuestionType.MULTIPLE_CHOICE:
+        return "#3b82f6";
+      case QuestionType.MULTI_SELECT:
+        return "#06b6d4";
+      case QuestionType.MATCHING:
+        return "#f59e0b";
+      case QuestionType.TRUE_FALSE:
+        return "#ef4444";
+      case QuestionType.FILL_BLANK:
+        return "#10b981";
+      default:
+        return "#6b7280";
+    }
+  };
+
   const updateQuestion = (index: number, updated: TestQuestionDto) => {
     const newQuestions = [...section.questions];
     newQuestions[index] = updated;
@@ -27,7 +76,7 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
   const addQuestion = () => {
     const newQuestion: TestQuestionDto = {
       number: section.questions.length + 1,
-      type: "MULTIPLE_CHOICE",
+      type: "",
       text: "",
       answers: [],
     };
@@ -159,10 +208,21 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
                 <Tag color="blue">Savol #{q.number}</Tag>
-                <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                  Do the following statements agree with the information given
-                  in Reading Passage Number?
-                </Text>
+                {q.type && (
+                  <Tag
+                    style={{
+                      background: getQuestionTypeColor(q.type),
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      padding: "4px 8px",
+                      fontSize: "11px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {getQuestionTypeLabel(q.type)}
+                  </Tag>
+                )}
               </div>
               <Button
                 danger
@@ -183,6 +243,40 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
               autoSize={{ minRows: 2, maxRows: 4 }}
             />
 
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "8px" }}>
+                <Text strong style={{ fontSize: "13px", color: "#374151" }}>
+                  Savol turi
+                </Text>
+              </div>
+              <Select
+                value={q.type}
+                onChange={(value) =>
+                  updateQuestion(qIdx, { ...q, type: value })
+                }
+                style={{ width: "100%", maxWidth: "300px" }}
+                size="middle"
+                placeholder="Savol turini tanlang"
+                options={[
+                  { label: "Matn kiritish", value: QuestionType.TEXT_INPUT },
+                  {
+                    label: "Ko'p tanlovli",
+                    value: QuestionType.MULTIPLE_CHOICE,
+                  },
+                  { label: "Ko'p tanlash", value: QuestionType.MULTI_SELECT },
+                  { label: "Moslashtirish", value: QuestionType.MATCHING },
+                  {
+                    label: "To'g'ri/Noto'g'ri",
+                    value: QuestionType.TRUE_FALSE,
+                  },
+                  {
+                    label: "Bo'sh joyni to'ldirish",
+                    value: QuestionType.FILL_BLANK,
+                  },
+                ]}
+              />
+            </div>
+
             <div style={{ marginBottom: "12px" }}>
               <Text strong style={{ fontSize: "13px", color: "#374151" }}>
                 Choice
@@ -193,6 +287,8 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
               <AnswerForm
                 key={aIdx}
                 answer={a}
+                questionType={q.type}
+                answerIndex={aIdx}
                 onChange={(field, value) => {
                   const updated = { ...a, [field]: value };
                   updateAnswer(qIdx, aIdx, updated);

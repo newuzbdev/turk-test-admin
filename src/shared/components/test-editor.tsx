@@ -128,7 +128,7 @@ export default function TestEditor({
           questions: (section.questions || []).map(
             (question, questionIndex) => ({
               number: questionIndex + 1,
-              type: question.type || "MULTIPLE_CHOICE",
+              type: question.type || "",
               text: question.question || `Question ${questionIndex + 1}`,
               answers: (question.answers || []).map((answer, answerIndex) => {
                 const variantText = String.fromCharCode(65 + answerIndex);

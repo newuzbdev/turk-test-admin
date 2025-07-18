@@ -1,3 +1,13 @@
+// Question Type Enum
+export enum QuestionType {
+  TEXT_INPUT = "TEXT_INPUT",
+  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
+  MULTI_SELECT = "MULTI_SELECT",
+  MATCHING = "MATCHING",
+  TRUE_FALSE = "TRUE_FALSE",
+  FILL_BLANK = "FILL_BLANK",
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -241,6 +251,7 @@ export interface WritingSection {
   createdAt?: string;
   updatedAt?: string;
   subParts?: WritingSubPart[];
+  questions?: WritingQuestion[]; // Add support for direct questions
 }
 
 export interface WritingSubPart {
@@ -250,6 +261,17 @@ export interface WritingSubPart {
   content?: string;
   order: number;
   writingSectionId: string;
+  createdAt?: string;
+  updatedAt?: string;
+  questions?: WritingQuestion[]; // Add support for questions in subParts too
+}
+
+export interface WritingQuestion {
+  id?: string;
+  text: string;
+  order: number;
+  writingSectionId?: string;
+  writingSubPartId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -298,5 +320,9 @@ export type CreateWritingSection = Omit<
 >;
 export type CreateWritingSubPart = Omit<
   WritingSubPart,
+  "id" | "createdAt" | "updatedAt"
+>;
+export type CreateWritingQuestion = Omit<
+  WritingQuestion,
   "id" | "createdAt" | "updatedAt"
 >;

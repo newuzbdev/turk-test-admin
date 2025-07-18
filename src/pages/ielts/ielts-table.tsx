@@ -5,13 +5,16 @@ import { useState } from "react";
 import { IeltsColumns } from "./ui/ielts-columns";
 import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
 import { useDeleteIelts } from "@/config/queries/ielts/delete.queries";
+import { useSearchParams } from "react-router-dom";
 
 export const IeltsTable = () => {
   const { onOpen } = useIeltsModalStore();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string>("");
+
+  const currentPage = parseInt(searchParams.get("page") || "1");
+  const pageSize = parseInt(searchParams.get("limit") || "10");
 
   const { data: ielts, isLoading: isIeltsLoading } = useGetAllIelts();
   const { mutate: deleteIeltsMutation } = useDeleteIelts();
@@ -37,14 +40,16 @@ export const IeltsTable = () => {
     <>
       <Table
         pagination={{
-          total: ielts?.meta?.total || 0,
+          total: ielts?.meta?.total || (ielts as any)?.total || 0,
           pageSize: pageSize,
           current: currentPage,
           showSizeChanger: true,
           pageSizeOptions: [5, 10, 20, 50, 100],
           onChange: (page, size) => {
-            setCurrentPage(page);
-            setPageSize(size);
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set("page", page.toString());
+            newParams.set("limit", size?.toString() || "10");
+            setSearchParams(newParams);
           },
         }}
         title={() => (

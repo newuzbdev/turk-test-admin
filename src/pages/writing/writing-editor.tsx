@@ -1,5 +1,15 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Button, Card, Input, Row, Col, Space, Form, notification } from "antd";
+import {
+  Button,
+  Card,
+  Input,
+  Row,
+  Col,
+  Space,
+  Form,
+  notification,
+  Select,
+} from "antd";
 import {
   ArrowLeftOutlined,
   PlusOutlined,
@@ -8,6 +18,7 @@ import {
 import { useState, useEffect } from "react";
 import { useGetOneWritingTest } from "@/config/queries/writing/get-one.queries";
 import { useCreateWritingTestWithAddition } from "@/config/queries/writing/create.queries";
+import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
 import type { WritingSection, WritingSubPart } from "@/utils/types/types";
 
 const { TextArea } = Input;
@@ -15,6 +26,7 @@ const { TextArea } = Input;
 interface WritingTestData {
   title: string;
   instruction: string;
+  type: string;
   ieltsId: string;
   sections: WritingSection[];
 }
@@ -28,6 +40,7 @@ export default function WritingEditor() {
   const [testData, setTestData] = useState<WritingTestData>({
     title: "",
     instruction: "",
+    type: "academic",
     ieltsId: "",
     sections: [],
   });
@@ -41,6 +54,7 @@ export default function WritingEditor() {
   const { data: test, isLoading } = useGetOneWritingTest(
     isNewTest ? "" : id || ""
   );
+  const { data: ieltsData, isLoading: isIeltsLoading } = useGetAllIelts();
 
   // Initialize test data from location state or API
   useEffect(() => {
@@ -48,11 +62,13 @@ export default function WritingEditor() {
       setTestData((prev) => ({
         ...prev,
         title: initialTestData.title || "",
+        type: initialTestData.type || "academic",
         ieltsId: initialTestData.ieltsId || "",
         instruction: "You have 60 minutes to complete both tasks.",
       }));
       form.setFieldsValue({
         title: initialTestData.title || "",
+        type: initialTestData.type || "academic",
         ieltsId: initialTestData.ieltsId || "",
         instruction: "You have 60 minutes to complete both tasks.",
       });
@@ -61,11 +77,13 @@ export default function WritingEditor() {
       setTestData({
         title: testInfo.title || "",
         instruction: testInfo.instruction || "",
+        type: (testInfo as any).type || "academic", // WritingTest type doesn't have type field yet
         ieltsId: testInfo.ieltsId || "",
         sections: testInfo.sections || [],
       });
       form.setFieldsValue({
         title: testInfo.title || "",
+        type: "academic", // Default since WritingTest doesn't have type field yet
         ieltsId: testInfo.ieltsId || "",
         instruction: testInfo.instruction || "",
       });
@@ -79,6 +97,7 @@ export default function WritingEditor() {
       description: "",
       writingTestId: id || "",
       subParts: [],
+      questions: [], // Add support for direct questions
     };
 
     setTestData((prev) => ({
@@ -139,12 +158,54 @@ export default function WritingEditor() {
     updateSection(sectionIndex, { subParts: updatedSubParts });
   };
 
+  // Functions for handling questions directly in sections
+  const addQuestionToSection = (sectionIndex: number) => {
+    const section = testData.sections[sectionIndex];
+    const newQuestion = {
+      text: "",
+      order: (section.questions?.length || 0) + 1,
+      writingSectionId: section.id || "",
+    };
+
+    updateSection(sectionIndex, {
+      questions: [...(section.questions || []), newQuestion],
+    });
+  };
+
+  const updateQuestionInSection = (
+    sectionIndex: number,
+    questionIndex: number,
+    updates: Partial<{ text: string; order: number }>
+  ) => {
+    const section = testData.sections[sectionIndex];
+    const updatedQuestions = (section.questions || []).map((question, i) =>
+      i === questionIndex ? { ...question, ...updates } : question
+    );
+
+    updateSection(sectionIndex, {
+      questions: updatedQuestions,
+    });
+  };
+
+  const removeQuestionFromSection = (
+    sectionIndex: number,
+    questionIndex: number
+  ) => {
+    const section = testData.sections[sectionIndex];
+    updateSection(sectionIndex, {
+      questions: (section.questions || []).filter(
+        (_, i) => i !== questionIndex
+      ),
+    });
+  };
+
   const handleSave = async () => {
     try {
       const formValues = await form.validateFields();
       const writingTestData = {
         title: formValues.title,
         instruction: formValues.instruction,
+        type: formValues.type,
         ieltsId: formValues.ieltsId,
         sections: testData.sections.map((section) => ({
           order: section.order,
@@ -154,6 +215,14 @@ export default function WritingEditor() {
             order: subPart.order,
             label: subPart.title,
             question: subPart.description || `Question for ${subPart.title}`,
+            questions: (subPart.questions || []).map((question) => ({
+              text: question.text,
+              order: question.order,
+            })),
+          })),
+          questions: (section.questions || []).map((question) => ({
+            text: question.text,
+            order: question.order,
           })),
         })),
       };
@@ -235,6 +304,54 @@ export default function WritingEditor() {
                     }))
                   }
                 />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[20, 20]}>
+            <Col span={12}>
+              <Form.Item
+                name="type"
+                label="Test turi"
+                rules={[{ required: true, message: "Test turini tanlang" }]}
+              >
+                <Select
+                  placeholder="Test turini tanlang"
+                  onChange={(value) =>
+                    setTestData((prev) => ({ ...prev, type: value }))
+                  }
+                >
+                  <Select.Option value="academic">Academic</Select.Option>
+                  <Select.Option value="general">
+                    General Training
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="ieltsId"
+                label="IELTS tanlang"
+                rules={[{ required: true, message: "IELTS ni tanlang" }]}
+              >
+                <Select
+                  placeholder="IELTS ni tanlang"
+                  loading={isIeltsLoading}
+                  onChange={(value) =>
+                    setTestData((prev) => ({ ...prev, ieltsId: value }))
+                  }
+                  showSearch
+                  filterOption={(input, option) =>
+                    String(option?.children ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  {ieltsData?.data?.map((ielts) => (
+                    <Select.Option key={ielts.id} value={ielts.id}>
+                      {ielts.title}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>
@@ -364,6 +481,74 @@ export default function WritingEditor() {
                       <p>
                         Hali sub-part qo'shilmagan. "Sub-Part qo'shish"
                         tugmasini bosing.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Direct Questions Section */}
+                <div className="mt-4 border-t pt-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-medium">Direct Questions</h4>
+                    <Button
+                      type="dashed"
+                      icon={<PlusOutlined />}
+                      onClick={() => addQuestionToSection(sectionIndex)}
+                      size="small"
+                    >
+                      Savol qo'shish
+                    </Button>
+                  </div>
+
+                  {(section.questions || []).map((question, questionIndex) => (
+                    <Card
+                      key={questionIndex}
+                      size="small"
+                      className="mb-2"
+                      title={`Savol ${question.order}`}
+                      extra={
+                        <Button
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() =>
+                            removeQuestionFromSection(
+                              sectionIndex,
+                              questionIndex
+                            )
+                          }
+                          size="small"
+                        />
+                      }
+                    >
+                      <Row gutter={[16, 16]}>
+                        <Col span={24}>
+                          <label className="block text-sm font-medium mb-1">
+                            Savol matni
+                          </label>
+                          <Input.TextArea
+                            value={question.text}
+                            onChange={(e) =>
+                              updateQuestionInSection(
+                                sectionIndex,
+                                questionIndex,
+                                {
+                                  text: e.target.value,
+                                }
+                              )
+                            }
+                            placeholder="Savol matnini kiriting"
+                            rows={3}
+                          />
+                        </Col>
+                      </Row>
+                    </Card>
+                  ))}
+
+                  {(!section.questions || section.questions.length === 0) && (
+                    <div className="text-center py-4 text-gray-500">
+                      <p>
+                        Hali savol qo'shilmagan. "Savol qo'shish" tugmasini
+                        bosing.
                       </p>
                     </div>
                   )}

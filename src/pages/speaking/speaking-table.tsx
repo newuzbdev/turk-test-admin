@@ -6,9 +6,11 @@ import { SpeakingColumns } from "./ui/speaking-columns";
 import { useGetAllSpeakingTests } from "@/config/queries/speaking/get-all.queries";
 import { useDeleteSpeakingTest } from "@/config/queries/speaking/delete.queries";
 import type { SpeakingTest } from "@/utils/types/types";
+import { useSearchParams } from "react-router-dom";
 
 export const SpeakingTable = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading } = useGetAllSpeakingTests();
   const { mutate: deleteSpeakingTest } = useDeleteSpeakingTest();
   const { onOpen } = useSpeakingModalStore();
@@ -68,13 +70,19 @@ export const SpeakingTable = () => {
         loading={isLoading}
         rowKey="id"
         pagination={{
-          total: data?.meta?.total || 0,
-          pageSize: data?.meta?.limit || 10,
-          current: data?.meta?.page || 1,
+          total: data?.meta?.total || (data as any)?.total || 0,
+          pageSize: data?.meta?.limit || (data as any)?.limit || 10,
+          current: data?.meta?.page || (data as any)?.page || 1,
           showSizeChanger: true,
           showQuickJumper: true,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,
+          onChange: (page, size) => {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set("page", page.toString());
+            newParams.set("limit", size?.toString() || "10");
+            setSearchParams(newParams);
+          },
         }}
         scroll={{ x: 800 }}
       />
