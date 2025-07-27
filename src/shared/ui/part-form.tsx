@@ -224,10 +224,9 @@ export default function PartForm({
 
       <div
         style={{
-          background: "white",
           borderRadius: "12px",
           padding: "20px",
-          border: "1px solid #f0f0f0",
+          border: "1px solid",
         }}
       >
         <div
@@ -256,7 +255,6 @@ export default function PartForm({
             <div
               key={i}
               style={{
-                background: "#f8fafc",
                 borderRadius: "8px",
                 border: "1px solid #e2e8f0",
                 overflow: "hidden",
@@ -282,7 +280,6 @@ export default function PartForm({
               color: "#10b981",
               fontSize: "14px",
               fontWeight: 600,
-              background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
               border: "2px dashed #10b981",
               transition: "all 0.3s ease",
             }}
@@ -295,7 +292,6 @@ export default function PartForm({
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background =
-                "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)";
               e.currentTarget.style.transform = "translateY(0px)";
               e.currentTarget.style.boxShadow = "none";
             }}

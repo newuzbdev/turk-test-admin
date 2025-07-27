@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Input, Button, Select, Card, Space, Tag, Divider } from "antd";
+import { Input, Button, Select, Card, Space, Tag, Divider,  } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useContext } from "react";
 
 import AnswerForm from "./answer-form";
 import type {
@@ -8,6 +9,7 @@ import type {
   TestQuestionDto,
 } from "@/config/queries/ielts/get-all.queries";
 import { QuestionType } from "@/utils/types/types";
+import { ThemeContext } from "@/providers/theme-provider";
 
 type Props = {
   question: TestQuestionDto;
@@ -16,6 +18,9 @@ type Props = {
 };
 
 export default function QuestionForm({ question, onChange, onRemove }: Props) {
+  const { theme: mode } = useContext(ThemeContext);
+  const isDark = mode === "dark";
+
   const updateAnswer = (
     index: number,
     field: keyof TestAnswerDto,
@@ -75,7 +80,7 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
       case QuestionType.FILL_BLANK:
         return "#10b981";
       default:
-        return "#6b7280";
+        return isDark ? "#9CA3AF" : "#6b7280";
     }
   };
 
@@ -141,7 +146,11 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
       <div style={{ marginBottom: "16px" }}>
         <div style={{ marginBottom: "8px" }}>
           <label
-            style={{ fontWeight: 500, color: "#374151", fontSize: "14px" }}
+            style={{
+              fontWeight: 500,
+              color: isDark ? "#E5E7EB" : "#374151",
+              fontSize: "14px"
+            }}
           >
             Savol matni
           </label>
@@ -162,7 +171,11 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
       <div style={{ marginBottom: "20px" }}>
         <div style={{ marginBottom: "8px" }}>
           <label
-            style={{ fontWeight: 500, color: "#374151", fontSize: "14px" }}
+            style={{
+              fontWeight: 500,
+              color: isDark ? "#E5E7EB" : "#374151",
+              fontSize: "14px"
+            }}
           >
             Savol turi
           </label>
@@ -187,7 +200,7 @@ export default function QuestionForm({ question, onChange, onRemove }: Props) {
       <Divider
         orientation="left"
         style={{
-          color: "#6b7280",
+          color: isDark ? "#D1D5DB" : "#6b7280",
           fontSize: "14px",
           fontWeight: 500,
           margin: "20px 0 16px 0",

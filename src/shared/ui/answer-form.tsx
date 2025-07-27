@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Input, Button, Col, Row, Tag } from "antd";
+import { Input, Button, Col, Row, Tag, } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import { useContext } from "react";
 import type { TestAnswerDto } from "@/config/queries/ielts/get-all.queries";
 import { QuestionType } from "@/utils/types/types";
+import { ThemeContext } from "@/providers/theme-provider";
 
 type Props = {
   answer: TestAnswerDto;
@@ -19,6 +21,9 @@ export default function AnswerForm({
   questionType,
   answerIndex = 0,
 }: Props) {
+  const { theme: mode } = useContext(ThemeContext);
+  const isDark = mode === "dark";
+
   const handleCorrectToggle = () => {
     onChange("correct", !answer.correct);
   };
@@ -30,6 +35,7 @@ export default function AnswerForm({
       case QuestionType.TRUE_FALSE:
         if (answerIndex === 0) return "True";
         if (answerIndex === 1) return "False";
+        if (answerIndex === 2) return "Not Given";
         return "Variant";
       case QuestionType.MULTIPLE_CHOICE:
       case QuestionType.MULTI_SELECT:
@@ -45,12 +51,13 @@ export default function AnswerForm({
   };
 
   const getSuggestedVariantText = () => {
-    if (!questionType || answer.variantText) return answer.variantText;
+    if (!questionType) return answer.variantText;
 
     switch (questionType) {
       case QuestionType.TRUE_FALSE:
         if (answerIndex === 0) return "True";
         if (answerIndex === 1) return "False";
+        if (answerIndex === 2) return "Not Given";
         return "";
       case QuestionType.MULTIPLE_CHOICE:
       case QuestionType.MULTI_SELECT:
@@ -70,8 +77,12 @@ export default function AnswerForm({
             width: "32px",
             height: "32px",
             borderRadius: "50%",
-            background: answer.variantText ? "#3b82f6" : "#e5e7eb",
-            color: "white",
+            background: answer.variantText
+              ? "#3b82f6"
+              : isDark ? "#4B5563" : "#e5e7eb",
+            color: answer.variantText
+              ? "white"
+              : isDark ? "#9CA3AF" : "#6B7280",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

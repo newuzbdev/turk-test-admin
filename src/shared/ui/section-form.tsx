@@ -11,6 +11,7 @@ import {
   Select,
 } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useContext } from "react";
 
 import AnswerForm from "./answer-form";
 import type {
@@ -19,6 +20,7 @@ import type {
   TestSectionDto,
 } from "@/config/queries/ielts/get-all.queries";
 import { QuestionType } from "@/utils/types/types";
+import { ThemeContext } from "@/providers/theme-provider";
 
 const { Text } = Typography;
 
@@ -29,6 +31,9 @@ type Props = {
 };
 
 export default function SectionForm({ section, onChange, onRemove }: Props) {
+  const { theme: mode } = useContext(ThemeContext);
+  const isDark = mode === "dark";
+
   const getQuestionTypeLabel = (type: string) => {
     switch (type) {
       case QuestionType.TEXT_INPUT:
@@ -63,7 +68,7 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
       case QuestionType.FILL_BLANK:
         return "#10b981";
       default:
-        return "#6b7280";
+        return isDark ? "#9CA3AF" : "#6b7280";
     }
   };
 
@@ -126,7 +131,6 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
         marginBottom: 16,
         borderRadius: "8px",
         border: "1px solid #f0f0f0",
-        background: "#fafafa",
       }}
     >
       <div
@@ -180,7 +184,10 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
       </Row>
 
       <div style={{ marginBottom: "12px" }}>
-        <Text strong style={{ color: "#374151", fontSize: "14px" }}>
+        <Text strong style={{
+          color: isDark ? "#E5E7EB" : "#374151",
+          fontSize: "14px"
+        }}>
           ❓ Savollar
         </Text>
       </div>
@@ -191,7 +198,6 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
             key={qIdx}
             size="small"
             style={{
-              background: "white",
               borderRadius: "8px",
               border: "1px solid #e5e7eb",
             }}
@@ -245,7 +251,10 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
 
             <div style={{ marginBottom: "16px" }}>
               <div style={{ marginBottom: "8px" }}>
-                <Text strong style={{ fontSize: "13px", color: "#374151" }}>
+                <Text strong style={{
+                  fontSize: "13px",
+                  color: isDark ? "#E5E7EB" : "#374151"
+                }}>
                   Savol turi
                 </Text>
               </div>
@@ -278,7 +287,10 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <Text strong style={{ fontSize: "13px", color: "#374151" }}>
+              <Text strong style={{
+                fontSize: "13px",
+                color: isDark ? "#E5E7EB" : "#374151"
+              }}>
                 Choice
               </Text>
             </div>
