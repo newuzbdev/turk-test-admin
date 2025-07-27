@@ -1,7 +1,7 @@
 import axiosPrivate from '@/config/api'
 import { partsEndpoints } from '@/config/endpoint'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { notification } from 'antd'
+import toast from "react-hot-toast";
 
 export const useDeletePart = () => {
 	const queryClient = useQueryClient()
@@ -11,16 +11,10 @@ export const useDeletePart = () => {
 			queryClient.invalidateQueries({
 				queryKey: [partsEndpoints.all]
 			})
-			notification.success({
-				message: "Muvaffaqiyatli o'chirildi",
-				placement: 'bottomRight'
-			})
+			toast.success("Muvaffaqiyatli o'chirildi");
 		},
 		onError: () => {
-			notification.error({
-				message: "O'chirishda xatolik yuz berdi",
-				placement: 'bottomRight'
-			})
+			toast.error("O'chirishda xatolik yuz berdi");
 		}
 	})
 }

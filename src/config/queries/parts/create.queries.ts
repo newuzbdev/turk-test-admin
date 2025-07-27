@@ -1,7 +1,7 @@
 import axiosPrivate from "@/config/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { partsEndpoints } from "@/config/endpoint";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse, CreatePart, Part } from "@/utils/types/types";
 
 export const useCreatePart = () => {
@@ -12,16 +12,10 @@ export const useCreatePart = () => {
         .data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [partsEndpoints.all] });
-      notification.success({
-        message: "Muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Yaratishda xatolik yuz berdi");
     },
   });
 };

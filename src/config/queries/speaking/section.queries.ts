@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   SpeakingSection,
@@ -32,16 +32,10 @@ export const useCreateSpeakingSection = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
-      notification.success({
-        message: "Speaking section muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking section muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking section yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking section yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -100,16 +94,10 @@ export const useUpdateSpeakingSection = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
-      notification.success({
-        message: "Speaking section muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking section muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking section yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking section yangilashda xatolik yuz berdi");
     },
   });
 };
@@ -124,16 +112,10 @@ export const useDeleteSpeakingSection = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
-      notification.success({
-        message: "Speaking section muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking section muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking section o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking section o'chirishda xatolik yuz berdi");
     },
   });
 };

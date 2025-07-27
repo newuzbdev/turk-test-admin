@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   CreateTest,
@@ -52,16 +52,10 @@ export const useCreateReadingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.all] });
-      notification.success({
-        message: "Reading test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Reading test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Reading test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Reading test yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -76,18 +70,11 @@ export const useCreateReadingTestWithAddition = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.all] });
-      notification.success({
-        message: "Reading test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Reading test muvaffaqiyatli yaratildi");
     },
     onError: (error: any) => {
       console.error("API Error:", error.response?.data);
-      notification.error({
-        message: "Reading test yaratishda xatolik yuz berdi",
-        description: error.response?.data?.error || "Unknown error",
-        placement: "bottomRight",
-      });
+      toast.error(error.response?.data?.error || "Reading test yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -106,16 +93,10 @@ export const useCreateOnlyReadingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.only] });
-      notification.success({
-        message: "Reading test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Reading test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Reading test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Reading test yaratishda xatolik yuz berdi");
     },
   });
 };

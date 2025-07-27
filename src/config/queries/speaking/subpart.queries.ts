@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   SpeakingSubPart,
@@ -28,16 +28,10 @@ export const useCreateSpeakingSubPart = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingSubPartEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking sub-part muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking sub-part muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking sub-part yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking sub-part yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -92,16 +86,10 @@ export const useUpdateSpeakingSubPart = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingSubPartEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking sub-part muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking sub-part muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking sub-part yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking sub-part yangilashda xatolik yuz berdi");
     },
   });
 };
@@ -116,16 +104,10 @@ export const useDeleteSpeakingSubPart = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingSubPartEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking sub-part muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking sub-part muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking sub-part o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking sub-part o'chirishda xatolik yuz berdi");
     },
   });
 };

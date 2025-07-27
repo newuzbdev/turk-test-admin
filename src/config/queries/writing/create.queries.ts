@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   CreateWritingTest,
@@ -46,16 +46,10 @@ export const useCreateWritingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [writingTestEndpoints.all] });
-      notification.success({
-        message: "Writing test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Writing test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Writing test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Writing test yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -73,18 +67,11 @@ export const useCreateWritingTestWithAddition = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [writingTestEndpoints.all] });
-      notification.success({
-        message: "Writing test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Writing test muvaffaqiyatli yaratildi");
     },
     onError: (error: any) => {
       console.error("API Error:", error.response?.data);
-      notification.error({
-        message: "Writing test yaratishda xatolik yuz berdi",
-        description: error.response?.data?.error || "Unknown error",
-        placement: "bottomRight",
-      });
+      toast.error(error.response?.data?.error || "Writing test yaratishda xatolik yuz berdi");
     },
   });
 };

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/api/hooks/useAdminAuth.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import { api } from "..";
 import { authEndpoints } from "../endpoint";
 import axiosPrivate from "../api";
@@ -30,7 +30,7 @@ export const useAdminLogin = () => {
       try {
         const { data } = await api.post<TokenResponse>(
           authEndpoints.login,
-          credentials
+          credentials, // <-- Pass credentials here
         );
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
@@ -42,16 +42,10 @@ export const useAdminLogin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
-      notification.success({
-        message: "Muvaffaqiyatli tizimga kirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli tizimga kirildi");
     },
     onError: (error: Error) => {
-      notification.error({
-        message: `Login xatoligi: ${error.message}`,
-        placement: "bottomRight",
-      });
+      toast.error(`Login xatoligi: ${error.message}`);
     },
   });
 };
@@ -99,17 +93,11 @@ export const useAdminLogout = () => {
     },
     onSuccess: () => {
       queryClient.clear();
-      notification.success({
-        message: "Tizimdan muvaffaqiyatli chiqildi",
-        placement: "bottomRight",
-      });
+      toast.success("Tizimdan muvaffaqiyatli chiqildi");
     },
     onError: (error: Error) => {
       queryClient.clear();
-      notification.error({
-        message: `Logout jarayonida xatolik: ${error.message}`,
-        placement: "bottomRight",
-      });
+      toast.error(`Logout jarayonida xatolik: ${error.message}`);
     },
   });
 };

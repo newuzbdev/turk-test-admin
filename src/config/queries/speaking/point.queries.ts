@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   SpeakingPoint,
@@ -29,16 +29,10 @@ export const useCreateSpeakingPoint = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking point muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking point muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking point yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking point yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -94,16 +88,10 @@ export const useUpdateSpeakingPoint = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking point muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking point muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking point yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking point yangilashda xatolik yuz berdi");
     },
   });
 };
@@ -118,16 +106,10 @@ export const useDeleteSpeakingPoint = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking point muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking point muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking point o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking point o'chirishda xatolik yuz berdi");
     },
   });
 };

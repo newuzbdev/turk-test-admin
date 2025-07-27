@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   SpeakingQuestion,
@@ -28,16 +28,10 @@ export const useCreateSpeakingQuestion = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingQuestionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
-      notification.success({
-        message: "Speaking question muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking question muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking question yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking question yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -63,16 +57,10 @@ export const useCreateSubPartQuestion = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingQuestionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSubPartEndpoints.all] });
-      notification.success({
-        message: "Sub-part question muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Sub-part question muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Sub-part question yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Sub-part question yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -128,16 +116,10 @@ export const useUpdateSpeakingQuestion = () => {
       queryClient.invalidateQueries({ queryKey: [speakingQuestionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSubPartEndpoints.all] });
-      notification.success({
-        message: "Speaking question muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking question muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking question yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking question yangilashda xatolik yuz berdi");
     },
   });
 };
@@ -153,16 +135,10 @@ export const useDeleteSpeakingQuestion = () => {
       queryClient.invalidateQueries({ queryKey: [speakingQuestionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingSubPartEndpoints.all] });
-      notification.success({
-        message: "Speaking question muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking question muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking question o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking question o'chirishda xatolik yuz berdi");
     },
   });
 };
