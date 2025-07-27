@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import axiosPrivate from "@/config/api";
 import { ieltsEndpoints } from "@/config/endpoint";
 
@@ -12,16 +12,10 @@ export const useDeleteIelts = () => {
       queryClient.invalidateQueries({
         queryKey: [ieltsEndpoints.all],
       });
-      notification.success({
-        message: "Muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "O'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("O'chirishda xatolik yuz berdi");
     },
   });
 };

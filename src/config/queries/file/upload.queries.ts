@@ -1,7 +1,7 @@
 import axiosPrivate from "@/config/api";
 import { useMutation } from "@tanstack/react-query";
 import { fileEndpoints } from "@/config/endpoint";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse } from "@/utils/types/types";
 
 interface FileUploadResponse {
@@ -29,16 +29,10 @@ export const useFileUpload = () => {
       ).data;
     },
     onSuccess: () => {
-      notification.success({
-        message: "Fayl muvaffaqiyatli yuklandi",
-        placement: "bottomRight",
-      });
+      toast.success("Fayl muvaffaqiyatli yuklandi");
     },
     onError: () => {
-      notification.error({
-        message: "Fayl yuklashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Fayl yuklashda xatolik yuz berdi");
     },
   });
 };

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import axiosPrivate from "../../api";
 import { testEndpoints } from "../../endpoint";
 
@@ -12,16 +12,10 @@ export const useDeleteTest = () => {
       queryClient.invalidateQueries({
         queryKey: [testEndpoints.all],
       });
-      notification.success({
-        message: "Muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "O'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("O'chirishda xatolik yuz berdi");
     },
   });
 };
@@ -35,16 +29,10 @@ export const useDeleteOnlyTest = () => {
       queryClient.invalidateQueries({
         queryKey: [testEndpoints.only],
       });
-      notification.success({
-        message: "Muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "O'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("O'chirishda xatolik yuz berdi");
     },
   });
 };

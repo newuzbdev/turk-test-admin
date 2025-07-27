@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse, OnlyTest } from "../../../utils/types/types";
 import { testEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
@@ -17,16 +16,10 @@ export const useUpdateOnlyTest = () => {
       ).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [testEndpoints.only] });
-      notification.success({
-        message: "Muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Yangilashda xatolik yuz berdi");
     },
   });
 };

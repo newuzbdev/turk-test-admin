@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse } from "../../../utils/types/types";
 import { readingEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
@@ -14,16 +14,10 @@ export const useDeleteReadingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.all] });
-      notification.success({
-        message: "Reading test muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Reading test muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Reading test o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Reading test o'chirishda xatolik yuz berdi");
     },
   });
 };

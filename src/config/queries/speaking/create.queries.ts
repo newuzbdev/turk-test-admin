@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   SpeakingTest,
@@ -49,16 +49,10 @@ export const useCreateSpeakingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
-      notification.success({
-        message: "Speaking test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking test yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -76,16 +70,10 @@ export const useCreateOnlySpeakingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.only] });
-      notification.success({
-        message: "Speaking test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking test yaratishda xatolik yuz berdi");
     },
   });
 };

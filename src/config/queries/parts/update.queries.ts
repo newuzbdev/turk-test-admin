@@ -1,7 +1,7 @@
 import axiosPrivate from "@/config/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { partsEndpoints } from "@/config/endpoint";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse, Part } from "@/utils/types/types";
 
 export const useUpdatePart = () => {
@@ -16,16 +16,10 @@ export const useUpdatePart = () => {
       ).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [partsEndpoints.all] });
-      notification.success({
-        message: "Muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Yangilashda xatolik yuz berdi");
     },
   });
 };
