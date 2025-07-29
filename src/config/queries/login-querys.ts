@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { api } from "..";
 import { authEndpoints } from "../endpoint";
 import axiosPrivate from "../api";
+import { useNavigate } from "react-router-dom";
 
 type LoginInput = {
   name: string;
@@ -72,32 +73,55 @@ export const useAdminRefresh = () => {
   });
 };
 
-export const useAdminLogout = () => {
+export const useAdminLogout = (setAuthenticated?: (auth: boolean) => void) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
       try {
         await axiosPrivate.post(authEndpoints.logout);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
       } catch (error: any) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
-
+        // Even if logout API fails, we still want to clear local storage
         const errorResponse = error?.response?.data as ErrorResponse;
         throw new Error(errorResponse?.error || "Logout failed");
       }
     },
     onSuccess: () => {
+      // Clear tokens and navigate on success
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       queryClient.clear();
+
+      // Update authentication state
+      if (setAuthenticated) {
+        setAuthenticated(false);
+      }
+
       toast.success("Tizimdan muvaffaqiyatli chiqildi");
+
+      // Small delay to ensure state updates are processed
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);
     },
     onError: (error: Error) => {
+      // Clear tokens and navigate even on error
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       queryClient.clear();
+
+      // Update authentication state
+      if (setAuthenticated) {
+        setAuthenticated(false);
+      }
+
       toast.error(`Logout jarayonida xatolik: ${error.message}`);
+
+      // Small delay to ensure state updates are processed
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);
     },
   });
 };

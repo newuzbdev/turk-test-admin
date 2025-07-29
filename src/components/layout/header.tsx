@@ -6,11 +6,13 @@ import { routerConfig, type RouterConfig } from "../../routes/router-config";
 import ThemeSwitcher from "../ui/theme-switcher";
 import { DoorOpen } from "lucide-react";
 import { useAdminLogout } from "../../config/queries/login-querys";
+import { useAuth } from "../../providers/auth-provider";
 
 export default function Header() {
   const location = useLocation();
   const [name, setName] = useState("");
-  const { mutate: logout } = useAdminLogout();
+  const { setAuthenticated } = useAuth();
+  const { mutate: logout } = useAdminLogout(setAuthenticated);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const findTitle = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

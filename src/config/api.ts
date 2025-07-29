@@ -45,7 +45,9 @@ axiosPrivate.interceptors.response.use(
             } catch (err) {
                 console.error('Error refreshing token:', err)
                 localStorage.removeItem('accessToken')
-                window.location.href = '/login'
+                localStorage.removeItem('refreshToken')
+                // Use window.location.replace instead of href for better navigation
+                window.location.replace('/login')
                 return Promise.reject(err)
             }
         }
