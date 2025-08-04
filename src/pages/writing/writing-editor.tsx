@@ -346,7 +346,7 @@ export default function WritingEditor() {
                       .includes(input.toLowerCase())
                   }
                 >
-                  {ieltsData?.data?.map((ielts) => (
+                  {ieltsData?.ieltsData?.map((ielts) => (
                     <Select.Option key={ielts.id} value={ielts.id}>
                       {ielts.title}
                     </Select.Option>

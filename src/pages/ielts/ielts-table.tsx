@@ -34,13 +34,13 @@ export const IeltsTable = () => {
     navigator.clipboard.writeText(id);
   };
 
-  const tableData = ielts?.data || [];
+  const tableData = ielts?.ieltsData || [];
 
   return (
     <>
       <Table
         pagination={{
-          total: ielts?.meta?.total || (ielts as any)?.total || 0,
+          total: ielts?.total || 0,
           pageSize: pageSize,
           current: currentPage,
           showSizeChanger: true,
