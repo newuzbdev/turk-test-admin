@@ -166,6 +166,7 @@ export interface SpeakingSection {
   updatedAt?: string;
   subParts?: SpeakingSubPart[];
   questions?: SpeakingQuestion[];
+  points?: SpeakingPoint[];
 }
 
 export interface SpeakingSubPart {
@@ -174,6 +175,7 @@ export interface SpeakingSubPart {
   description: string;
   speakingSectionId: string;
   order: number;
+  images?: string[];
   createdAt?: string;
   updatedAt?: string;
   questions?: SpeakingQuestion[];
@@ -191,12 +193,12 @@ export interface SpeakingQuestion {
 
 export interface SpeakingPoint {
   id?: string;
-  point: string;
-  type: string;
-  speakingSectionId: string;
   order: number;
+  type: "ADVANTAGE" | "DISADVANTAGE";
+  speakingSectionId: string;
   createdAt?: string;
   updatedAt?: string;
+  questions?: SpeakingQuestion[];
 }
 
 // Create DTOs for Speaking Tests
@@ -218,16 +220,24 @@ export interface CreateSpeakingSectionDTO {
   content: string;
   images: string[];
   subParts: CreateSpeakingSubPartDTO[];
+  points?: CreateSpeakingPointDTO[];
 }
 export interface CreateSpeakingSubPartDTO {
   label: string;
   description: string;
+  images: string[];
   questions: CreateSpeakingQuestion[];
 }
 
 export interface CreateSpeakingQuestion {
   order: number;
   question: string;
+}
+
+export interface CreateSpeakingPointDTO {
+  order: number;
+  type: "ADVANTAGE" | "DISADVANTAGE";
+  questions: CreateSpeakingQuestion[];
 }
 
 // Writing Test Interfaces

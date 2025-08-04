@@ -12,19 +12,24 @@ import {
   List,
   Modal,
   notification,
+  Upload,
+  Image,
 } from "antd";
 import {
   ArrowLeftOutlined,
   PlusOutlined,
   DeleteOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { useGetOneSpeakingTest } from "@/config/queries/speaking/get-one.queries";
 import { useCreateSpeakingTest } from "@/config/queries/speaking/create.queries";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type {
   SpeakingSection,
   SpeakingSubPart,
   SpeakingQuestion,
+  SpeakingPoint,
 } from "@/utils/types/types";
 
 const { TextArea } = Input;
@@ -55,6 +60,7 @@ export default function SpeakingEditor() {
   );
   const { mutateAsync: createSpeakingTest, isPending: isCreating } =
     useCreateSpeakingTest();
+  const { mutateAsync: uploadFile } = useFileUpload();
 
   useEffect(() => {
     if (isNewTest && location.state?.testData) {
@@ -94,8 +100,19 @@ export default function SpeakingEditor() {
             section.subParts?.map((subPart) => ({
               label: subPart.label,
               description: subPart.description,
+              images: subPart.images || [],
               questions:
                 subPart.questions?.map((question) => ({
+                  order: question.order,
+                  question: question.question,
+                })) || [],
+            })) || [],
+          points:
+            section.points?.map((point) => ({
+              order: point.order,
+              type: point.type,
+              questions:
+                point.questions?.map((question) => ({
                   order: question.order,
                   question: question.question,
                 })) || [],
@@ -242,6 +259,133 @@ export default function SpeakingEditor() {
         ],
       });
     }
+  };
+
+  const addPoint = (
+    sectionIndex: number,
+    type: "ADVANTAGE" | "DISADVANTAGE"
+  ) => {
+    const newPoint: SpeakingPoint = {
+      id: `temp-point-${Date.now()}`,
+      order: (testData.sections[sectionIndex].points?.length || 0) + 1,
+      type,
+      speakingSectionId: testData.sections[sectionIndex].id || "",
+      questions: [],
+    };
+
+    updateSection(sectionIndex, {
+      points: [...(testData.sections[sectionIndex].points || []), newPoint],
+    });
+  };
+
+  const updatePoint = (
+    sectionIndex: number,
+    pointIndex: number,
+    updates: Partial<SpeakingPoint>
+  ) => {
+    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
+    updatedPoints[pointIndex] = {
+      ...updatedPoints[pointIndex],
+      ...updates,
+    };
+    updateSection(sectionIndex, { points: updatedPoints });
+  };
+
+  const deletePoint = (sectionIndex: number, pointIndex: number) => {
+    Modal.confirm({
+      title: "Pointni o'chirish",
+      content: "Haqiqatan ham bu pointni o'chirmoqchimisiz?",
+      onOk: () => {
+        const updatedPoints =
+          testData.sections[sectionIndex].points?.filter(
+            (_, index) => index !== pointIndex
+          ) || [];
+        updateSection(sectionIndex, { points: updatedPoints });
+      },
+    });
+  };
+
+  const addPointQuestion = (sectionIndex: number, pointIndex: number) => {
+    const newQuestion: SpeakingQuestion = {
+      id: `temp-question-${Date.now()}`,
+      question: "",
+      order: 1,
+    };
+
+    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
+    const point = updatedPoints[pointIndex];
+    newQuestion.order = (point.questions?.length || 0) + 1;
+    newQuestion.speakingSectionId = testData.sections[sectionIndex].id;
+
+    updatedPoints[pointIndex] = {
+      ...point,
+      questions: [...(point.questions || []), newQuestion],
+    };
+    updateSection(sectionIndex, { points: updatedPoints });
+  };
+
+  const handleSectionImageUpload = async (sectionIndex: number, file: File) => {
+    try {
+      const response = await uploadFile(file);
+      const imageUrl = response.data.url;
+      const currentImages = testData.sections[sectionIndex].images || [];
+      updateSection(sectionIndex, {
+        images: [...currentImages, imageUrl],
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
+  const handleSubPartImageUpload = async (
+    sectionIndex: number,
+    subPartIndex: number,
+    file: File
+  ) => {
+    try {
+      const response = await uploadFile(file);
+      const imageUrl = response.data.url;
+      const updatedSubParts = [
+        ...(testData.sections[sectionIndex].subParts || []),
+      ];
+      const subPart = updatedSubParts[subPartIndex];
+      const currentImages = subPart.images || [];
+      updatedSubParts[subPartIndex] = {
+        ...subPart,
+        images: [...currentImages, imageUrl],
+      };
+      updateSection(sectionIndex, { subParts: updatedSubParts });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
+  const removeSectionImage = (sectionIndex: number, imageIndex: number) => {
+    const currentImages = testData.sections[sectionIndex].images || [];
+    const updatedImages = currentImages.filter(
+      (_, index) => index !== imageIndex
+    );
+    updateSection(sectionIndex, { images: updatedImages });
+  };
+
+  const removeSubPartImage = (
+    sectionIndex: number,
+    subPartIndex: number,
+    imageIndex: number
+  ) => {
+    const updatedSubParts = [
+      ...(testData.sections[sectionIndex].subParts || []),
+    ];
+    const subPart = updatedSubParts[subPartIndex];
+    const currentImages = subPart.images || [];
+    const updatedImages = currentImages.filter(
+      (_, index) => index !== imageIndex
+    );
+    updatedSubParts[subPartIndex] = {
+      ...subPart,
+      images: updatedImages,
+    };
+    updateSection(sectionIndex, { subParts: updatedSubParts });
   };
 
   if (isLoading) {
@@ -429,6 +573,52 @@ export default function SpeakingEditor() {
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Images
+                      </label>
+                      <div className="space-y-2">
+                        <Upload
+                          accept="image/*"
+                          showUploadList={false}
+                          beforeUpload={(file) => {
+                            handleSectionImageUpload(sectionIndex, file);
+                            return false;
+                          }}
+                        >
+                          <Button icon={<UploadOutlined />} size="small">
+                            Upload Image
+                          </Button>
+                        </Upload>
+                        {section.images && section.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {section.images.map((image, imageIndex) => (
+                              <div key={imageIndex} className="relative">
+                                <Image
+                                  src={image}
+                                  alt={`Section image ${imageIndex + 1}`}
+                                  width={100}
+                                  height={100}
+                                  style={{ objectFit: "cover" }}
+                                />
+                                <Button
+                                  type="text"
+                                  danger
+                                  size="small"
+                                  className="absolute top-0 right-0"
+                                  onClick={() =>
+                                    removeSectionImage(sectionIndex, imageIndex)
+                                  }
+                                >
+                                  ×
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-medium">Sub-Parts</h4>
@@ -489,6 +679,60 @@ export default function SpeakingEditor() {
                               />
                             </Col>
                           </Row>
+
+                          <div className="mt-3">
+                            <label className="block text-sm font-medium mb-1">
+                              Images
+                            </label>
+                            <div className="space-y-2">
+                              <Upload
+                                accept="image/*"
+                                showUploadList={false}
+                                beforeUpload={(file) => {
+                                  handleSubPartImageUpload(
+                                    sectionIndex,
+                                    subPartIndex,
+                                    file
+                                  );
+                                  return false;
+                                }}
+                              >
+                                <Button icon={<UploadOutlined />} size="small">
+                                  Upload Image
+                                </Button>
+                              </Upload>
+                              {subPart.images && subPart.images.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {subPart.images.map((image, imageIndex) => (
+                                    <div key={imageIndex} className="relative">
+                                      <Image
+                                        src={image}
+                                        alt={`Sub-part image ${imageIndex + 1}`}
+                                        width={100}
+                                        height={100}
+                                        style={{ objectFit: "cover" }}
+                                      />
+                                      <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        className="absolute top-0 right-0"
+                                        onClick={() =>
+                                          removeSubPartImage(
+                                            sectionIndex,
+                                            subPartIndex,
+                                            imageIndex
+                                          )
+                                        }
+                                      >
+                                        ×
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
                           <div className="mt-3">
                             <div className="flex justify-between items-center mb-2">
@@ -624,6 +868,138 @@ export default function SpeakingEditor() {
                         )}
                       />
                     </div>
+
+                    {/* Points Section for Part 3 */}
+                    {section.type === "PART3" && (
+                      <div className="border-t pt-4">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="font-medium">
+                            Advantages & Disadvantages
+                          </h4>
+                          <div className="space-x-2">
+                            <Button
+                              type="dashed"
+                              icon={<PlusOutlined />}
+                              onClick={() =>
+                                addPoint(sectionIndex, "ADVANTAGE")
+                              }
+                              size="small"
+                            >
+                              Advantage qo'shish
+                            </Button>
+                            <Button
+                              type="dashed"
+                              icon={<PlusOutlined />}
+                              onClick={() =>
+                                addPoint(sectionIndex, "DISADVANTAGE")
+                              }
+                              size="small"
+                            >
+                              Disadvantage qo'shish
+                            </Button>
+                          </div>
+                        </div>
+
+                        {section.points?.map((point, pointIndex) => (
+                          <Card
+                            key={point.id}
+                            size="small"
+                            className="mb-3"
+                            title={`${
+                              point.type === "ADVANTAGE"
+                                ? "Advantage"
+                                : "Disadvantage"
+                            } ${point.order}`}
+                            extra={
+                              <Button
+                                danger
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                onClick={() =>
+                                  deletePoint(sectionIndex, pointIndex)
+                                }
+                              />
+                            }
+                          >
+                            <div className="mt-3">
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="text-sm font-medium">
+                                  Questions
+                                </span>
+                                <Button
+                                  type="link"
+                                  icon={<PlusOutlined />}
+                                  onClick={() =>
+                                    addPointQuestion(sectionIndex, pointIndex)
+                                  }
+                                  size="small"
+                                >
+                                  Question qo'shish
+                                </Button>
+                              </div>
+                              <List
+                                size="small"
+                                dataSource={point.questions || []}
+                                renderItem={(question, questionIndex) => (
+                                  <List.Item
+                                    actions={[
+                                      <Button
+                                        danger
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => {
+                                          const updatedPoints = [
+                                            ...(testData.sections[sectionIndex]
+                                              .points || []),
+                                          ];
+                                          const updatedQuestions =
+                                            point.questions?.filter(
+                                              (_, index) =>
+                                                index !== questionIndex
+                                            ) || [];
+                                          updatedPoints[pointIndex] = {
+                                            ...point,
+                                            questions: updatedQuestions,
+                                          };
+                                          updateSection(sectionIndex, {
+                                            points: updatedPoints,
+                                          });
+                                        }}
+                                      />,
+                                    ]}
+                                  >
+                                    <Input
+                                      value={question.question}
+                                      onChange={(e) => {
+                                        const updatedPoints = [
+                                          ...(testData.sections[sectionIndex]
+                                            .points || []),
+                                        ];
+                                        const updatedQuestions = [
+                                          ...(point.questions || []),
+                                        ];
+                                        updatedQuestions[questionIndex] = {
+                                          ...question,
+                                          question: e.target.value,
+                                        };
+                                        updatedPoints[pointIndex] = {
+                                          ...point,
+                                          questions: updatedQuestions,
+                                        };
+                                        updateSection(sectionIndex, {
+                                          points: updatedPoints,
+                                        });
+                                      }}
+                                      placeholder="Question text"
+                                    />
+                                  </List.Item>
+                                )}
+                              />
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </Panel>
               ))}

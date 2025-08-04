@@ -1,18 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
-import type {
-  ApiResponse,
-  SpeakingPoint,
-} from "../../../utils/types/types";
-import { speakingPointEndpoints, speakingSectionEndpoints } from "../../endpoint";
+import type { ApiResponse, SpeakingPoint } from "../../../utils/types/types";
+import {
+  speakingPointEndpoints,
+  speakingSectionEndpoints,
+} from "../../endpoint";
 import axiosPrivate from "../../api";
 
 // Create Point
 interface CreateSpeakingPointDto {
   speakingSectionId: string;
   order: number;
-  type: string;
-  questionText: string;
+  type: "ADVANTAGE" | "DISADVANTAGE";
+  questions: {
+    order: number;
+    question: string;
+  }[];
 }
 
 export const useCreateSpeakingPoint = () => {
@@ -28,7 +31,9 @@ export const useCreateSpeakingPoint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
-      queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
+      queryClient.invalidateQueries({
+        queryKey: [speakingSectionEndpoints.all],
+      });
       notification.success({
         message: "Speaking point muvaffaqiyatli yaratildi",
         placement: "bottomRight",
@@ -76,8 +81,11 @@ export const useGetOneSpeakingPoint = (id: string) => {
 interface UpdateSpeakingPointDto {
   id: string;
   order: number;
-  type: string;
-  question: string;
+  type: "ADVANTAGE" | "DISADVANTAGE";
+  questions: {
+    order: number;
+    question: string;
+  }[];
 }
 
 export const useUpdateSpeakingPoint = () => {
@@ -93,7 +101,9 @@ export const useUpdateSpeakingPoint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
-      queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
+      queryClient.invalidateQueries({
+        queryKey: [speakingSectionEndpoints.all],
+      });
       notification.success({
         message: "Speaking point muvaffaqiyatli yangilandi",
         placement: "bottomRight",
@@ -117,7 +127,9 @@ export const useDeleteSpeakingPoint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
-      queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
+      queryClient.invalidateQueries({
+        queryKey: [speakingSectionEndpoints.all],
+      });
       notification.success({
         message: "Speaking point muvaffaqiyatli o'chirildi",
         placement: "bottomRight",

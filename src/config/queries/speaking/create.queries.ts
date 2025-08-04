@@ -22,6 +22,15 @@ interface CreateSpeakingTestDto {
     subParts: {
       label: string;
       description: string;
+      images: string[];
+      questions: {
+        order: number;
+        question: string;
+      }[];
+    }[];
+    points?: {
+      order: number;
+      type: "ADVANTAGE" | "DISADVANTAGE";
       questions: {
         order: number;
         question: string;
