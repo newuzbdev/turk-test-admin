@@ -32,6 +32,7 @@ export const IeltsTable = () => {
     navigator.clipboard.writeText(id);
   };
 
+<<<<<<< HEAD
   // Extract ieltsData
   const tableData = ielts?.ieltsData || [];
 
@@ -65,6 +66,9 @@ export const IeltsTable = () => {
       ),
     },
   ];
+=======
+  const tableData = ielts?.ieltsData || [];
+>>>>>>> 7e0758a70e6f09c9d4c277c95df1b76ab4c626f0
 
   return (
     <>

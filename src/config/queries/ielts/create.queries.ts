@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   CreateIELTS,
@@ -16,16 +16,10 @@ export const useCreateIelts = () => {
         .data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ieltsEndpoints.all] });
-      notification.success({
-        message: "Muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Yaratishda xatolik yuz berdi");
     },
   });
 };

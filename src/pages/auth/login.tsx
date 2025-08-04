@@ -4,7 +4,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
 } from "@ant-design/icons";
-import { Button, Form, Input, Alert } from "antd";
+import { Button, Form, Input,  } from "antd";
 import { useAdminLogin } from "../../config/queries/login-querys";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ export default function Login() {
   const loginMutation = useAdminLogin();
   const navigate = useNavigate();
   const { setAuthenticated } = useAuth();
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleFinish = (values: { name: string; password: string }) => {
@@ -50,10 +50,6 @@ export default function Login() {
           </h1>
         </div> */}
         <div className="mx-2 z-[2] mt-10 flex-auto px-10 py-5 shadow-2xl shadow-slate-900/10 sm:mx-0 sm:flex-none sm:rounded-5xl sm:p-24 rounded-3xl w-full">
-          {error && (
-            <Alert message={error} type="error" showIcon className="mb-4" />
-          )}
-
           <Form
             form={form}
             onFinish={handleFinish}

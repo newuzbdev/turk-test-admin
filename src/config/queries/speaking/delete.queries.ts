@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import { speakingTestEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
 
@@ -12,16 +12,10 @@ export const useDeleteSpeakingTest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.only] });
-      notification.success({
-        message: "Speaking test muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking test muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking test o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking test o'chirishda xatolik yuz berdi");
     },
   });
 };

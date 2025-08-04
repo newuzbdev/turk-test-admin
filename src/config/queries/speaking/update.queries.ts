@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   SpeakingTest,
@@ -27,16 +27,10 @@ export const useUpdateSpeakingTest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.only] });
-      notification.success({
-        message: "Speaking test muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Speaking test muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Speaking test yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking test yangilashda xatolik yuz berdi");
     },
   });
 };

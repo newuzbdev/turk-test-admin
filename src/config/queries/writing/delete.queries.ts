@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse } from "../../../utils/types/types";
 import { writingTestEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
@@ -16,16 +16,10 @@ export const useDeleteWritingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [writingTestEndpoints.all] });
-      notification.success({
-        message: "Writing test muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Writing test muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Writing test o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Writing test o'chirishda xatolik yuz berdi");
     },
   });
 };

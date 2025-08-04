@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import axiosPrivate from "../../api";
 import { listeningEndpoints } from "../../endpoint";
 
@@ -12,16 +12,10 @@ export const useDeleteListeningTest = () => {
       queryClient.invalidateQueries({
         queryKey: [listeningEndpoints.all],
       });
-      notification.success({
-        message: "Listening test muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Listening test o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Listening test o'chirishda xatolik yuz berdi");
     },
   });
 };
@@ -35,16 +29,10 @@ export const useDeleteOnlyListeningTest = () => {
       queryClient.invalidateQueries({
         queryKey: [listeningEndpoints.only],
       });
-      notification.success({
-        message: "Listening test muvaffaqiyatli o'chirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli o'chirildi");
     },
     onError: () => {
-      notification.error({
-        message: "Listening test o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Listening test o'chirishda xatolik yuz berdi");
     },
   });
 };

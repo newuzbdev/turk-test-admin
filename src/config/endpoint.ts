@@ -109,16 +109,38 @@ export const fileEndpoints = {
 export const writingTestEndpoints = {
   all: "/api/writing-test",
   one: (id: string) => `/api/writing-test/${id}`,
+  // Specific update endpoints
+  updateTitle: (id: string) => `/api/writing-test/${id}/title`,
+  updateInstruction: (id: string) => `/api/writing-test/${id}/instruction`,
 };
 
 // Writing Section endpoints
 export const writingSectionEndpoints = {
   all: "/api/writing-section",
   one: (id: string) => `/api/writing-section/${id}`,
+  // Specific update endpoints
+  updateTitle: (id: string) => `/api/writing-section/${id}/title`,
+  updateDescription: (id: string) => `/api/writing-section/${id}/description`,
+  updateContent: (id: string) => `/api/writing-section/${id}/content`,
+  updateOrder: (id: string) => `/api/writing-section/${id}/order`,
 };
 
 // Writing SubPart endpoints
 export const writingSubPartEndpoints = {
   all: "/api/writing-sub-part",
   one: (id: string) => `/api/writing-sub-part/${id}`,
+  // Specific update endpoints
+  updateTitle: (id: string) => `/api/writing-sub-part/${id}/title`,
+  updateDescription: (id: string) => `/api/writing-sub-part/${id}/description`,
+  updateContent: (id: string) => `/api/writing-sub-part/${id}/content`,
+  updateOrder: (id: string) => `/api/writing-sub-part/${id}/order`,
+};
+
+// Writing Question endpoints
+export const writingQuestionEndpoints = {
+  all: "/api/writing-question",
+  one: (id: string) => `/api/writing-question/${id}`,
+  // Specific update endpoints
+  updateText: (id: string) => `/api/writing-question/${id}/text`,
+  updateOrder: (id: string) => `/api/writing-question/${id}/order`,
 };

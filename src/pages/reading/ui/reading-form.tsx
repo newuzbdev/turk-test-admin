@@ -4,7 +4,7 @@ import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
 const ReadingForm = () => {
   const { data: ieltsData, isLoading: isIeltsLoading } = useGetAllIelts();
 
-  const ieltsOptions = ieltsData?.data?.map((ielts) => ({
+  const ieltsOptions = ieltsData?.ieltsData?.map((ielts) => ({
     label: ielts.title,
     value: ielts.id,
   })) || [];

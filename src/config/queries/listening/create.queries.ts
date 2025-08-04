@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type {
   ApiResponse,
   CreateTest,
@@ -52,16 +52,10 @@ export const useCreateListeningTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [listeningEndpoints.all] });
-      notification.success({
-        message: "Listening test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Listening test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Listening test yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -76,18 +70,11 @@ export const useCreateListeningTestWithAddition = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [listeningEndpoints.all] });
-      notification.success({
-        message: "Listening test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli yaratildi");
     },
     onError: (error: any) => {
       console.error("API Error:", error.response?.data);
-      notification.error({
-        message: "Listening test yaratishda xatolik yuz berdi",
-        description: error.response?.data?.error || "Unknown error",
-        placement: "bottomRight",
-      });
+      toast.error(error.response?.data?.error || "Listening test yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -106,16 +93,10 @@ export const useCreateOnlyListeningTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [listeningEndpoints.only] });
-      notification.success({
-        message: "Listening test muvaffaqiyatli yaratildi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli yaratildi");
     },
     onError: () => {
-      notification.error({
-        message: "Listening test yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Listening test yaratishda xatolik yuz berdi");
     },
   });
 };

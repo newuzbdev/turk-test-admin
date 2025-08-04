@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import axiosPrivate from "@/config/api";
 import { ieltsEndpoints } from "@/config/endpoint";
-import type { TPaginationWrapper, IELTS } from "@/utils/types/types";
+import type { IELTS } from "@/utils/types/types";
 
 export interface TestAnswerDto {
   id?: string;
@@ -104,7 +104,16 @@ export const useGetAllIelts = () => {
     queryKey: [ieltsEndpoints.all, search, page, limit],
     queryFn: async () => {
       return (
-        await axiosPrivate.get<TPaginationWrapper<IELTS[]>>(
+        await axiosPrivate.get<{
+          total: number;
+          page: number;
+          limit: number;
+          ieltsData: IELTS[];
+          listeningTests: TestItem[];
+          readingTests: TestItem[];
+          speakingTests: TestItem[];
+          writingTests: TestItem[];
+        }>(
           ieltsEndpoints.all,
           {
             params: {

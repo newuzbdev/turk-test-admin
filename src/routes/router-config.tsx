@@ -1,4 +1,4 @@
-import { Listening, Reading, Speaking, Writing } from "@/pages";
+import { Listening, Reading, Speaking, Writing, Archive } from "@/pages";
 import { IELTS } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
 import ReadingEditor from "@/pages/reading/reading-editor";
@@ -10,6 +10,7 @@ import {
   Headphones,
   Speaker,
   PenTool,
+  Archive as ArchiveIcon,
 } from "lucide-react";
 
 export interface RouterConfig {
@@ -104,6 +105,14 @@ export const routerConfig: RouterConfig[] = [
     icon: <BookAudioIcon />,
     path: "test",
     page: <IELTS />,
+    inMenu: true,
+  },
+  {
+    title: "Archive",
+    label: "Arxiv",
+    icon: <ArchiveIcon />,
+    path: "archive",
+    page: <Archive />,
     inMenu: true,
   },
 

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import type { ApiResponse, OnlyTest, Test } from "../../../utils/types/types";
 import { listeningEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
@@ -16,16 +16,10 @@ export const useUpdateListeningTest = () => {
       ).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [listeningEndpoints.all] });
-      notification.success({
-        message: "Listening test muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Listening test yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Listening test yangilashda xatolik yuz berdi");
     },
   });
 };
@@ -42,16 +36,10 @@ export const useUpdateOnlyListeningTest = () => {
       ).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [listeningEndpoints.only] });
-      notification.success({
-        message: "Listening test muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Listening test muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Listening test yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Listening test yangilashda xatolik yuz berdi");
     },
   });
 };

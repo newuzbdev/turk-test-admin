@@ -1,10 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { notification } from "antd";
 import type { ApiResponse, SpeakingPoint } from "../../../utils/types/types";
 import {
   speakingPointEndpoints,
   speakingSectionEndpoints,
 } from "../../endpoint";
+=======
+import toast from "react-hot-toast";
+import type {
+  ApiResponse,
+  SpeakingPoint,
+} from "../../../utils/types/types";
+import { speakingPointEndpoints, speakingSectionEndpoints } from "../../endpoint";
+>>>>>>> 7e0758a70e6f09c9d4c277c95df1b76ab4c626f0
 import axiosPrivate from "../../api";
 
 // Create Point
@@ -31,6 +40,7 @@ export const useCreateSpeakingPoint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
+<<<<<<< HEAD
       queryClient.invalidateQueries({
         queryKey: [speakingSectionEndpoints.all],
       });
@@ -38,12 +48,13 @@ export const useCreateSpeakingPoint = () => {
         message: "Speaking point muvaffaqiyatli yaratildi",
         placement: "bottomRight",
       });
+=======
+      queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
+      toast.success("Speaking point muvaffaqiyatli yaratildi");
+>>>>>>> 7e0758a70e6f09c9d4c277c95df1b76ab4c626f0
     },
     onError: () => {
-      notification.error({
-        message: "Speaking point yaratishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking point yaratishda xatolik yuz berdi");
     },
   });
 };
@@ -101,6 +112,7 @@ export const useUpdateSpeakingPoint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
+<<<<<<< HEAD
       queryClient.invalidateQueries({
         queryKey: [speakingSectionEndpoints.all],
       });
@@ -108,12 +120,13 @@ export const useUpdateSpeakingPoint = () => {
         message: "Speaking point muvaffaqiyatli yangilandi",
         placement: "bottomRight",
       });
+=======
+      queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
+      toast.success("Speaking point muvaffaqiyatli yangilandi");
+>>>>>>> 7e0758a70e6f09c9d4c277c95df1b76ab4c626f0
     },
     onError: () => {
-      notification.error({
-        message: "Speaking point yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking point yangilashda xatolik yuz berdi");
     },
   });
 };
@@ -127,6 +140,7 @@ export const useDeleteSpeakingPoint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingPointEndpoints.all] });
+<<<<<<< HEAD
       queryClient.invalidateQueries({
         queryKey: [speakingSectionEndpoints.all],
       });
@@ -134,12 +148,13 @@ export const useDeleteSpeakingPoint = () => {
         message: "Speaking point muvaffaqiyatli o'chirildi",
         placement: "bottomRight",
       });
+=======
+      queryClient.invalidateQueries({ queryKey: [speakingSectionEndpoints.all] });
+      toast.success("Speaking point muvaffaqiyatli o'chirildi");
+>>>>>>> 7e0758a70e6f09c9d4c277c95df1b76ab4c626f0
     },
     onError: () => {
-      notification.error({
-        message: "Speaking point o'chirishda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Speaking point o'chirishda xatolik yuz berdi");
     },
   });
 };

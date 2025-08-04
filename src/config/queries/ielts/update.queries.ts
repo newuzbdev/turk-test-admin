@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import axiosPrivate from "@/config/api";
 import { ieltsEndpoints } from "@/config/endpoint";
 import type { ApiResponse, IELTS } from "@/utils/types/types";
@@ -16,16 +16,10 @@ export const useUpdateIelts = () => {
       ).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ieltsEndpoints.all] });
-      notification.success({
-        message: "Muvaffaqiyatli yangilandi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli yangilandi");
     },
     onError: () => {
-      notification.error({
-        message: "Yangilashda xatolik yuz berdi",
-        placement: "bottomRight",
-      });
+      toast.error("Yangilashda xatolik yuz berdi");
     },
   });
 };

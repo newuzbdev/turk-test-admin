@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/api/hooks/useAdminAuth.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { notification } from "antd";
+import toast from "react-hot-toast";
 import { api } from "..";
 import { authEndpoints } from "../endpoint";
 import axiosPrivate from "../api";
+import { useNavigate } from "react-router-dom";
 
 type LoginInput = {
   name: string;
@@ -30,7 +31,7 @@ export const useAdminLogin = () => {
       try {
         const { data } = await api.post<TokenResponse>(
           authEndpoints.login,
-          credentials
+          credentials, // <-- Pass credentials here
         );
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
@@ -42,16 +43,10 @@ export const useAdminLogin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
-      notification.success({
-        message: "Muvaffaqiyatli tizimga kirildi",
-        placement: "bottomRight",
-      });
+      toast.success("Muvaffaqiyatli tizimga kirildi");
     },
     onError: (error: Error) => {
-      notification.error({
-        message: `Login xatoligi: ${error.message}`,
-        placement: "bottomRight",
-      });
+      toast.error(`Login xatoligi: ${error.message}`);
     },
   });
 };
@@ -78,38 +73,55 @@ export const useAdminRefresh = () => {
   });
 };
 
-export const useAdminLogout = () => {
+export const useAdminLogout = (setAuthenticated?: (auth: boolean) => void) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async () => {
       try {
         await axiosPrivate.post(authEndpoints.logout);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
       } catch (error: any) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
-
+        // Even if logout API fails, we still want to clear local storage
         const errorResponse = error?.response?.data as ErrorResponse;
         throw new Error(errorResponse?.error || "Logout failed");
       }
     },
     onSuccess: () => {
+      // Clear tokens and navigate on success
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       queryClient.clear();
-      notification.success({
-        message: "Tizimdan muvaffaqiyatli chiqildi",
-        placement: "bottomRight",
-      });
+
+      // Update authentication state
+      if (setAuthenticated) {
+        setAuthenticated(false);
+      }
+
+      toast.success("Tizimdan muvaffaqiyatli chiqildi");
+
+      // Small delay to ensure state updates are processed
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);
     },
     onError: (error: Error) => {
+      // Clear tokens and navigate even on error
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       queryClient.clear();
-      notification.error({
-        message: `Logout jarayonida xatolik: ${error.message}`,
-        placement: "bottomRight",
-      });
+
+      // Update authentication state
+      if (setAuthenticated) {
+        setAuthenticated(false);
+      }
+
+      toast.error(`Logout jarayonida xatolik: ${error.message}`);
+
+      // Small delay to ensure state updates are processed
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);
     },
   });
 };

@@ -4,6 +4,7 @@ import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import PartForm from "@/shared/ui/part-form";
 import type { Part } from "@/utils/types/types";
+import { QuestionType } from "@/utils/types/types";
 
 const { TextArea } = Input;
 
@@ -131,7 +132,30 @@ export default function TestEditor({
               type: question.type || "",
               text: question.question || `Question ${questionIndex + 1}`,
               answers: (question.answers || []).map((answer, answerIndex) => {
-                const variantText = String.fromCharCode(65 + answerIndex);
+                // Generate variant text based on question type
+                let variantText: string;
+                switch (question.type) {
+                  case QuestionType.TRUE_FALSE:
+                    if (answerIndex === 0) variantText = "True";
+                    else if (answerIndex === 1) variantText = "False";
+                    else if (answerIndex === 2) variantText = "Not Given";
+                    else variantText = "Variant";
+                    break;
+                  case QuestionType.MULTIPLE_CHOICE:
+                  case QuestionType.MULTI_SELECT:
+                    variantText = String.fromCharCode(65 + answerIndex); // A, B, C, D...
+                    break;
+                  case QuestionType.MATCHING:
+                    variantText = `${answerIndex + 1}`; // 1, 2, 3, 4...
+                    break;
+                  case QuestionType.TEXT_INPUT:
+                  case QuestionType.FILL_BLANK:
+                    variantText = "Text";
+                    break;
+                  default:
+                    variantText = String.fromCharCode(65 + answerIndex);
+                }
+
                 return {
                   variantText: variantText,
                   answer: answer.answer || `Option ${variantText}`,
@@ -176,7 +200,7 @@ export default function TestEditor({
   // Show progress for new test creation
   if (showProgress) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+      <div className="flex flex-col items-center justify-center h-screen">
         <div className="w-96 text-center">
           <h2 className="text-xl font-semibold mb-4">
             Creating {testType} Test...
@@ -201,9 +225,9 @@ export default function TestEditor({
   const testIcon = testType === "LISTENING" ? "🎧" : "📖";
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen ">
       {/* Top Bar */}
-      <header className="flex items-center justify-between h-16 px-6 border-b bg-white shadow-sm">
+      <header className="flex items-center justify-between h-16 px-6 border-b  shadow-sm">
         <div className="flex items-center space-x-4">
           <Button
             icon={<ArrowLeftOutlined />}
@@ -296,7 +320,7 @@ export default function TestEditor({
                 <div
                   key={index}
                   style={{
-                    background: "#f8fafc",
+                
                     borderRadius: "8px",
                     border: "1px solid #e2e8f0",
                     overflow: "hidden",

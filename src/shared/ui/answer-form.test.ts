@@ -5,11 +5,12 @@ import { QuestionType } from '@/utils/types/types';
 describe('Answer Form Logic', () => {
   const getVariantPlaceholder = (questionType?: string, answerIndex = 0) => {
     if (!questionType) return "Variant";
-    
+
     switch (questionType) {
       case QuestionType.TRUE_FALSE:
         if (answerIndex === 0) return "True";
         if (answerIndex === 1) return "False";
+        if (answerIndex === 2) return "Not Given";
         return "Variant";
       case QuestionType.MULTIPLE_CHOICE:
       case QuestionType.MULTI_SELECT:
@@ -27,7 +28,8 @@ describe('Answer Form Logic', () => {
   it('should return correct placeholders for TRUE_FALSE questions', () => {
     expect(getVariantPlaceholder(QuestionType.TRUE_FALSE, 0)).toBe('True');
     expect(getVariantPlaceholder(QuestionType.TRUE_FALSE, 1)).toBe('False');
-    expect(getVariantPlaceholder(QuestionType.TRUE_FALSE, 2)).toBe('Variant');
+    expect(getVariantPlaceholder(QuestionType.TRUE_FALSE, 2)).toBe('Not Given');
+    expect(getVariantPlaceholder(QuestionType.TRUE_FALSE, 3)).toBe('Variant');
   });
 
   it('should return correct placeholders for MULTIPLE_CHOICE questions', () => {
