@@ -1,6 +1,8 @@
 import { Table, Modal } from "antd";
 import { useIeltsModalStore } from "./utils/ielts-modal-store";
+import { IeltsModal } from "./ui/ielts-modal";
 import { useState } from "react";
+import { IeltsColumns } from "./ui/ielts-columns";
 import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
 import { useDeleteIelts } from "@/config/queries/ielts/delete.queries";
 import { useSearchParams } from "react-router-dom";
@@ -32,51 +34,11 @@ export const IeltsTable = () => {
     navigator.clipboard.writeText(id);
   };
 
-<<<<<<< HEAD
-  // Extract ieltsData
   const tableData = ielts?.ieltsData || [];
-
-  // Define table columns
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Title",
-      dataIndex: "title",
-      key: "title",
-    },
-    {
-      title: "Created At",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (text: string) => new Date(text).toLocaleDateString(),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_: any, record: any) => (
-        <>
-          <button onClick={() => onOpen(record.id)}>Edit</button>
-          <button onClick={() => handleDelete(record.id)}>Delete</button>
-          <button onClick={() => handleCopyId(record.id)}>Copy ID</button>
-        </>
-      ),
-    },
-  ];
-=======
-  const tableData = ielts?.ieltsData || [];
->>>>>>> 7e0758a70e6f09c9d4c277c95df1b76ab4c626f0
 
   return (
     <>
       <Table
-        columns={columns}
-        dataSource={tableData}
-        rowKey="id"
-        loading={isIeltsLoading}
         pagination={{
           total: ielts?.total || 0,
           pageSize: pageSize,
@@ -90,14 +52,33 @@ export const IeltsTable = () => {
             setSearchParams(newParams);
           },
         }}
+        title={() => (
+          <div className="flex items-center justify-between">
+            <h2>IELTS Testlar</h2>
+            <IeltsModal />
+          </div>
+        )}
+        size="small"
+        loading={isIeltsLoading}
+        scroll={{ x: "max-content" }}
+        dataSource={tableData}
+        rowKey={(rec) => rec.id || ""}
+        columns={IeltsColumns({
+          onEdit: onOpen,
+          onDelete: handleDelete,
+          onCopyId: handleCopyId,
+        })}
       />
+
       <Modal
-        title="Confirm Delete"
-        visible={deleteModalOpen}
+        title="Ishonchingiz komilmi?"
+        open={deleteModalOpen}
         onOk={confirmDelete}
         onCancel={() => setDeleteModalOpen(false)}
+        okText="Ha"
+        cancelText="Yo'q"
       >
-        Are you sure you want to delete this item?
+        <p>Ushbu IELTS testini o'chirishni xoxlaysizmi?</p>
       </Modal>
     </>
   );
