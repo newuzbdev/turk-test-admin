@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Upload,
@@ -35,6 +35,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [previewTitle, setPreviewTitle] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [recentlyUploaded, setRecentlyUploaded] = useState<string[]>([]);
+  const tempUrlsRef = useRef<string[]>([]);
+
+  // Clean up temporary URLs on unmount
+  useEffect(() => {
+    return () => {
+      tempUrlsRef.current.forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -57,6 +67,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       
       // Add to recently uploaded for visual feedback
       const tempUrl = URL.createObjectURL(file);
+      tempUrlsRef.current.push(tempUrl);
       setRecentlyUploaded(prev => [...prev, tempUrl]);
       
       message.success("Image uploaded successfully!");
@@ -64,8 +75,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       // Clear progress after success
       setTimeout(() => {
         setUploadProgress(0);
-        setRecentlyUploaded(prev => prev.filter(url => url !== tempUrl));
       }, 2000);
+      
+      // Keep the temporary preview for 30 seconds instead of 2 seconds
+      setTimeout(() => {
+        setRecentlyUploaded(prev => {
+          const newRecentlyUploaded = prev.filter(url => url !== tempUrl);
+          // Revoke the URL after removing from state
+          if (newRecentlyUploaded.length !== prev.length) {
+            URL.revokeObjectURL(tempUrl);
+            tempUrlsRef.current = tempUrlsRef.current.filter(url => url !== tempUrl);
+          }
+          return newRecentlyUploaded;
+        });
+      }, 30000); // 30 seconds instead of 2 seconds
       
     } catch (error) {
       setUploadProgress(0);
@@ -234,7 +257,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Full Screen Preview Modal */}
       <Image
-        style={{ display: 'none' }}
+        wrapperStyle={{ display: 'none' }}
         src={previewImage}
         preview={{
           visible: previewVisible,

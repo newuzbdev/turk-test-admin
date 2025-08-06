@@ -6,7 +6,8 @@ import type {
   SpeakingQuestion,
   SpeakingPoint,
 } from "@/utils/types/types";
-import { api } from "@/config";
+import axiosPrivate from "@/config/api";
+import { speakingTestEndpoints } from "@/config/endpoint";
 
 // Types for the speaking editor
 interface SpeakingTestData {
@@ -51,7 +52,7 @@ export const useGetOneSpeakingTest = (id: string) => {
     queryKey: ["speaking", "one", id],
     queryFn: async () => {
       if (!id) return null;
-      const response = await api.get(`${speakingEndpoint.getOne}/${id}`);
+      const response = await axiosPrivate.get(speakingTestEndpoints.one(id));
       return response.data;
     },
     enabled: !!id,
@@ -64,7 +65,7 @@ export const useCreateSpeakingTest = () => {
 
   return useMutation({
     mutationFn: async (data: CreateSpeakingTestData) => {
-      const response = await api.post(speakingEndpoints.create, data);
+      const response = await axiosPrivate.post(speakingTestEndpoints.all, data);
       return response.data;
     },
     onSuccess: () => {
@@ -84,7 +85,7 @@ export const useUpdateSpeakingTest = () => {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: CreateSpeakingTestData }) => {
-      const response = await api.put(`${speakingEndpoints.update}/${id}`, data);
+      const response = await axiosPrivate.put(speakingTestEndpoints.one(id), data);
       return response.data;
     },
     onSuccess: () => {
@@ -98,25 +99,7 @@ export const useUpdateSpeakingTest = () => {
   });
 };
 
-// File upload hook
-export const useFileUpload = () => {
-  return useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await api.post("/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      return response.data;
-    },
-    onError: (error: any) => {
-      toast.error("Fayl yuklashda xatolik yuz berdi");
-      console.error("File upload error:", error);
-    },
-  });
-};
+
 
 // Speaking editor utilities
 export const useSpeakingEditor = () => {
@@ -146,7 +129,7 @@ export const useSpeakingEditor = () => {
   };
 
   const updateSection = (
-    testData: SpeakingTestData,
+    _testData: SpeakingTestData,
     setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
     sectionIndex: number,
     updates: Partial<SpeakingSection>
@@ -160,7 +143,7 @@ export const useSpeakingEditor = () => {
   };
 
   const deleteSection = (
-    testData: SpeakingTestData,
+    _testData: SpeakingTestData,
     setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
     sectionIndex: number
   ) => {
@@ -507,7 +490,6 @@ export const useSpeakingEditor = () => {
     useGetOneSpeakingTest,
     useCreateSpeakingTest,
     useUpdateSpeakingTest,
-    useFileUpload,
     
     // Section management
     addSection,

@@ -9,7 +9,6 @@ import {
   InputNumber,
 } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import { TextArea } from "antd/lib/input";
 import type { SpeakingSection } from "@/utils/types/types";
 import { ImageUpload } from "./image-upload";
 

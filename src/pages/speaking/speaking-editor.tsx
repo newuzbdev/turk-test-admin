@@ -18,15 +18,15 @@ import {
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import type { SpeakingSection } from "@/utils/types/types";
-import { SectionForm, SubPartForm, PointForm, ImageUpload } from "./components";
-import { 
-  useGetOneSpeakingTest, 
-  useCreateSpeakingTest, 
-  useFileUpload,
-  useSpeakingEditor 
+import { SectionForm, SubPartForm, PointForm, } from "./components";
+import {
+  useGetOneSpeakingTest,
+  useCreateSpeakingTest,
+  useSpeakingEditor
 } from "@/config/queries/speaking/speaking-editor.queries";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
 
-const { TextArea } = Input;
+
 const { Panel } = Collapse;
 
 interface SpeakingTestData {

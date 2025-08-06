@@ -36,7 +36,6 @@ export const PointForm: React.FC<PointFormProps> = ({
   point,
   sectionIndex,
   pointIndex,
-  onUpdate,
   onDelete,
   onAddQuestion,
   onUpdateQuestion,

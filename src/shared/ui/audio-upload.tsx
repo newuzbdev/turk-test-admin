@@ -1,7 +1,7 @@
 import { Card, Input, Upload, Button, Space, message } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
-import { useState } from "react";
 import type { TestPartDto } from "@/config/queries/ielts/get-all.queries";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
 
 type Props = {
   part: TestPartDto;
@@ -10,34 +10,17 @@ type Props = {
 };
 
 export default function AudioUpload({ part, onChange, onRemove }: Props) {
-  const [uploading, setUploading] = useState(false);
+  const fileUploadMutation = useFileUpload();
 
   const handleAudioUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      setUploading(true);
-      const res = await fetch("/api/file/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-
-      const data = await res.json();
-
-      if (data?.url) {
-        onChange({ ...part, audioUrl: data.url });
-        message.success("Audio muvaffaqiyatli yuklandi");
-      } else {
-        throw new Error("Invalid response from server");
+      const result = await fileUploadMutation.mutateAsync(file);
+      if (result?.data?.url) {
+        onChange({ ...part, audioUrl: result.data.url });
       }
     } catch (error) {
       console.error("Audio upload error:", error);
       message.error("Audio yuklashda xatolik");
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -70,10 +53,10 @@ export default function AudioUpload({ part, onChange, onRemove }: Props) {
         >
           <Button
             icon={<UploadOutlined />}
-            loading={uploading}
-            disabled={uploading}
+            loading={fileUploadMutation.isPending}
+            disabled={fileUploadMutation.isPending}
           >
-            {uploading ? "Yuklanmoqda..." : "Audio faylni tanlang"}
+            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Audio faylni tanlang"}
           </Button>
         </Upload>
 

@@ -1,6 +1,5 @@
 // src/providers/auth-provider.tsx
-import { createContext, useContext, useEffect, useState } from "react";
-import { useAdminRefresh } from "@/config/queries/login-querys";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 const AuthContext = createContext<{
   isAuthenticated: boolean;
@@ -14,9 +13,8 @@ const AuthContext = createContext<{
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const refreshMutation = useAdminRefresh();
 
-  const checkAuthStatus = (): boolean => {
+  const checkAuthStatus = useCallback((): boolean => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       setIsAuthenticated(false);
@@ -27,28 +25,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
-      
+
       if (payload.exp < currentTime) {
-        // Token is expired, try to refresh
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          refreshMutation.mutate(undefined, {
-            onSuccess: () => {
-              setIsAuthenticated(true);
-            },
-            onError: () => {
-              localStorage.removeItem("accessToken");
-              localStorage.removeItem("refreshToken");
-              setIsAuthenticated(false);
-            },
-          });
-        } else {
-          localStorage.removeItem("accessToken");
-          setIsAuthenticated(false);
-        }
+        // Token is expired, clear it immediately
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        setIsAuthenticated(false);
         return false;
       }
-      
+
       setIsAuthenticated(true);
       return true;
     } catch (error) {
@@ -58,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAuthenticated(false);
       return false;
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkAuthStatus();

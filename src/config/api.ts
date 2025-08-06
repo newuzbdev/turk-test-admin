@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { api } from '.'
+import { authEndpoints } from './endpoint'
 
 const baseURL = import.meta.env.VITE_API_URL
 const axiosPrivate = axios.create({
@@ -36,7 +37,7 @@ axiosPrivate.interceptors.response.use(
                     throw new Error('No refresh token available')
                 }
 
-                const refreshResponse = await api.post('/user/auth/refresh', {
+                const refreshResponse = await api.post(authEndpoints.refresh, {
                     refreshToken
                 })
 

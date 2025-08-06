@@ -8,25 +8,25 @@ import { routerConfig } from "./router-config";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/test" replace />, // or redirect to your default protected route
-  },
-  {
-    path: "/",
     element: <ProtectedRoute />,
     children: [
       {
-        path: "", // or whatever your main route should be
+        path: "/",
+        element: <Navigate to="/test" replace />,
+      },
+      {
+        path: "/",
         element: <RootLayout />,
         children: [...getAllRoutesForRouter(routerConfig)],
       },
     ],
   },
   {
-    path: "/",
+    path: "/login",
     element: <PublicRoute />,
     children: [
       {
-        path: "login",
+        path: "",
         element: <Login />,
       },
     ],
