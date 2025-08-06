@@ -7,30 +7,24 @@ import {
   Col,
   Collapse,
   Form,
-  Select,
-  InputNumber,
   List,
   Modal,
   notification,
-  Upload,
-  Image,
 } from "antd";
 import {
   ArrowLeftOutlined,
   PlusOutlined,
   DeleteOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import { useGetOneSpeakingTest } from "@/config/queries/speaking/get-one.queries";
-import { useCreateSpeakingTest } from "@/config/queries/speaking/create.queries";
-import { useFileUpload } from "@/config/queries/file/upload.queries";
-import type {
-  SpeakingSection,
-  SpeakingSubPart,
-  SpeakingQuestion,
-  SpeakingPoint,
-} from "@/utils/types/types";
+import type { SpeakingSection } from "@/utils/types/types";
+import { SectionForm, SubPartForm, PointForm, ImageUpload } from "./components";
+import { 
+  useGetOneSpeakingTest, 
+  useCreateSpeakingTest, 
+  useFileUpload,
+  useSpeakingEditor 
+} from "@/config/queries/speaking/speaking-editor.queries";
 
 const { TextArea } = Input;
 const { Panel } = Collapse;
@@ -55,12 +49,36 @@ export default function SpeakingEditor() {
 
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
 
+  // Queries
   const { data: existingTest, isLoading } = useGetOneSpeakingTest(
     isNewTest ? "" : id || ""
   );
   const { mutateAsync: createSpeakingTest, isPending: isCreating } =
     useCreateSpeakingTest();
   const { mutateAsync: uploadFile } = useFileUpload();
+
+  // Editor utilities
+  const {
+    addSection,
+    updateSection,
+    deleteSection,
+    addSubPart,
+    updateSubPart,
+    deleteSubPart,
+    addQuestion,
+    updateQuestion,
+    deleteQuestion,
+    addPoint,
+    updatePoint,
+    deletePoint,
+    addPointQuestion,
+    updatePointQuestion,
+    deletePointQuestion,
+    handleSectionImageUpload,
+    handleSubPartImageUpload,
+    removeSectionImage,
+    removeSubPartImage,
+  } = useSpeakingEditor();
 
   useEffect(() => {
     if (isNewTest && location.state?.testData) {
@@ -131,261 +149,52 @@ export default function SpeakingEditor() {
     }
   };
 
-  const addSection = () => {
-    const newSection: SpeakingSection = {
-      id: `temp-section-${Date.now()}`,
-      title: `Section ${testData.sections.length + 1}`,
-      description: "",
-      content: "",
-      order: testData.sections.length + 1,
-      type: "PART1",
-      speakingTestId: id || "",
-      images: [],
-      subParts: [],
-      questions: [],
-    };
-
-    setTestData((prev) => ({
-      ...prev,
-      sections: [...prev.sections, newSection],
-    }));
-  };
-
-  const updateSection = (
-    sectionIndex: number,
-    updates: Partial<SpeakingSection>
-  ) => {
-    setTestData((prev) => ({
-      ...prev,
-      sections: prev.sections.map((section, index) =>
-        index === sectionIndex ? { ...section, ...updates } : section
-      ),
-    }));
-  };
-
-  const deleteSection = (sectionIndex: number) => {
+  const handleDeleteSection = (sectionIndex: number) => {
     Modal.confirm({
       title: "Sectionni o'chirish",
       content: "Haqiqatan ham bu sectionni o'chirmoqchimisiz?",
-      onOk: () => {
-        setTestData((prev) => ({
-          ...prev,
-          sections: prev.sections.filter((_, index) => index !== sectionIndex),
-        }));
-      },
+      onOk: () => deleteSection(testData, setTestData, sectionIndex),
     });
   };
 
-  const addSubPart = (sectionIndex: number) => {
-    const newSubPart: SpeakingSubPart = {
-      id: `temp-subpart-${Date.now()}`,
-      label: `${testData.sections[sectionIndex].order}.${
-        (testData.sections[sectionIndex].subParts?.length || 0) + 1
-      }`,
-      description: "",
-      speakingSectionId: testData.sections[sectionIndex].id || "",
-      order: (testData.sections[sectionIndex].subParts?.length || 0) + 1,
-      questions: [],
-    };
-
-    updateSection(sectionIndex, {
-      subParts: [
-        ...(testData.sections[sectionIndex].subParts || []),
-        newSubPart,
-      ],
-    });
-  };
-
-  const updateSubPart = (
-    sectionIndex: number,
-    subPartIndex: number,
-    updates: Partial<SpeakingSubPart>
-  ) => {
-    const updatedSubParts = [
-      ...(testData.sections[sectionIndex].subParts || []),
-    ];
-    updatedSubParts[subPartIndex] = {
-      ...updatedSubParts[subPartIndex],
-      ...updates,
-    };
-    updateSection(sectionIndex, { subParts: updatedSubParts });
-  };
-
-  const deleteSubPart = (sectionIndex: number, subPartIndex: number) => {
+  const handleDeleteSubPart = (sectionIndex: number, subPartIndex: number) => {
     Modal.confirm({
       title: "Sub-partni o'chirish",
       content: "Haqiqatan ham bu sub-partni o'chirmoqchimisiz?",
-      onOk: () => {
-        const updatedSubParts =
-          testData.sections[sectionIndex].subParts?.filter(
-            (_, index) => index !== subPartIndex
-          ) || [];
-        updateSection(sectionIndex, { subParts: updatedSubParts });
-      },
+      onOk: () => deleteSubPart(testData, setTestData, sectionIndex, subPartIndex),
     });
   };
 
-  const addQuestion = (sectionIndex: number, subPartIndex?: number) => {
-    const newQuestion: SpeakingQuestion = {
-      id: `temp-question-${Date.now()}`,
-      question: "",
-      order: 1,
-    };
-
-    if (subPartIndex !== undefined) {
-      // Add to sub-part
-      const updatedSubParts = [
-        ...(testData.sections[sectionIndex].subParts || []),
-      ];
-      const subPart = updatedSubParts[subPartIndex];
-      newQuestion.order = (subPart.questions?.length || 0) + 1;
-      newQuestion.speakingSubPartId = subPart.id;
-
-      updatedSubParts[subPartIndex] = {
-        ...subPart,
-        questions: [...(subPart.questions || []), newQuestion],
-      };
-      updateSection(sectionIndex, { subParts: updatedSubParts });
-    } else {
-      // Add to section
-      newQuestion.order =
-        (testData.sections[sectionIndex].questions?.length || 0) + 1;
-      newQuestion.speakingSectionId = testData.sections[sectionIndex].id;
-
-      updateSection(sectionIndex, {
-        questions: [
-          ...(testData.sections[sectionIndex].questions || []),
-          newQuestion,
-        ],
-      });
-    }
-  };
-
-  const addPoint = (
-    sectionIndex: number,
-    type: "ADVANTAGE" | "DISADVANTAGE"
-  ) => {
-    const newPoint: SpeakingPoint = {
-      id: `temp-point-${Date.now()}`,
-      order: (testData.sections[sectionIndex].points?.length || 0) + 1,
-      type,
-      speakingSectionId: testData.sections[sectionIndex].id || "",
-      questions: [],
-    };
-
-    updateSection(sectionIndex, {
-      points: [...(testData.sections[sectionIndex].points || []), newPoint],
-    });
-  };
-
-  const updatePoint = (
-    sectionIndex: number,
-    pointIndex: number,
-    updates: Partial<SpeakingPoint>
-  ) => {
-    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
-    updatedPoints[pointIndex] = {
-      ...updatedPoints[pointIndex],
-      ...updates,
-    };
-    updateSection(sectionIndex, { points: updatedPoints });
-  };
-
-  const deletePoint = (sectionIndex: number, pointIndex: number) => {
+  const handleDeletePoint = (sectionIndex: number, pointIndex: number) => {
     Modal.confirm({
       title: "Pointni o'chirish",
       content: "Haqiqatan ham bu pointni o'chirmoqchimisiz?",
-      onOk: () => {
-        const updatedPoints =
-          testData.sections[sectionIndex].points?.filter(
-            (_, index) => index !== pointIndex
-          ) || [];
-        updateSection(sectionIndex, { points: updatedPoints });
-      },
+      onOk: () => deletePoint(testData, setTestData, sectionIndex, pointIndex),
     });
   };
 
-  const addPointQuestion = (sectionIndex: number, pointIndex: number) => {
-    const newQuestion: SpeakingQuestion = {
-      id: `temp-question-${Date.now()}`,
-      question: "",
-      order: 1,
-    };
-
-    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
-    const point = updatedPoints[pointIndex];
-    newQuestion.order = (point.questions?.length || 0) + 1;
-    newQuestion.speakingSectionId = testData.sections[sectionIndex].id;
-
-    updatedPoints[pointIndex] = {
-      ...point,
-      questions: [...(point.questions || []), newQuestion],
-    };
-    updateSection(sectionIndex, { points: updatedPoints });
+  const handleSectionImageUploadWrapper = async (sectionIndex: number, file: File) => {
+    await handleSectionImageUpload(testData, setTestData, sectionIndex, file, uploadFile);
   };
 
-  const handleSectionImageUpload = async (sectionIndex: number, file: File) => {
-    try {
-      const response = await uploadFile(file);
-      const imageUrl = response.data.url;
-      const currentImages = testData.sections[sectionIndex].images || [];
-      updateSection(sectionIndex, {
-        images: [...currentImages, imageUrl],
-      });
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    }
-  };
-
-  const handleSubPartImageUpload = async (
+  const handleSubPartImageUploadWrapper = async (
     sectionIndex: number,
     subPartIndex: number,
     file: File
   ) => {
-    try {
-      const response = await uploadFile(file);
-      const imageUrl = response.data.url;
-      const updatedSubParts = [
-        ...(testData.sections[sectionIndex].subParts || []),
-      ];
-      const subPart = updatedSubParts[subPartIndex];
-      const currentImages = subPart.images || [];
-      updatedSubParts[subPartIndex] = {
-        ...subPart,
-        images: [...currentImages, imageUrl],
-      };
-      updateSection(sectionIndex, { subParts: updatedSubParts });
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    }
+    await handleSubPartImageUpload(testData, setTestData, sectionIndex, subPartIndex, file, uploadFile);
   };
 
-  const removeSectionImage = (sectionIndex: number, imageIndex: number) => {
-    const currentImages = testData.sections[sectionIndex].images || [];
-    const updatedImages = currentImages.filter(
-      (_, index) => index !== imageIndex
-    );
-    updateSection(sectionIndex, { images: updatedImages });
+  const handleRemoveSectionImage = (sectionIndex: number, imageIndex: number) => {
+    removeSectionImage(testData, setTestData, sectionIndex, imageIndex);
   };
 
-  const removeSubPartImage = (
+  const handleRemoveSubPartImage = (
     sectionIndex: number,
     subPartIndex: number,
     imageIndex: number
   ) => {
-    const updatedSubParts = [
-      ...(testData.sections[sectionIndex].subParts || []),
-    ];
-    const subPart = updatedSubParts[subPartIndex];
-    const currentImages = subPart.images || [];
-    const updatedImages = currentImages.filter(
-      (_, index) => index !== imageIndex
-    );
-    updatedSubParts[subPartIndex] = {
-      ...subPart,
-      images: updatedImages,
-    };
-    updateSection(sectionIndex, { subParts: updatedSubParts });
+    removeSubPartImage(testData, setTestData, sectionIndex, subPartIndex, imageIndex);
   };
 
   if (isLoading) {
@@ -471,7 +280,7 @@ export default function SpeakingEditor() {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={addSection}
+                onClick={() => addSection(testData, setTestData, id)}
               >
                 Section qo'shish
               </Button>
@@ -489,135 +298,22 @@ export default function SpeakingEditor() {
                       icon={<DeleteOutlined />}
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteSection(sectionIndex);
+                        handleDeleteSection(sectionIndex);
                       }}
                     />
                   }
                 >
                   <div className="space-y-4">
-                    <Row gutter={16}>
-                      <Col span={8}>
-                        <label className="block text-sm font-medium mb-1">
-                          Title
-                        </label>
-                        <Input
-                          value={section.title}
-                          onChange={(e) =>
-                            updateSection(sectionIndex, {
-                              title: e.target.value,
-                            })
-                          }
-                          placeholder="Section title"
-                        />
-                      </Col>
-                      <Col span={8}>
-                        <label className="block text-sm font-medium mb-1">
-                          Type
-                        </label>
-                        <Select
-                          value={section.type}
-                          onChange={(value) =>
-                            updateSection(sectionIndex, { type: value })
-                          }
-                          style={{ width: "100%" }}
-                        >
-                          <Select.Option value="PART1">Part 1</Select.Option>
-                          <Select.Option value="PART2">Part 2</Select.Option>
-                          <Select.Option value="PART3">Part 3</Select.Option>
-                        </Select>
-                      </Col>
-                      <Col span={8}>
-                        <label className="block text-sm font-medium mb-1">
-                          Order
-                        </label>
-                        <InputNumber
-                          value={section.order}
-                          onChange={(value) =>
-                            updateSection(sectionIndex, { order: value || 1 })
-                          }
-                          min={1}
-                          style={{ width: "100%" }}
-                        />
-                      </Col>
-                    </Row>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Description
-                      </label>
-                      <TextArea
-                        value={section.description}
-                        onChange={(e) =>
-                          updateSection(sectionIndex, {
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="Section description"
-                        rows={2}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Content
-                      </label>
-                      <TextArea
-                        value={section.content}
-                        onChange={(e) =>
-                          updateSection(sectionIndex, {
-                            content: e.target.value,
-                          })
-                        }
-                        placeholder="Section content"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Images
-                      </label>
-                      <div className="space-y-2">
-                        <Upload
-                          accept="image/*"
-                          showUploadList={false}
-                          beforeUpload={(file) => {
-                            handleSectionImageUpload(sectionIndex, file);
-                            return false;
-                          }}
-                        >
-                          <Button icon={<UploadOutlined />} size="small">
-                            Upload Image
-                          </Button>
-                        </Upload>
-                        {section.images && section.images.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {section.images.map((image, imageIndex) => (
-                              <div key={imageIndex} className="relative">
-                                <Image
-                                  src={image}
-                                  alt={`Section image ${imageIndex + 1}`}
-                                  width={100}
-                                  height={100}
-                                  style={{ objectFit: "cover" }}
-                                />
-                                <Button
-                                  type="text"
-                                  danger
-                                  size="small"
-                                  className="absolute top-0 right-0"
-                                  onClick={() =>
-                                    removeSectionImage(sectionIndex, imageIndex)
-                                  }
-                                >
-                                  ×
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <SectionForm
+                      section={section}
+                      sectionIndex={sectionIndex}
+                      onUpdate={(sectionIndex, updates) => 
+                        updateSection(testData, setTestData, sectionIndex, updates)
+                      }
+                      onDelete={handleDeleteSection}
+                      onImageUpload={handleSectionImageUploadWrapper}
+                      onRemoveImage={handleRemoveSectionImage}
+                    />
 
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center mb-3">
@@ -625,7 +321,7 @@ export default function SpeakingEditor() {
                         <Button
                           type="dashed"
                           icon={<PlusOutlined />}
-                          onClick={() => addSubPart(sectionIndex)}
+                          onClick={() => addSubPart(testData, setTestData, sectionIndex)}
                           size="small"
                         >
                           Sub-Part qo'shish
@@ -633,183 +329,27 @@ export default function SpeakingEditor() {
                       </div>
 
                       {section.subParts?.map((subPart, subPartIndex) => (
-                        <Card
+                        <SubPartForm
                           key={subPart.id}
-                          size="small"
-                          className="mb-3"
-                          title={`Sub-Part: ${subPart.label}`}
-                          extra={
-                            <Button
-                              danger
-                              size="small"
-                              icon={<DeleteOutlined />}
-                              onClick={() =>
-                                deleteSubPart(sectionIndex, subPartIndex)
-                              }
-                            />
+                          subPart={subPart}
+                          sectionIndex={sectionIndex}
+                          subPartIndex={subPartIndex}
+                          onUpdate={(sectionIndex, subPartIndex, updates) =>
+                            updateSubPart(testData, setTestData, sectionIndex, subPartIndex, updates)
                           }
-                        >
-                          <Row gutter={16}>
-                            <Col span={12}>
-                              <label className="block text-sm font-medium mb-1">
-                                Label
-                              </label>
-                              <Input
-                                value={subPart.label}
-                                onChange={(e) =>
-                                  updateSubPart(sectionIndex, subPartIndex, {
-                                    label: e.target.value,
-                                  })
-                                }
-                                placeholder="Sub-part label"
-                              />
-                            </Col>
-                            <Col span={12}>
-                              <label className="block text-sm font-medium mb-1">
-                                Description
-                              </label>
-                              <Input
-                                value={subPart.description}
-                                onChange={(e) =>
-                                  updateSubPart(sectionIndex, subPartIndex, {
-                                    description: e.target.value,
-                                  })
-                                }
-                                placeholder="Sub-part description"
-                              />
-                            </Col>
-                          </Row>
-
-                          <div className="mt-3">
-                            <label className="block text-sm font-medium mb-1">
-                              Images
-                            </label>
-                            <div className="space-y-2">
-                              <Upload
-                                accept="image/*"
-                                showUploadList={false}
-                                beforeUpload={(file) => {
-                                  handleSubPartImageUpload(
-                                    sectionIndex,
-                                    subPartIndex,
-                                    file
-                                  );
-                                  return false;
-                                }}
-                              >
-                                <Button icon={<UploadOutlined />} size="small">
-                                  Upload Image
-                                </Button>
-                              </Upload>
-                              {subPart.images && subPart.images.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {subPart.images.map((image, imageIndex) => (
-                                    <div key={imageIndex} className="relative">
-                                      <Image
-                                        src={image}
-                                        alt={`Sub-part image ${imageIndex + 1}`}
-                                        width={100}
-                                        height={100}
-                                        style={{ objectFit: "cover" }}
-                                      />
-                                      <Button
-                                        type="text"
-                                        danger
-                                        size="small"
-                                        className="absolute top-0 right-0"
-                                        onClick={() =>
-                                          removeSubPartImage(
-                                            sectionIndex,
-                                            subPartIndex,
-                                            imageIndex
-                                          )
-                                        }
-                                      >
-                                        ×
-                                      </Button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="mt-3">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium">
-                                Questions
-                              </span>
-                              <Button
-                                type="link"
-                                icon={<PlusOutlined />}
-                                onClick={() =>
-                                  addQuestion(sectionIndex, subPartIndex)
-                                }
-                                size="small"
-                              >
-                                Question qo'shish
-                              </Button>
-                            </div>
-                            <List
-                              size="small"
-                              dataSource={subPart.questions || []}
-                              renderItem={(question, questionIndex) => (
-                                <List.Item
-                                  actions={[
-                                    <Button
-                                      danger
-                                      size="small"
-                                      icon={<DeleteOutlined />}
-                                      onClick={() => {
-                                        const updatedSubParts = [
-                                          ...(testData.sections[sectionIndex]
-                                            .subParts || []),
-                                        ];
-                                        const updatedQuestions =
-                                          subPart.questions?.filter(
-                                            (_, index) =>
-                                              index !== questionIndex
-                                          ) || [];
-                                        updatedSubParts[subPartIndex] = {
-                                          ...subPart,
-                                          questions: updatedQuestions,
-                                        };
-                                        updateSection(sectionIndex, {
-                                          subParts: updatedSubParts,
-                                        });
-                                      }}
-                                    />,
-                                  ]}
-                                >
-                                  <Input
-                                    value={question.question}
-                                    onChange={(e) => {
-                                      const updatedSubParts = [
-                                        ...(testData.sections[sectionIndex]
-                                          .subParts || []),
-                                      ];
-                                      const updatedQuestions = [
-                                        ...(subPart.questions || []),
-                                      ];
-                                      updatedQuestions[questionIndex] = {
-                                        ...question,
-                                        question: e.target.value,
-                                      };
-                                      updatedSubParts[subPartIndex] = {
-                                        ...subPart,
-                                        questions: updatedQuestions,
-                                      };
-                                      updateSection(sectionIndex, {
-                                        subParts: updatedSubParts,
-                                      });
-                                    }}
-                                    placeholder="Question text"
-                                  />
-                                </List.Item>
-                              )}
-                            />
-                          </div>
-                        </Card>
+                          onDelete={handleDeleteSubPart}
+                          onImageUpload={handleSubPartImageUploadWrapper}
+                          onRemoveImage={handleRemoveSubPartImage}
+                          onAddQuestion={(sectionIndex, subPartIndex) =>
+                            addQuestion(testData, setTestData, sectionIndex, subPartIndex)
+                          }
+                          onUpdateQuestion={(sectionIndex, subPartIndex, questionIndex, updates) =>
+                            updateQuestion(testData, setTestData, sectionIndex, subPartIndex, questionIndex, updates)
+                          }
+                          onDeleteQuestion={(sectionIndex, subPartIndex, questionIndex) =>
+                            deleteQuestion(testData, setTestData, sectionIndex, subPartIndex, questionIndex)
+                          }
+                        />
                       ))}
                     </div>
 
@@ -819,7 +359,7 @@ export default function SpeakingEditor() {
                         <Button
                           type="dashed"
                           icon={<PlusOutlined />}
-                          onClick={() => addQuestion(sectionIndex)}
+                          onClick={() => addQuestion(testData, setTestData, sectionIndex)}
                           size="small"
                         >
                           Question qo'shish
@@ -841,7 +381,7 @@ export default function SpeakingEditor() {
                                     section.questions?.filter(
                                       (_, index) => index !== questionIndex
                                     ) || [];
-                                  updateSection(sectionIndex, {
+                                  updateSection(testData, setTestData, sectionIndex, {
                                     questions: updatedQuestions,
                                   });
                                 }}
@@ -858,7 +398,7 @@ export default function SpeakingEditor() {
                                   ...question,
                                   question: e.target.value,
                                 };
-                                updateSection(sectionIndex, {
+                                updateSection(testData, setTestData, sectionIndex, {
                                   questions: updatedQuestions,
                                 });
                               }}
@@ -881,7 +421,7 @@ export default function SpeakingEditor() {
                               type="dashed"
                               icon={<PlusOutlined />}
                               onClick={() =>
-                                addPoint(sectionIndex, "ADVANTAGE")
+                                addPoint(testData, setTestData, sectionIndex, "ADVANTAGE")
                               }
                               size="small"
                             >
@@ -891,7 +431,7 @@ export default function SpeakingEditor() {
                               type="dashed"
                               icon={<PlusOutlined />}
                               onClick={() =>
-                                addPoint(sectionIndex, "DISADVANTAGE")
+                                addPoint(testData, setTestData, sectionIndex, "DISADVANTAGE")
                               }
                               size="small"
                             >
@@ -901,102 +441,25 @@ export default function SpeakingEditor() {
                         </div>
 
                         {section.points?.map((point, pointIndex) => (
-                          <Card
+                          <PointForm
                             key={point.id}
-                            size="small"
-                            className="mb-3"
-                            title={`${
-                              point.type === "ADVANTAGE"
-                                ? "Advantage"
-                                : "Disadvantage"
-                            } ${point.order}`}
-                            extra={
-                              <Button
-                                danger
-                                size="small"
-                                icon={<DeleteOutlined />}
-                                onClick={() =>
-                                  deletePoint(sectionIndex, pointIndex)
-                                }
-                              />
+                            point={point}
+                            sectionIndex={sectionIndex}
+                            pointIndex={pointIndex}
+                            onUpdate={(sectionIndex, pointIndex, updates) =>
+                              updatePoint(testData, setTestData, sectionIndex, pointIndex, updates)
                             }
-                          >
-                            <div className="mt-3">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-medium">
-                                  Questions
-                                </span>
-                                <Button
-                                  type="link"
-                                  icon={<PlusOutlined />}
-                                  onClick={() =>
-                                    addPointQuestion(sectionIndex, pointIndex)
-                                  }
-                                  size="small"
-                                >
-                                  Question qo'shish
-                                </Button>
-                              </div>
-                              <List
-                                size="small"
-                                dataSource={point.questions || []}
-                                renderItem={(question, questionIndex) => (
-                                  <List.Item
-                                    actions={[
-                                      <Button
-                                        danger
-                                        size="small"
-                                        icon={<DeleteOutlined />}
-                                        onClick={() => {
-                                          const updatedPoints = [
-                                            ...(testData.sections[sectionIndex]
-                                              .points || []),
-                                          ];
-                                          const updatedQuestions =
-                                            point.questions?.filter(
-                                              (_, index) =>
-                                                index !== questionIndex
-                                            ) || [];
-                                          updatedPoints[pointIndex] = {
-                                            ...point,
-                                            questions: updatedQuestions,
-                                          };
-                                          updateSection(sectionIndex, {
-                                            points: updatedPoints,
-                                          });
-                                        }}
-                                      />,
-                                    ]}
-                                  >
-                                    <Input
-                                      value={question.question}
-                                      onChange={(e) => {
-                                        const updatedPoints = [
-                                          ...(testData.sections[sectionIndex]
-                                            .points || []),
-                                        ];
-                                        const updatedQuestions = [
-                                          ...(point.questions || []),
-                                        ];
-                                        updatedQuestions[questionIndex] = {
-                                          ...question,
-                                          question: e.target.value,
-                                        };
-                                        updatedPoints[pointIndex] = {
-                                          ...point,
-                                          questions: updatedQuestions,
-                                        };
-                                        updateSection(sectionIndex, {
-                                          points: updatedPoints,
-                                        });
-                                      }}
-                                      placeholder="Question text"
-                                    />
-                                  </List.Item>
-                                )}
-                              />
-                            </div>
-                          </Card>
+                            onDelete={handleDeletePoint}
+                            onAddQuestion={(sectionIndex, pointIndex) =>
+                              addPointQuestion(testData, setTestData, sectionIndex, pointIndex)
+                            }
+                            onUpdateQuestion={(sectionIndex, pointIndex, questionIndex, updates) =>
+                              updatePointQuestion(testData, setTestData, sectionIndex, pointIndex, questionIndex, updates)
+                            }
+                            onDeleteQuestion={(sectionIndex, pointIndex, questionIndex) =>
+                              deletePointQuestion(testData, setTestData, sectionIndex, pointIndex, questionIndex)
+                            }
+                          />
                         ))}
                       </div>
                     )}

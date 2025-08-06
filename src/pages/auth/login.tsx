@@ -7,13 +7,14 @@ import {
 import { Button, Form, Input,  } from "antd";
 import { useAdminLogin } from "../../config/queries/login-querys";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../providers/auth-provider";
 
 export default function Login() {
   const [form] = Form.useForm();
   const loginMutation = useAdminLogin();
   const navigate = useNavigate();
+  const location = useLocation();
   const { setAuthenticated } = useAuth();
   const [, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +24,9 @@ export default function Login() {
     loginMutation.mutate(values, {
       onSuccess: () => {
         setAuthenticated(true);
-        navigate("/listening");
+        // Redirect to the intended destination or default route
+        const from = location.state?.from?.pathname || "/test";
+        navigate(from, { replace: true });
       },
       onError: () => {
         setError("Login yoki parol noto'g'ri");

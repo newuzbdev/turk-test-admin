@@ -26,19 +26,26 @@ axiosPrivate.interceptors.response.use(
 
         if (
             error.response?.status === 401 &&
-            error.response?.data?.message === 'Token has expired' &&
-            error.response?.data?.error === 'Unauthorized' &&
             !originalRequest._retry
         ) {
             originalRequest._retry = true
 
             try {
-                const refreshResponse = await api.get('/user/auth/refresh')
-                console.log('refreshResponse:', refreshResponse)
+                const refreshToken = localStorage.getItem('refreshToken')
+                if (!refreshToken) {
+                    throw new Error('No refresh token available')
+                }
+
+                const refreshResponse = await api.post('/user/auth/refresh', {
+                    refreshToken
+                })
 
                 if (refreshResponse?.data?.accessToken) {
                     const newAccessToken = refreshResponse.data.accessToken
                     localStorage.setItem('accessToken', newAccessToken)
+                    if (refreshResponse.data.refreshToken) {
+                        localStorage.setItem('refreshToken', refreshResponse.data.refreshToken)
+                    }
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
                     return axiosPrivate(originalRequest)
                 }
