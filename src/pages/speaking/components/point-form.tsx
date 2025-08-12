@@ -6,7 +6,7 @@ import {
   Input,
 } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import type { SpeakingPoint, SpeakingQuestion } from "@/utils/types/types";
+import type { SpeakingPoint, SpeakingQuestion, SpeakingExample } from "@/utils/types/types";
 
 interface PointFormProps {
   point: SpeakingPoint;
@@ -30,6 +30,18 @@ interface PointFormProps {
     pointIndex: number,
     questionIndex: number
   ) => void;
+  onAddExample: (sectionIndex: number, pointIndex: number) => void;
+  onUpdateExample: (
+    sectionIndex: number,
+    pointIndex: number,
+    exampleIndex: number,
+    updates: Partial<SpeakingExample>
+  ) => void;
+  onDeleteExample: (
+    sectionIndex: number,
+    pointIndex: number,
+    exampleIndex: number
+  ) => void;
 }
 
 export const PointForm: React.FC<PointFormProps> = ({
@@ -40,6 +52,9 @@ export const PointForm: React.FC<PointFormProps> = ({
   onAddQuestion,
   onUpdateQuestion,
   onDeleteQuestion,
+  onAddExample,
+  onUpdateExample,
+  onDeleteExample,
 }) => {
   return (
     <Card
@@ -93,6 +108,48 @@ export const PointForm: React.FC<PointFormProps> = ({
                   })
                 }
                 placeholder="Question text"
+              />
+            </List.Item>
+          )}
+        />
+      </div>
+
+      <div className="mt-3">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium">Examples</span>
+          <Button
+            type="link"
+            icon={<PlusOutlined />}
+            onClick={() => onAddExample(sectionIndex, pointIndex)}
+            size="small"
+          >
+            Example qo'shish
+          </Button>
+        </div>
+        <List
+          size="small"
+          dataSource={Array.isArray(point.example) ? point.example : point.example ? [point.example] : []}
+          renderItem={(example, exampleIndex) => (
+            <List.Item
+              actions={[
+                <Button
+                  danger
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  onClick={() =>
+                    onDeleteExample(sectionIndex, pointIndex, exampleIndex)
+                  }
+                />,
+              ]}
+            >
+              <Input
+                value={example.text}
+                onChange={(e) =>
+                  onUpdateExample(sectionIndex, pointIndex, exampleIndex, {
+                    text: e.target.value,
+                  })
+                }
+                placeholder="Example text"
               />
             </List.Item>
           )}

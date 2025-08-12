@@ -16,6 +16,13 @@ interface CreateSpeakingPointDto {
     order: number;
     question: string;
   }[];
+  example?: {
+    text: string;
+    order: number;
+  } | {
+    text: string;
+    order: number;
+  }[];
 }
 
 export const useCreateSpeakingPoint = () => {
@@ -77,6 +84,13 @@ interface UpdateSpeakingPointDto {
   questions: {
     order: number;
     question: string;
+  }[];
+  example?: {
+    text: string;
+    order: number;
+  } | {
+    text: string;
+    order: number;
   }[];
 }
 

@@ -42,6 +42,13 @@ interface CreateSpeakingTestData {
         order: number;
         question: string;
       }[];
+      example?: {
+        text: string;
+        order: number;
+      } | {
+        text: string;
+        order: number;
+      }[];
     }[];
   }[];
 }
@@ -404,6 +411,68 @@ export const useSpeakingEditor = () => {
     updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
   };
 
+  const addPointExample = (
+    testData: SpeakingTestData,
+    setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
+    sectionIndex: number,
+    pointIndex: number
+  ) => {
+    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
+    const point = updatedPoints[pointIndex];
+    const currentExamples = Array.isArray(point.example) ? point.example : point.example ? [point.example] : [];
+
+    const newExample = {
+      text: "",
+      order: currentExamples.length + 1,
+    };
+
+    updatedPoints[pointIndex] = {
+      ...point,
+      example: [...currentExamples, newExample],
+    };
+    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+  };
+
+  const updatePointExample = (
+    testData: SpeakingTestData,
+    setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
+    sectionIndex: number,
+    pointIndex: number,
+    exampleIndex: number,
+    updates: Partial<{ text: string; order: number }>
+  ) => {
+    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
+    const point = updatedPoints[pointIndex];
+    const currentExamples = Array.isArray(point.example) ? point.example : point.example ? [point.example] : [];
+    const updatedExamples = [...currentExamples];
+    updatedExamples[exampleIndex] = { ...updatedExamples[exampleIndex], ...updates };
+
+    updatedPoints[pointIndex] = {
+      ...point,
+      example: updatedExamples,
+    };
+    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+  };
+
+  const deletePointExample = (
+    testData: SpeakingTestData,
+    setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
+    sectionIndex: number,
+    pointIndex: number,
+    exampleIndex: number
+  ) => {
+    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
+    const point = updatedPoints[pointIndex];
+    const currentExamples = Array.isArray(point.example) ? point.example : point.example ? [point.example] : [];
+    const updatedExamples = currentExamples.filter((_, index) => index !== exampleIndex);
+
+    updatedPoints[pointIndex] = {
+      ...point,
+      example: updatedExamples.length === 0 ? undefined : updatedExamples,
+    };
+    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+  };
+
   // Image management
   const handleSectionImageUpload = async (
     testData: SpeakingTestData,
@@ -513,7 +582,10 @@ export const useSpeakingEditor = () => {
     addPointQuestion,
     updatePointQuestion,
     deletePointQuestion,
-    
+    addPointExample,
+    updatePointExample,
+    deletePointExample,
+
     // Image management
     handleSectionImageUpload,
     handleSubPartImageUpload,

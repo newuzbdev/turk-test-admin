@@ -11,17 +11,16 @@ export const useGetAllArchivedTests = () => {
   const limit = parseInt(searchParams.get("limit") || "10");
 
   return useQuery({
-    queryKey: [testEndpoints.all, "ARCHIVED", search, page, limit],
+    queryKey: [testEndpoints.archive, "ARCHIVED", search, page, limit],
     queryFn: async () => {
       return (
         await axiosPrivate.get<TPaginationWrapper<Test[]>>(
-          testEndpoints.all,
+          testEndpoints.archive,
           {
             params: {
               page,
               limit,
               search,
-              isDeleted: true,
             },
           }
         )

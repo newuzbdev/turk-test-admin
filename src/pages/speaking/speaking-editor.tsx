@@ -74,6 +74,9 @@ export default function SpeakingEditor() {
     addPointQuestion,
     updatePointQuestion,
     deletePointQuestion,
+    addPointExample,
+    updatePointExample,
+    deletePointExample,
     handleSectionImageUpload,
     handleSubPartImageUpload,
     removeSectionImage,
@@ -134,6 +137,7 @@ export default function SpeakingEditor() {
                   order: question.order,
                   question: question.question,
                 })) || [],
+              example: point.example,
             })) || [],
         })),
       };
@@ -458,6 +462,15 @@ export default function SpeakingEditor() {
                             }
                             onDeleteQuestion={(sectionIndex, pointIndex, questionIndex) =>
                               deletePointQuestion(testData, setTestData, sectionIndex, pointIndex, questionIndex)
+                            }
+                            onAddExample={(sectionIndex, pointIndex) =>
+                              addPointExample(testData, setTestData, sectionIndex, pointIndex)
+                            }
+                            onUpdateExample={(sectionIndex, pointIndex, exampleIndex, updates) =>
+                              updatePointExample(testData, setTestData, sectionIndex, pointIndex, exampleIndex, updates)
+                            }
+                            onDeleteExample={(sectionIndex, pointIndex, exampleIndex) =>
+                              deletePointExample(testData, setTestData, sectionIndex, pointIndex, exampleIndex)
                             }
                           />
                         ))}

@@ -17,6 +17,7 @@ export const testEndpoints = {
   one: (id: string) => `/api/test/${id}`,
   only: "/api/test/only",
   onlyOne: (id: string) => `/api/test/only/${id}`,
+  archive: "/api/archive",
 };
 
 // Listening Test endpoints (using same API but with type filtering)
@@ -144,3 +145,4 @@ export const writingQuestionEndpoints = {
   updateText: (id: string) => `/api/writing-question/${id}/text`,
   updateOrder: (id: string) => `/api/writing-question/${id}/order`,
 };
+

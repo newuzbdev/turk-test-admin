@@ -191,6 +191,11 @@ export interface SpeakingQuestion {
   updatedAt?: string;
 }
 
+export interface SpeakingExample {
+  text: string;
+  order: number;
+}
+
 export interface SpeakingPoint {
   id?: string;
   order: number;
@@ -199,6 +204,7 @@ export interface SpeakingPoint {
   createdAt?: string;
   updatedAt?: string;
   questions?: SpeakingQuestion[];
+  example?: SpeakingExample | SpeakingExample[];
 }
 
 // Create DTOs for Speaking Tests
@@ -238,6 +244,7 @@ export interface CreateSpeakingPointDTO {
   order: number;
   type: "ADVANTAGE" | "DISADVANTAGE";
   questions: CreateSpeakingQuestion[];
+  example?: SpeakingExample | SpeakingExample[];
 }
 
 // Writing Test Interfaces
