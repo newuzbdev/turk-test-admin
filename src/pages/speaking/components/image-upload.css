@@ -93,6 +93,50 @@
   color: #666;
 }
 
+/* Enhanced delete button styles */
+.delete-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.delete-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.delete-button.recently-uploaded {
+  background: #ff4d4f;
+  border-color: #ff4d4f;
+  color: white;
+}
+
+.delete-button.recently-uploaded:hover {
+  background: #ff7875;
+  border-color: #ff7875;
+}
+
+.delete-button.permanent {
+  background: white;
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+.delete-button.permanent:hover {
+  background: #fff1f0;
+  border-color: #ff7875;
+  color: #ff7875;
+}
+
 /* Progress bar styles */
 .upload-progress {
   margin-top: 8px;
@@ -141,4 +185,4 @@
   .image-preview-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
-} 
+}

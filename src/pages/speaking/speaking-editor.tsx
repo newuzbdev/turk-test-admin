@@ -18,14 +18,13 @@ import {
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import type { SpeakingSection } from "@/utils/types/types";
-import { SectionForm, SubPartForm, PointForm, } from "./components";
+import { SectionForm, SubPartForm, PointForm } from "./components";
 import {
   useGetOneSpeakingTest,
   useCreateSpeakingTest,
-  useSpeakingEditor
+  useSpeakingEditor,
 } from "@/config/queries/speaking/speaking-editor.queries";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
-
 
 const { Panel } = Collapse;
 
@@ -71,9 +70,7 @@ export default function SpeakingEditor() {
     addPoint,
     updatePoint,
     deletePoint,
-    addPointQuestion,
-    updatePointQuestion,
-    deletePointQuestion,
+
     addPointExample,
     updatePointExample,
     deletePointExample,
@@ -132,11 +129,6 @@ export default function SpeakingEditor() {
             section.points?.map((point) => ({
               order: point.order,
               type: point.type,
-              questions:
-                point.questions?.map((question) => ({
-                  order: question.order,
-                  question: question.question,
-                })) || [],
               example: point.example,
             })) || [],
         })),
@@ -165,7 +157,8 @@ export default function SpeakingEditor() {
     Modal.confirm({
       title: "Sub-partni o'chirish",
       content: "Haqiqatan ham bu sub-partni o'chirmoqchimisiz?",
-      onOk: () => deleteSubPart(testData, setTestData, sectionIndex, subPartIndex),
+      onOk: () =>
+        deleteSubPart(testData, setTestData, sectionIndex, subPartIndex),
     });
   };
 
@@ -177,8 +170,17 @@ export default function SpeakingEditor() {
     });
   };
 
-  const handleSectionImageUploadWrapper = async (sectionIndex: number, file: File) => {
-    await handleSectionImageUpload(testData, setTestData, sectionIndex, file, uploadFile);
+  const handleSectionImageUploadWrapper = async (
+    sectionIndex: number,
+    file: File
+  ) => {
+    await handleSectionImageUpload(
+      testData,
+      setTestData,
+      sectionIndex,
+      file,
+      uploadFile
+    );
   };
 
   const handleSubPartImageUploadWrapper = async (
@@ -186,10 +188,20 @@ export default function SpeakingEditor() {
     subPartIndex: number,
     file: File
   ) => {
-    await handleSubPartImageUpload(testData, setTestData, sectionIndex, subPartIndex, file, uploadFile);
+    await handleSubPartImageUpload(
+      testData,
+      setTestData,
+      sectionIndex,
+      subPartIndex,
+      file,
+      uploadFile
+    );
   };
 
-  const handleRemoveSectionImage = (sectionIndex: number, imageIndex: number) => {
+  const handleRemoveSectionImage = (
+    sectionIndex: number,
+    imageIndex: number
+  ) => {
     removeSectionImage(testData, setTestData, sectionIndex, imageIndex);
   };
 
@@ -198,7 +210,13 @@ export default function SpeakingEditor() {
     subPartIndex: number,
     imageIndex: number
   ) => {
-    removeSubPartImage(testData, setTestData, sectionIndex, subPartIndex, imageIndex);
+    removeSubPartImage(
+      testData,
+      setTestData,
+      sectionIndex,
+      subPartIndex,
+      imageIndex
+    );
   };
 
   if (isLoading) {
@@ -311,8 +329,13 @@ export default function SpeakingEditor() {
                     <SectionForm
                       section={section}
                       sectionIndex={sectionIndex}
-                      onUpdate={(sectionIndex, updates) => 
-                        updateSection(testData, setTestData, sectionIndex, updates)
+                      onUpdate={(sectionIndex, updates) =>
+                        updateSection(
+                          testData,
+                          setTestData,
+                          sectionIndex,
+                          updates
+                        )
                       }
                       onDelete={handleDeleteSection}
                       onImageUpload={handleSectionImageUploadWrapper}
@@ -325,7 +348,9 @@ export default function SpeakingEditor() {
                         <Button
                           type="dashed"
                           icon={<PlusOutlined />}
-                          onClick={() => addSubPart(testData, setTestData, sectionIndex)}
+                          onClick={() =>
+                            addSubPart(testData, setTestData, sectionIndex)
+                          }
                           size="small"
                         >
                           Sub-Part qo'shish
@@ -339,19 +364,52 @@ export default function SpeakingEditor() {
                           sectionIndex={sectionIndex}
                           subPartIndex={subPartIndex}
                           onUpdate={(sectionIndex, subPartIndex, updates) =>
-                            updateSubPart(testData, setTestData, sectionIndex, subPartIndex, updates)
+                            updateSubPart(
+                              testData,
+                              setTestData,
+                              sectionIndex,
+                              subPartIndex,
+                              updates
+                            )
                           }
                           onDelete={handleDeleteSubPart}
                           onImageUpload={handleSubPartImageUploadWrapper}
                           onRemoveImage={handleRemoveSubPartImage}
                           onAddQuestion={(sectionIndex, subPartIndex) =>
-                            addQuestion(testData, setTestData, sectionIndex, subPartIndex)
+                            addQuestion(
+                              testData,
+                              setTestData,
+                              sectionIndex,
+                              subPartIndex
+                            )
                           }
-                          onUpdateQuestion={(sectionIndex, subPartIndex, questionIndex, updates) =>
-                            updateQuestion(testData, setTestData, sectionIndex, subPartIndex, questionIndex, updates)
+                          onUpdateQuestion={(
+                            sectionIndex,
+                            subPartIndex,
+                            questionIndex,
+                            updates
+                          ) =>
+                            updateQuestion(
+                              testData,
+                              setTestData,
+                              sectionIndex,
+                              subPartIndex,
+                              questionIndex,
+                              updates
+                            )
                           }
-                          onDeleteQuestion={(sectionIndex, subPartIndex, questionIndex) =>
-                            deleteQuestion(testData, setTestData, sectionIndex, subPartIndex, questionIndex)
+                          onDeleteQuestion={(
+                            sectionIndex,
+                            subPartIndex,
+                            questionIndex
+                          ) =>
+                            deleteQuestion(
+                              testData,
+                              setTestData,
+                              sectionIndex,
+                              subPartIndex,
+                              questionIndex
+                            )
                           }
                         />
                       ))}
@@ -363,7 +421,9 @@ export default function SpeakingEditor() {
                         <Button
                           type="dashed"
                           icon={<PlusOutlined />}
-                          onClick={() => addQuestion(testData, setTestData, sectionIndex)}
+                          onClick={() =>
+                            addQuestion(testData, setTestData, sectionIndex)
+                          }
                           size="small"
                         >
                           Question qo'shish
@@ -385,9 +445,14 @@ export default function SpeakingEditor() {
                                     section.questions?.filter(
                                       (_, index) => index !== questionIndex
                                     ) || [];
-                                  updateSection(testData, setTestData, sectionIndex, {
-                                    questions: updatedQuestions,
-                                  });
+                                  updateSection(
+                                    testData,
+                                    setTestData,
+                                    sectionIndex,
+                                    {
+                                      questions: updatedQuestions,
+                                    }
+                                  );
                                 }}
                               />,
                             ]}
@@ -402,9 +467,14 @@ export default function SpeakingEditor() {
                                   ...question,
                                   question: e.target.value,
                                 };
-                                updateSection(testData, setTestData, sectionIndex, {
-                                  questions: updatedQuestions,
-                                });
+                                updateSection(
+                                  testData,
+                                  setTestData,
+                                  sectionIndex,
+                                  {
+                                    questions: updatedQuestions,
+                                  }
+                                );
                               }}
                               placeholder="Question text"
                             />
@@ -425,7 +495,12 @@ export default function SpeakingEditor() {
                               type="dashed"
                               icon={<PlusOutlined />}
                               onClick={() =>
-                                addPoint(testData, setTestData, sectionIndex, "ADVANTAGE")
+                                addPoint(
+                                  testData,
+                                  setTestData,
+                                  sectionIndex,
+                                  "ADVANTAGE"
+                                )
                               }
                               size="small"
                             >
@@ -435,7 +510,12 @@ export default function SpeakingEditor() {
                               type="dashed"
                               icon={<PlusOutlined />}
                               onClick={() =>
-                                addPoint(testData, setTestData, sectionIndex, "DISADVANTAGE")
+                                addPoint(
+                                  testData,
+                                  setTestData,
+                                  sectionIndex,
+                                  "DISADVANTAGE"
+                                )
                               }
                               size="small"
                             >
@@ -451,26 +531,50 @@ export default function SpeakingEditor() {
                             sectionIndex={sectionIndex}
                             pointIndex={pointIndex}
                             onUpdate={(sectionIndex, pointIndex, updates) =>
-                              updatePoint(testData, setTestData, sectionIndex, pointIndex, updates)
+                              updatePoint(
+                                testData,
+                                setTestData,
+                                sectionIndex,
+                                pointIndex,
+                                updates
+                              )
                             }
                             onDelete={handleDeletePoint}
-                            onAddQuestion={(sectionIndex, pointIndex) =>
-                              addPointQuestion(testData, setTestData, sectionIndex, pointIndex)
-                            }
-                            onUpdateQuestion={(sectionIndex, pointIndex, questionIndex, updates) =>
-                              updatePointQuestion(testData, setTestData, sectionIndex, pointIndex, questionIndex, updates)
-                            }
-                            onDeleteQuestion={(sectionIndex, pointIndex, questionIndex) =>
-                              deletePointQuestion(testData, setTestData, sectionIndex, pointIndex, questionIndex)
-                            }
                             onAddExample={(sectionIndex, pointIndex) =>
-                              addPointExample(testData, setTestData, sectionIndex, pointIndex)
+                              addPointExample(
+                                testData,
+                                setTestData,
+                                sectionIndex,
+                                pointIndex
+                              )
                             }
-                            onUpdateExample={(sectionIndex, pointIndex, exampleIndex, updates) =>
-                              updatePointExample(testData, setTestData, sectionIndex, pointIndex, exampleIndex, updates)
+                            onUpdateExample={(
+                              sectionIndex,
+                              pointIndex,
+                              exampleIndex,
+                              updates
+                            ) =>
+                              updatePointExample(
+                                testData,
+                                setTestData,
+                                sectionIndex,
+                                pointIndex,
+                                exampleIndex,
+                                updates
+                              )
                             }
-                            onDeleteExample={(sectionIndex, pointIndex, exampleIndex) =>
-                              deletePointExample(testData, setTestData, sectionIndex, pointIndex, exampleIndex)
+                            onDeleteExample={(
+                              sectionIndex,
+                              pointIndex,
+                              exampleIndex
+                            ) =>
+                              deletePointExample(
+                                testData,
+                                setTestData,
+                                sectionIndex,
+                                pointIndex,
+                                exampleIndex
+                              )
                             }
                           />
                         ))}

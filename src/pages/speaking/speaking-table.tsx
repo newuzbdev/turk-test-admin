@@ -1,4 +1,4 @@
-import { Table, Modal, notification } from "antd";
+import { Table, notification } from "antd";
 import { useSpeakingModalStore } from "./utils/speaking-modal-store";
 import { SpeakingModal } from "./ui/speaking-modal";
 import { useState } from "react";
@@ -20,16 +20,26 @@ export const SpeakingTable = () => {
   };
 
   const handleDelete = (id: string) => {
-    Modal.confirm({
-      title: "Speaking testni o'chirish",
-      content: "Haqiqatan ham bu speaking testni o'chirmoqchimisiz?",
-      okText: "Ha, o'chirish",
-      cancelText: "Bekor qilish",
-      okType: "danger",
-      onOk: () => {
+    console.log("=== HANDLE DELETE CALLED ===");
+    console.log("Attempting to delete speaking test with ID:", id);
+
+    // Simple confirmation dialog
+    const confirmed = window.confirm(
+      "Haqiqatan ham bu speaking testni o'chirmoqchimisiz?"
+    );
+
+    if (confirmed) {
+      console.log("=== DELETE CONFIRMED ===");
+      console.log("Delete confirmed for ID:", id);
+      try {
         deleteSpeakingTest(id);
-      },
-    });
+        console.log("Delete mutation called successfully");
+      } catch (error) {
+        console.error("Error calling delete mutation:", error);
+      }
+    } else {
+      console.log("Delete cancelled by user");
+    }
   };
 
   const handleCopyId = (id: string) => {
@@ -55,8 +65,10 @@ export const SpeakingTable = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Speaking Tests</h1>
-          <p className="text-gray-600 dark:text-white mt-1">
+          <h1 className="text-2xl font-bold text-black dark:text-white">
+            Speaking Tests
+          </h1>
+          <p className="text-black dark:text-white mt-1">
             Speaking testlarini boshqaring va tahrirlang
           </p>
         </div>

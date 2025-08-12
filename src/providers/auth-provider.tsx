@@ -1,5 +1,11 @@
 // src/providers/auth-provider.tsx
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 
 const AuthContext = createContext<{
   isAuthenticated: boolean;
@@ -23,15 +29,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Check if token is expired
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       const currentTime = Date.now() / 1000;
 
       if (payload.exp < currentTime) {
-        // Token is expired, clear it immediately
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        setIsAuthenticated(false);
-        return false;
+        // Token is expired, try to refresh it
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (refreshToken) {
+          // Attempt to refresh token
+          fetch(`${import.meta.env.VITE_API_URL}/api/auth/refresh`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ refreshToken }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.accessToken) {
+                localStorage.setItem("accessToken", data.accessToken);
+                if (data.refreshToken) {
+                  localStorage.setItem("refreshToken", data.refreshToken);
+                }
+                setIsAuthenticated(true);
+              } else {
+                // Refresh failed, clear tokens and redirect
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                setIsAuthenticated(false);
+                window.location.href = "/login";
+              }
+            })
+            .catch(() => {
+              // Refresh failed, clear tokens and redirect
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("refreshToken");
+              setIsAuthenticated(false);
+              window.location.href = "/login";
+            });
+          return false;
+        } else {
+          // No refresh token, clear tokens and redirect
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          setIsAuthenticated(false);
+          window.location.href = "/login";
+          return false;
+        }
       }
 
       setIsAuthenticated(true);
@@ -41,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       setIsAuthenticated(false);
+      window.location.href = "/login";
       return false;
     }
   }, []);
@@ -60,10 +105,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ 
-        isAuthenticated, 
+      value={{
+        isAuthenticated,
         setAuthenticated: setIsAuthenticated,
-        checkAuthStatus 
+        checkAuthStatus,
       }}
     >
       {children}

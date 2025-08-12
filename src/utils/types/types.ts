@@ -23,6 +23,11 @@ export interface PaginatedResponse<T> {
 }
 
 export interface TPaginationWrapper<T> {
+  writingTest: boolean;
+  speakingTest: boolean;
+  readingTest: boolean;
+  listeningTest: boolean;
+  ielts: boolean;
   data: T;
   meta: {
     page: number;
@@ -203,7 +208,6 @@ export interface SpeakingPoint {
   speakingSectionId: string;
   createdAt?: string;
   updatedAt?: string;
-  questions?: SpeakingQuestion[];
   example?: SpeakingExample | SpeakingExample[];
 }
 
@@ -243,7 +247,6 @@ export interface CreateSpeakingQuestion {
 export interface CreateSpeakingPointDTO {
   order: number;
   type: "ADVANTAGE" | "DISADVANTAGE";
-  questions: CreateSpeakingQuestion[];
   example?: SpeakingExample | SpeakingExample[];
 }
 

@@ -38,17 +38,15 @@ interface CreateSpeakingTestData {
     points: {
       order: number;
       type: string;
-      questions: {
-        order: number;
-        question: string;
-      }[];
-      example?: {
-        text: string;
-        order: number;
-      } | {
-        text: string;
-        order: number;
-      }[];
+      example?:
+        | {
+            text: string;
+            order: number;
+          }
+        | {
+            text: string;
+            order: number;
+          }[];
     }[];
   }[];
 }
@@ -91,8 +89,17 @@ export const useUpdateSpeakingTest = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: CreateSpeakingTestData }) => {
-      const response = await axiosPrivate.put(speakingTestEndpoints.one(id), data);
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: CreateSpeakingTestData;
+    }) => {
+      const response = await axiosPrivate.put(
+        speakingTestEndpoints.one(id),
+        data
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -105,8 +112,6 @@ export const useUpdateSpeakingTest = () => {
     },
   });
 };
-
-
 
 // Speaking editor utilities
 export const useSpeakingEditor = () => {
@@ -199,7 +204,9 @@ export const useSpeakingEditor = () => {
       ...updatedSubParts[subPartIndex],
       ...updates,
     };
-    updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+    updateSection(testData, setTestData, sectionIndex, {
+      subParts: updatedSubParts,
+    });
   };
 
   const deleteSubPart = (
@@ -212,7 +219,9 @@ export const useSpeakingEditor = () => {
       testData.sections[sectionIndex].subParts?.filter(
         (_, index) => index !== subPartIndex
       ) || [];
-    updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+    updateSection(testData, setTestData, sectionIndex, {
+      subParts: updatedSubParts,
+    });
   };
 
   // Question management
@@ -241,7 +250,9 @@ export const useSpeakingEditor = () => {
         ...subPart,
         questions: [...(subPart.questions || []), newQuestion],
       };
-      updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+      updateSection(testData, setTestData, sectionIndex, {
+        subParts: updatedSubParts,
+      });
     } else {
       // Add to section
       newQuestion.order =
@@ -268,7 +279,9 @@ export const useSpeakingEditor = () => {
     const updatedSubParts = [
       ...(testData.sections[sectionIndex].subParts || []),
     ];
-    const updatedQuestions = [...(updatedSubParts[subPartIndex].questions || [])];
+    const updatedQuestions = [
+      ...(updatedSubParts[subPartIndex].questions || []),
+    ];
     updatedQuestions[questionIndex] = {
       ...updatedQuestions[questionIndex],
       ...updates,
@@ -277,7 +290,9 @@ export const useSpeakingEditor = () => {
       ...updatedSubParts[subPartIndex],
       questions: updatedQuestions,
     };
-    updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+    updateSection(testData, setTestData, sectionIndex, {
+      subParts: updatedSubParts,
+    });
   };
 
   const deleteQuestion = (
@@ -290,14 +305,17 @@ export const useSpeakingEditor = () => {
     const updatedSubParts = [
       ...(testData.sections[sectionIndex].subParts || []),
     ];
-    const updatedQuestions = updatedSubParts[subPartIndex].questions?.filter(
-      (_, index) => index !== questionIndex
-    ) || [];
+    const updatedQuestions =
+      updatedSubParts[subPartIndex].questions?.filter(
+        (_, index) => index !== questionIndex
+      ) || [];
     updatedSubParts[subPartIndex] = {
       ...updatedSubParts[subPartIndex],
       questions: updatedQuestions,
     };
-    updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+    updateSection(testData, setTestData, sectionIndex, {
+      subParts: updatedSubParts,
+    });
   };
 
   // Point management
@@ -312,7 +330,6 @@ export const useSpeakingEditor = () => {
       order: (testData.sections[sectionIndex].points?.length || 0) + 1,
       type,
       speakingSectionId: testData.sections[sectionIndex].id || "",
-      questions: [],
     };
 
     updateSection(testData, setTestData, sectionIndex, {
@@ -332,7 +349,9 @@ export const useSpeakingEditor = () => {
       ...updatedPoints[pointIndex],
       ...updates,
     };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+    updateSection(testData, setTestData, sectionIndex, {
+      points: updatedPoints,
+    });
   };
 
   const deletePoint = (
@@ -345,70 +364,9 @@ export const useSpeakingEditor = () => {
       testData.sections[sectionIndex].points?.filter(
         (_, index) => index !== pointIndex
       ) || [];
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
-  };
-
-  const addPointQuestion = (
-    testData: SpeakingTestData,
-    setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
-    sectionIndex: number,
-    pointIndex: number
-  ) => {
-    const newQuestion: SpeakingQuestion = {
-      id: `temp-question-${Date.now()}`,
-      question: "",
-      order: 1,
-    };
-
-    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
-    const point = updatedPoints[pointIndex];
-    newQuestion.order = (point.questions?.length || 0) + 1;
-    newQuestion.speakingSectionId = testData.sections[sectionIndex].id;
-
-    updatedPoints[pointIndex] = {
-      ...point,
-      questions: [...(point.questions || []), newQuestion],
-    };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
-  };
-
-  const updatePointQuestion = (
-    testData: SpeakingTestData,
-    setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
-    sectionIndex: number,
-    pointIndex: number,
-    questionIndex: number,
-    updates: Partial<SpeakingQuestion>
-  ) => {
-    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
-    const updatedQuestions = [...(updatedPoints[pointIndex].questions || [])];
-    updatedQuestions[questionIndex] = {
-      ...updatedQuestions[questionIndex],
-      ...updates,
-    };
-    updatedPoints[pointIndex] = {
-      ...updatedPoints[pointIndex],
-      questions: updatedQuestions,
-    };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
-  };
-
-  const deletePointQuestion = (
-    testData: SpeakingTestData,
-    setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
-    sectionIndex: number,
-    pointIndex: number,
-    questionIndex: number
-  ) => {
-    const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
-    const updatedQuestions = updatedPoints[pointIndex].questions?.filter(
-      (_, index) => index !== questionIndex
-    ) || [];
-    updatedPoints[pointIndex] = {
-      ...updatedPoints[pointIndex],
-      questions: updatedQuestions,
-    };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+    updateSection(testData, setTestData, sectionIndex, {
+      points: updatedPoints,
+    });
   };
 
   const addPointExample = (
@@ -419,7 +377,11 @@ export const useSpeakingEditor = () => {
   ) => {
     const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
     const point = updatedPoints[pointIndex];
-    const currentExamples = Array.isArray(point.example) ? point.example : point.example ? [point.example] : [];
+    const currentExamples = Array.isArray(point.example)
+      ? point.example
+      : point.example
+      ? [point.example]
+      : [];
 
     const newExample = {
       text: "",
@@ -430,7 +392,9 @@ export const useSpeakingEditor = () => {
       ...point,
       example: [...currentExamples, newExample],
     };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+    updateSection(testData, setTestData, sectionIndex, {
+      points: updatedPoints,
+    });
   };
 
   const updatePointExample = (
@@ -443,15 +407,24 @@ export const useSpeakingEditor = () => {
   ) => {
     const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
     const point = updatedPoints[pointIndex];
-    const currentExamples = Array.isArray(point.example) ? point.example : point.example ? [point.example] : [];
+    const currentExamples = Array.isArray(point.example)
+      ? point.example
+      : point.example
+      ? [point.example]
+      : [];
     const updatedExamples = [...currentExamples];
-    updatedExamples[exampleIndex] = { ...updatedExamples[exampleIndex], ...updates };
+    updatedExamples[exampleIndex] = {
+      ...updatedExamples[exampleIndex],
+      ...updates,
+    };
 
     updatedPoints[pointIndex] = {
       ...point,
       example: updatedExamples,
     };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+    updateSection(testData, setTestData, sectionIndex, {
+      points: updatedPoints,
+    });
   };
 
   const deletePointExample = (
@@ -463,14 +436,22 @@ export const useSpeakingEditor = () => {
   ) => {
     const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
     const point = updatedPoints[pointIndex];
-    const currentExamples = Array.isArray(point.example) ? point.example : point.example ? [point.example] : [];
-    const updatedExamples = currentExamples.filter((_, index) => index !== exampleIndex);
+    const currentExamples = Array.isArray(point.example)
+      ? point.example
+      : point.example
+      ? [point.example]
+      : [];
+    const updatedExamples = currentExamples.filter(
+      (_, index) => index !== exampleIndex
+    );
 
     updatedPoints[pointIndex] = {
       ...point,
       example: updatedExamples.length === 0 ? undefined : updatedExamples,
     };
-    updateSection(testData, setTestData, sectionIndex, { points: updatedPoints });
+    updateSection(testData, setTestData, sectionIndex, {
+      points: updatedPoints,
+    });
   };
 
   // Image management
@@ -513,7 +494,9 @@ export const useSpeakingEditor = () => {
         ...subPart,
         images: [...currentImages, imageUrl],
       };
-      updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+      updateSection(testData, setTestData, sectionIndex, {
+        subParts: updatedSubParts,
+      });
     } catch (error) {
       console.error("Error uploading image:", error);
     }
@@ -529,7 +512,9 @@ export const useSpeakingEditor = () => {
     const updatedImages = currentImages.filter(
       (_, index) => index !== imageIndex
     );
-    updateSection(testData, setTestData, sectionIndex, { images: updatedImages });
+    updateSection(testData, setTestData, sectionIndex, {
+      images: updatedImages,
+    });
   };
 
   const removeSubPartImage = (
@@ -551,7 +536,9 @@ export const useSpeakingEditor = () => {
       ...subPart,
       images: updatedImages,
     };
-    updateSection(testData, setTestData, sectionIndex, { subParts: updatedSubParts });
+    updateSection(testData, setTestData, sectionIndex, {
+      subParts: updatedSubParts,
+    });
   };
 
   return {
@@ -559,29 +546,27 @@ export const useSpeakingEditor = () => {
     useGetOneSpeakingTest,
     useCreateSpeakingTest,
     useUpdateSpeakingTest,
-    
+
     // Section management
     addSection,
     updateSection,
     deleteSection,
-    
+
     // Sub-part management
     addSubPart,
     updateSubPart,
     deleteSubPart,
-    
+
     // Question management
     addQuestion,
     updateQuestion,
     deleteQuestion,
-    
+
     // Point management
     addPoint,
     updatePoint,
     deletePoint,
-    addPointQuestion,
-    updatePointQuestion,
-    deletePointQuestion,
+
     addPointExample,
     updatePointExample,
     deletePointExample,
@@ -592,4 +577,4 @@ export const useSpeakingEditor = () => {
     removeSectionImage,
     removeSubPartImage,
   };
-}; 
+};

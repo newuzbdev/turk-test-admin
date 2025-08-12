@@ -11,7 +11,13 @@ import {
   Space,
   Progress,
 } from "antd";
-import { UploadOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  DownloadOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
 import "./image-upload.css";
 
 const { Text } = Typography;
@@ -40,7 +46,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   // Clean up temporary URLs on unmount
   useEffect(() => {
     return () => {
-      tempUrlsRef.current.forEach(url => {
+      tempUrlsRef.current.forEach((url) => {
         URL.revokeObjectURL(url);
       });
     };
@@ -49,10 +55,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleUpload = async (file: File) => {
     setUploading(true);
     setUploadProgress(0);
-    
+
     // Simulate upload progress
     const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
+      setUploadProgress((prev) => {
         if (prev >= 90) {
           clearInterval(progressInterval);
           return 90;
@@ -64,32 +70,33 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     try {
       await onUpload(file);
       setUploadProgress(100);
-      
+
       // Add to recently uploaded for visual feedback
       const tempUrl = URL.createObjectURL(file);
       tempUrlsRef.current.push(tempUrl);
-      setRecentlyUploaded(prev => [...prev, tempUrl]);
-      
+      setRecentlyUploaded((prev) => [...prev, tempUrl]);
+
       message.success("Image uploaded successfully!");
-      
+
       // Clear progress after success
       setTimeout(() => {
         setUploadProgress(0);
       }, 2000);
-      
+
       // Keep the temporary preview for 30 seconds instead of 2 seconds
       setTimeout(() => {
-        setRecentlyUploaded(prev => {
-          const newRecentlyUploaded = prev.filter(url => url !== tempUrl);
+        setRecentlyUploaded((prev) => {
+          const newRecentlyUploaded = prev.filter((url) => url !== tempUrl);
           // Revoke the URL after removing from state
           if (newRecentlyUploaded.length !== prev.length) {
             URL.revokeObjectURL(tempUrl);
-            tempUrlsRef.current = tempUrlsRef.current.filter(url => url !== tempUrl);
+            tempUrlsRef.current = tempUrlsRef.current.filter(
+              (url) => url !== tempUrl
+            );
           }
           return newRecentlyUploaded;
         });
       }, 30000); // 30 seconds instead of 2 seconds
-      
     } catch (error) {
       setUploadProgress(0);
       message.error("Failed to upload image");
@@ -106,7 +113,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const handleDownload = (image: string, index: number) => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = image;
     link.download = `image-${index + 1}.jpg`;
     document.body.appendChild(link);
@@ -119,7 +126,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   return (
     <div className="image-upload-container">
       <label className="block text-sm font-medium mb-3">{title}</label>
-      
+
       {/* Upload Button */}
       <div className="mb-4">
         <Upload
@@ -131,8 +138,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           }}
           disabled={uploading}
         >
-          <Button 
-            icon={<UploadOutlined />} 
+          <Button
+            icon={<UploadOutlined />}
             size="large"
             loading={uploading}
             type="dashed"
@@ -141,22 +148,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             {uploading ? "Uploading..." : "Click to Upload Image"}
           </Button>
         </Upload>
-        
+
         {/* Upload Progress */}
         {uploading && (
           <div className="mt-2">
-            <Progress 
-              percent={uploadProgress} 
+            <Progress
+              percent={uploadProgress}
               status={uploadProgress === 100 ? "success" : "active"}
               strokeColor={{
-                '0%': '#108ee9',
-                '100%': '#87d068',
+                "0%": "#108ee9",
+                "100%": "#87d068",
               }}
             />
           </div>
         )}
       </div>
-      
+
       {/* Image Preview Grid */}
       {allImages.length > 0 && (
         <div className="space-y-4">
@@ -164,18 +171,23 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             <Text strong>Uploaded Images ({images.length})</Text>
             <Text type="secondary">Click on image to preview</Text>
           </div>
-          
+
           <Row gutter={[16, 16]}>
             {allImages.map((image, imageIndex) => {
               const isRecentlyUploaded = recentlyUploaded.includes(image);
-              const actualIndex = imageIndex < images.length ? imageIndex : imageIndex - images.length;
-              
+              const actualIndex =
+                imageIndex < images.length
+                  ? imageIndex
+                  : imageIndex - images.length;
+
               return (
                 <Col key={imageIndex} xs={24} sm={12} md={8} lg={6}>
                   <Card
                     size="small"
-                    className={`image-preview-card ${isRecentlyUploaded ? 'recently-uploaded' : ''}`}
-                    bodyStyle={{ padding: '8px' }}
+                    className={`image-preview-card ${
+                      isRecentlyUploaded ? "recently-uploaded" : ""
+                    }`}
+                    bodyStyle={{ padding: "8px" }}
                     hoverable
                   >
                     <div className="relative group">
@@ -186,15 +198,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                           alt={`Image ${actualIndex + 1}`}
                           width="100%"
                           height={150}
-                          style={{ 
+                          style={{
                             objectFit: "cover",
-                            cursor: "pointer"
+                            cursor: "pointer",
                           }}
                           className="transition-transform duration-200 group-hover:scale-105"
                           onClick={() => handlePreview(image, actualIndex)}
                           preview={false}
                         />
-                        
+
                         {/* Recently uploaded indicator */}
                         {isRecentlyUploaded && (
                           <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
@@ -202,7 +214,30 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                             New
                           </div>
                         )}
-                        
+
+                        {/* Remove button for recently uploaded images */}
+                        {isRecentlyUploaded && (
+                          <Button
+                            type="primary"
+                            danger
+                            size="large"
+                            icon={<DeleteOutlined />}
+                            className="delete-button recently-uploaded"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const tempUrl = image;
+                              setRecentlyUploaded((prev) =>
+                                prev.filter((url) => url !== tempUrl)
+                              );
+                              URL.revokeObjectURL(tempUrl);
+                              tempUrlsRef.current = tempUrlsRef.current.filter(
+                                (url) => url !== tempUrl
+                              );
+                              message.success("Image removed");
+                            }}
+                          />
+                        )}
+
                         {/* Overlay with actions */}
                         <div className="image-overlay">
                           <Space className="action-buttons">
@@ -221,24 +256,26 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                   type="primary"
                                   size="small"
                                   icon={<DownloadOutlined />}
-                                  onClick={() => handleDownload(image, actualIndex)}
+                                  onClick={() =>
+                                    handleDownload(image, actualIndex)
+                                  }
                                   className="bg-white text-black hover:bg-gray-100 border-white"
                                 >
                                   Download
                                 </Button>
                                 <Button
                                   danger
-                                  size="small"
+                                  size="large"
                                   icon={<DeleteOutlined />}
                                   onClick={() => onRemove(actualIndex)}
-                                  className="bg-white hover:bg-red-50 border-white"
+                                  className="delete-button permanent"
                                 />
                               </>
                             )}
                           </Space>
                         </div>
                       </div>
-                      
+
                       {/* Image info */}
                       <div className="image-info">
                         <Text className="text-xs text-gray-600">
@@ -257,7 +294,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Full Screen Preview Modal */}
       <Image
-        wrapperStyle={{ display: 'none' }}
+        wrapperStyle={{ display: "none" }}
         src={previewImage}
         preview={{
           visible: previewVisible,
@@ -267,4 +304,4 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       />
     </div>
   );
-}; 
+};

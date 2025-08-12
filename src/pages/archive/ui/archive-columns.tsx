@@ -1,15 +1,17 @@
 import { Button, Space, Tag } from "antd";
-import { Copy, RotateCcw } from "lucide-react";
+import { Copy, RotateCcw, Trash2 } from "lucide-react";
 import type { Test } from "@/utils/types/types";
 
 interface ArchiveColumnsProps {
   onRestore: (id: string) => void;
   onCopyId: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const ArchiveColumns = ({
   onRestore,
   onCopyId,
+  onDelete,
 }: ArchiveColumnsProps) => {
   return [
     {
@@ -57,25 +59,37 @@ export const ArchiveColumns = ({
     {
       title: "Amallar",
       key: "actions",
-      width: 150,
+      width: 200,
       fixed: "right" as const,
       render: (_: any, record: Test) => (
-        <Space size="small">
+        <Space size="middle" className="w-full justify-end">
           <Button
             type="primary"
-            size="small"
-            icon={<RotateCcw size={14} />}
+            size="middle"
+            icon={<RotateCcw size={16} />}
             onClick={() => onRestore(record.id!)}
             title="Qayta tiklash"
+            className="min-w-[100px]"
           >
             Qayta tiklash
           </Button>
           <Button
-            size="small"
-            icon={<Copy size={14} />}
+            size="middle"
+            icon={<Copy size={16} />}
             onClick={() => onCopyId(record.id!)}
             title="ID nusxalash"
+            className="min-w-[40px]"
           />
+          {onDelete && (
+            <Button
+              danger
+              size="middle"
+              icon={<Trash2 size={16} />}
+              onClick={() => onDelete(record.id!)}
+              title="Butunlay o'chirish"
+              className="min-w-[40px]"
+            />
+          )}
         </Space>
       ),
     },

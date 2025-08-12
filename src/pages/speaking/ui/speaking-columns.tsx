@@ -27,7 +27,7 @@ export const SpeakingColumns = ({
       title: "Test nomi",
       dataIndex: "title",
       render: (title: string) => (
-        <span className="font-medium text-gray-900">{title}</span>
+        <span className="font-medium text-black dark:text-white">{title}</span>
       ),
     },
     {
@@ -54,7 +54,7 @@ export const SpeakingColumns = ({
       title: "Yaratilgan sana",
       dataIndex: "createdAt",
       render: (date: string) => (
-        <span className="text-gray-600">
+        <span className="text-black dark:text-white">
           {new Date(date).toLocaleDateString("uz-UZ")}
         </span>
       ),
@@ -66,6 +66,7 @@ export const SpeakingColumns = ({
         <Space>
           <Button
             type="primary"
+            size="large"
             icon={<SettingOutlined />}
             onClick={(e) => {
               e.stopPropagation();
@@ -74,19 +75,39 @@ export const SpeakingColumns = ({
               }
             }}
             title="Open Editor"
+            className="shadow-md hover:shadow-lg transition-shadow"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
 
           <Button
+            size="large"
             icon={<EditOutlined />}
             onClick={(e) => {
               e.stopPropagation();
               onEdit(record);
             }}
             title="Edit"
+            className="shadow-md hover:shadow-lg transition-shadow"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
 
           <Button
-            icon={<Copy size={14} />}
+            size="large"
+            icon={<Copy size={16} />}
             onClick={(e) => {
               e.stopPropagation();
               if (record.id) {
@@ -94,18 +115,43 @@ export const SpeakingColumns = ({
               }
             }}
             title="Copy ID"
+            className="shadow-md hover:shadow-lg transition-shadow"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
 
           <Button
             danger
+            size="large"
             icon={<DeleteOutlined />}
             onClick={(e) => {
               e.stopPropagation();
+              console.log("=== DELETE BUTTON CLICKED ===");
+              console.log("Delete button clicked for record:", record);
+
               if (record.id) {
+                console.log("Calling onDelete with ID:", record.id);
                 onDelete(record.id);
+              } else {
+                console.error("No ID found in record:", record);
               }
             }}
             title="Delete"
+            className="shadow-md hover:shadow-lg transition-shadow"
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
         </Space>
       ),
