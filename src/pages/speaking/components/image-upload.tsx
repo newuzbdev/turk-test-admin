@@ -70,6 +70,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     try {
       await onUpload(file);
       setUploadProgress(100);
+      console.log("Image uploaded successfully:", file);
 
       // Add to recently uploaded for visual feedback
       const tempUrl = URL.createObjectURL(file);
@@ -88,6 +89,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         setRecentlyUploaded((prev) => {
           const newRecentlyUploaded = prev.filter((url) => url !== tempUrl);
           // Revoke the URL after removing from state
+          console.log("Revoking URL:", tempUrl);
           if (newRecentlyUploaded.length !== prev.length) {
             URL.revokeObjectURL(tempUrl);
             tempUrlsRef.current = tempUrlsRef.current.filter(

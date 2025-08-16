@@ -103,6 +103,7 @@ export default function SpeakingEditor() {
 
   const handleSave = async () => {
     try {
+      console.log(" test data", testData);
       const formValues = await form.validateFields();
       const speakingTestData = {
         title: formValues.title,

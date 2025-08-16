@@ -171,6 +171,7 @@ export const useSpeakingEditor = () => {
     setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
     sectionIndex: number
   ) => {
+    // addSubPart ichida images bo'sh massiv bilan boshlash
     const newSubPart: SpeakingSubPart = {
       id: `temp-subpart-${Date.now()}`,
       label: `${testData.sections[sectionIndex].order}.${
@@ -179,6 +180,7 @@ export const useSpeakingEditor = () => {
       description: "",
       speakingSectionId: testData.sections[sectionIndex].id || "",
       order: (testData.sections[sectionIndex].subParts?.length || 0) + 1,
+      images: [], // <-- qo'shildi
       questions: [],
     };
 
@@ -453,8 +455,11 @@ export const useSpeakingEditor = () => {
       points: updatedPoints,
     });
   };
+  // helper
+  const getUploadedPath = (res: any) => {
+    return res?.data?.path || res?.data?.url || res?.path || res?.url || "";
+  };
 
-  // Image management
   const handleSectionImageUpload = async (
     testData: SpeakingTestData,
     setTestData: React.Dispatch<React.SetStateAction<SpeakingTestData>>,
@@ -464,10 +469,16 @@ export const useSpeakingEditor = () => {
   ) => {
     try {
       const response = await uploadFile(file);
-      const imageUrl = response.data.url;
-      const currentImages = testData.sections[sectionIndex].images || [];
+      const imagePath = getUploadedPath(response);
+
+      if (!imagePath) {
+        console.error("Image path not found in response:", response);
+        return;
+      }
+
+      const currentImages = testData.sections[sectionIndex].images ?? [];
       updateSection(testData, setTestData, sectionIndex, {
-        images: [...currentImages, imageUrl],
+        images: [...currentImages, imagePath],
       });
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -484,16 +495,19 @@ export const useSpeakingEditor = () => {
   ) => {
     try {
       const response = await uploadFile(file);
-      const imageUrl = response.data.url;
+      const imagePath = getUploadedPath(response);
+
       const updatedSubParts = [
-        ...(testData.sections[sectionIndex].subParts || []),
+        ...(testData.sections[sectionIndex].subParts ?? []),
       ];
       const subPart = updatedSubParts[subPartIndex];
-      const currentImages = subPart.images || [];
+      const currentImages = subPart.images ?? [];
+
       updatedSubParts[subPartIndex] = {
         ...subPart,
-        images: [...currentImages, imageUrl],
+        images: [...currentImages, imagePath],
       };
+
       updateSection(testData, setTestData, sectionIndex, {
         subParts: updatedSubParts,
       });
