@@ -1,39 +1,46 @@
-import { createContext, type PropsWithChildren, useEffect, useState } from 'react';
+import {
+  createContext,
+  type PropsWithChildren,
+  useEffect,
+  useState,
+} from "react";
+
 interface IThemeContext {
-    theme: 'dark' | 'light';
-    toggleMode: (mode?: IThemeContext['theme']) => void;
+  theme: "dark" | "light";
+  toggleMode: (mode?: IThemeContext["theme"]) => void;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const ThemeContext = createContext<IThemeContext>({} as IThemeContext);
 
 export const ThemeProvider = ({ children }: PropsWithChildren) => {
-    const [theme, setTheme] = useState<IThemeContext['theme']>('dark');
-    const toggleMode = (mode?: IThemeContext['theme']): void => {
-        setTheme(() => {
-            if (mode) {
-                return mode;
-            } else if (theme === 'dark') {
-                return 'light';
-            } else {
-                return 'dark';
-            }
-        });
-    };
+  const [theme, setTheme] = useState<IThemeContext["theme"]>(() => {
+    const storedTheme = localStorage.getItem("theme") as
+      | IThemeContext["theme"]
+      | null;
+    if (storedTheme) return storedTheme;
 
-    useEffect(() => {
-        const mode = window.matchMedia('(prefers-color-scheme: dark)');
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    return prefersDark ? "dark" : "light";
+  });
 
-        if (mode.matches) {
-            setTheme('dark');
-        } else {
-            setTheme('light');
-        }
-    }, []);
+  const toggleMode = (mode?: IThemeContext["theme"]): void => {
+    setTheme((prev) => {
+      const newTheme = mode ? mode : prev === "dark" ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
+      return newTheme;
+    });
+  };
 
-    useEffect(() => {
-        document.documentElement.className = theme;
-    }, [theme]);
+  useEffect(() => {
+    document.documentElement.className = theme;
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
-    return <ThemeContext.Provider value={{ theme, toggleMode }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, toggleMode }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };

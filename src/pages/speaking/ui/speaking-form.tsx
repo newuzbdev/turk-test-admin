@@ -4,10 +4,11 @@ import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
 const SpeakingForm = () => {
   const { data: ieltsData, isLoading: isIeltsLoading } = useGetAllIelts();
 
-  const ieltsOptions = ieltsData?.ieltsData?.map((ielts) => ({
-    label: ielts.title,
-    value: ielts.id,
-  })) || [];
+  const ieltsOptions =
+    ieltsData?.ieltsData?.map((ielts) => ({
+      label: ielts.title,
+      value: ielts.id,
+    })) || [];
 
   return (
     <>
