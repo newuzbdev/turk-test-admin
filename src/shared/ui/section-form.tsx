@@ -3,11 +3,11 @@ import { Button, Card, Input, Select, Space, Upload, message } from "antd";
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import QuestionForm from "./question-form";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
-import type { Question, Section } from "@/utils/types/types";
+import type { QuestionDto, SectionDto } from "../components/test-editor";
 
 interface SectionFormProps {
-  section: Section;
-  onChange: (section: Section) => void;
+  section: SectionDto;
+  onChange: (section: SectionDto) => void;
   onRemove: () => void;
 }
 
@@ -30,12 +30,12 @@ const SectionForm: React.FC<SectionFormProps> = ({
     }
   };
 
-  const updateField = (field: keyof Section, value: any) => {
+  const updateField = (field: keyof SectionDto, value: any) => {
     onChange({ ...section, [field]: value });
   };
 
   const addQuestion = () => {
-    const newQuestion: Question = {
+    const newQuestion: QuestionDto = {
       text: "",
       content: "",
       answers: [],
@@ -43,7 +43,7 @@ const SectionForm: React.FC<SectionFormProps> = ({
     onChange({ ...section, questions: [...section.questions, newQuestion] });
   };
 
-  const updateQuestion = (index: number, updated: Question) => {
+  const updateQuestion = (index: number, updated: QuestionDto) => {
     const newQuestions = [...section.questions];
     newQuestions[index] = updated;
     onChange({ ...section, questions: newQuestions });

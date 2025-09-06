@@ -3,13 +3,14 @@ import { Button, Card, Input, Space, Upload, message } from "antd";
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import SectionForm from "./section-form";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
-import type { Part, Section } from "@/utils/types/types";
+import type { PartDto, SectionDto } from "../components/test-editor";
 
 interface PartFormProps {
-  part: Part;
-  onChange: (part: Part) => void;
+  part: PartDto;
+  onChange: (part: PartDto) => void;
   onRemove: () => void;
 }
+const FILE_BASE = "https://api.turkcetest.uz/"
 
 const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove }) => {
   const fileUploadMutation = useFileUpload();
@@ -26,12 +27,12 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove }) => {
     }
   };
 
-  const updateField = (field: keyof Part, value: any) => {
+  const updateField = (field: keyof PartDto, value: any) => {
     onChange({ ...part, [field]: value });
   };
 
   const addSection = () => {
-    const newSection: Section = {
+    const newSection: SectionDto = {
       title: "",
       type: null,
       content: "",
@@ -41,7 +42,7 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove }) => {
     onChange({ ...part, sections: [...part.sections, newSection] });
   };
 
-  const updateSection = (index: number, updated: Section) => {
+  const updateSection = (index: number, updated: SectionDto) => {
     const newSections = [...part.sections];
     newSections[index] = updated;
     onChange({ ...part, sections: newSections });
@@ -89,7 +90,7 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove }) => {
         </Upload>
 
         {part.audioUrl && (
-          <audio controls src={part.audioUrl} style={{ marginTop: 10 }} />
+          <audio controls src={FILE_BASE + part.audioUrl} style={{ marginTop: 10 }} />
         )}
 
         <Button type="dashed" onClick={addSection}>
