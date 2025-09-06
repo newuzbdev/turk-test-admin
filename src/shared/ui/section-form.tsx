@@ -1,47 +1,57 @@
-import { Button, Card, Input, Select, Space } from "antd";
-import type { QuestionDto, SectionDto } from "../components/test-editor";
+import React from "react";
+import { Button, Card, Input, Select, Space, Upload, message } from "antd";
+import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import QuestionForm from "./question-form";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
+import type { Question, Section } from "@/utils/types/types";
 
-interface Props {
-  section: SectionDto;
-  onChange: (section: SectionDto) => void;
+interface SectionFormProps {
+  section: Section;
+  onChange: (section: Section) => void;
   onRemove: () => void;
 }
 
-const options = [
-  { label: "Multiple Choice", value: "MULTIPLE_CHOICE" },
-  { label: "Text Input", value: "TEXT_INPUT" },
-  { label: "True / False", value: "TRUE_FALSE" },
-  { label: "Matching", value: "MATCHING" },
-  { label: "Fill Blank", value: "FILL_BLANK" },
-];
+const SectionForm: React.FC<SectionFormProps> = ({
+  section,
+  onChange,
+  onRemove,
+}) => {
+  const fileUploadMutation = useFileUpload();
 
-export default function SectionForm({ section, onChange, onRemove }: Props) {
-  const updateField = (field: keyof SectionDto, value: any) => {
-    // when type changes, reset questions.answers to match new type
-    if (field === "type") {
-      onChange({ ...section, type: value, questions: [] });
-      return;
+  const handleImageUpload = async (file: File) => {
+    try {
+      const result = await fileUploadMutation.mutateAsync(file);
+      if (result?.path) {
+        onChange({ ...section, imageUrl: result.path });
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      message.error("Rasm yuklashda xatolik");
     }
+  };
+
+  const updateField = (field: keyof Section, value: any) => {
     onChange({ ...section, [field]: value });
   };
 
   const addQuestion = () => {
-    const newQ: QuestionDto = { text: "", content: "", answers: [] };
-    onChange({ ...section, questions: [...section.questions, newQ] });
+    const newQuestion: Question = {
+      text: "",
+      content: "",
+      answers: [],
+    };
+    onChange({ ...section, questions: [...section.questions, newQuestion] });
   };
 
-  const updateQuestion = (index: number, updated: QuestionDto) => {
-    const newQs = [...section.questions];
-    newQs[index] = updated;
-    onChange({ ...section, questions: newQs });
+  const updateQuestion = (index: number, updated: Question) => {
+    const newQuestions = [...section.questions];
+    newQuestions[index] = updated;
+    onChange({ ...section, questions: newQuestions });
   };
 
   const removeQuestion = (index: number) => {
-    onChange({
-      ...section,
-      questions: section.questions.filter((_, i) => i !== index),
-    });
+    const newQuestions = section.questions.filter((_, i) => i !== index);
+    onChange({ ...section, questions: newQuestions });
   };
 
   return (
@@ -54,33 +64,63 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
         />
       }
       className="mb-4"
-      extra={<Button danger onClick={onRemove}>Remove Section</Button>}
+      extra={
+        <Button danger onClick={onRemove} icon={<DeleteOutlined />}>
+          O'chirish
+        </Button>
+      }
     >
       <Space direction="vertical" style={{ width: "100%" }}>
-        <Input
-          placeholder="Section content (optional)"
+        <label>📄 Content</label>
+        <Input.TextArea
+          rows={3}
+          placeholder="Matn kiriting..."
           value={section.content}
           onChange={(e) => updateField("content", e.target.value)}
         />
-        <Input
-          placeholder="Section image URL (optional)"
-          value={section.imageUrl}
-          onChange={(e) => updateField("imageUrl", e.target.value)}
-        />
+
+        <label>🖼️ Rasm yuklash</label>
+        <Upload
+          showUploadList={false}
+          accept="image/*"
+          beforeUpload={(file) => {
+            handleImageUpload(file);
+            return false;
+          }}
+        >
+          <Button
+            icon={<UploadOutlined />}
+            loading={fileUploadMutation.isPending}
+          >
+            {fileUploadMutation.isPending
+              ? "Yuklanmoqda..."
+              : "Rasm faylni tanlang"}
+          </Button>
+        </Upload>
+
+        {section.imageUrl && (
+          <img
+            src={section.imageUrl}
+            alt="Section"
+            style={{ marginTop: 10, maxHeight: 200 }}
+          />
+        )}
 
         <Select
-          placeholder="Select question type for this section"
-          value={section.type ?? undefined}
-          onChange={(val) => updateField("type", val)}
-          style={{ width: 280 }}
-          options={options}
+          placeholder="Savol turi"
+          value={section.type}
+          onChange={(value) => updateField("type", value)}
+          style={{ width: 250 }}
+          options={[
+            { label: "Multiple Choice", value: "MULTIPLE_CHOICE" },
+            { label: "Fill in the Blank", value: "FILL_BLANK" },
+            { label: "True / False", value: "TRUE_FALSE" },
+            { label: "Matching", value: "MATCHING" },
+            { label: "Text Input", value: "TEXT_INPUT" },
+          ]}
         />
 
-        <Button
-          type="dashed"
-          onClick={addQuestion}
-          disabled={!section.type}
-        >
+        <Button type="dashed" onClick={addQuestion} disabled={!section.type}>
           + Add Question
         </Button>
 
@@ -96,4 +136,6 @@ export default function SectionForm({ section, onChange, onRemove }: Props) {
       </Space>
     </Card>
   );
-}
+};
+
+export default SectionForm;
