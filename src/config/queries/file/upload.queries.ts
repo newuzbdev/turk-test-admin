@@ -1,12 +1,11 @@
 import axiosPrivate from "@/config/api";
-import { useMutation } from "@tanstack/react-query";
 import { fileEndpoints } from "@/config/endpoint";
 import toast from "react-hot-toast";
+import { useMutation } from "@tanstack/react-query";
 
 interface FileUploadResponse {
-  id: string;
   filename: string;
-  url: string;
+  originalname: string;
   path: string;
 }
 

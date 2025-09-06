@@ -1,5 +1,6 @@
-import { Card, Input, Upload, Button, Space, message } from "antd";
-import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Button, Card, Input, Space, Upload, message } from "antd";
+import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+
 import type { TestPartDto } from "@/config/queries/ielts/get-all.queries";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
 
@@ -15,8 +16,8 @@ export default function AudioUpload({ part, onChange, onRemove }: Props) {
   const handleAudioUpload = async (file: File) => {
     try {
       const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.data?.url) {
-        onChange({ ...part, audioUrl: result.data.url });
+      if (result?.path) {
+        onChange({ ...part, audioUrl: result.path });
       }
     } catch (error) {
       console.error("Audio upload error:", error);
@@ -56,7 +57,9 @@ export default function AudioUpload({ part, onChange, onRemove }: Props) {
             loading={fileUploadMutation.isPending}
             disabled={fileUploadMutation.isPending}
           >
-            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Audio faylni tanlang"}
+            {fileUploadMutation.isPending
+              ? "Yuklanmoqda..."
+              : "Audio faylni tanlang"}
           </Button>
         </Upload>
 
