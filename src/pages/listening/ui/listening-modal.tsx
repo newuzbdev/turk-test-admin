@@ -41,8 +41,8 @@ export const ListeningModal = ({
         // For new test creation, just navigate to editor without API call
         close();
         // Generate a temporary ID for the editor
-        const tempId = `temp-${Date.now()}`;
-        navigate(`/listening/${tempId}/edit`, {
+        // const tempId = `temp-${Date.now()}`;
+        navigate(`/listening/${formData.ieltsId}/edit`, {
           state: {
             isNew: true,
             testData: {

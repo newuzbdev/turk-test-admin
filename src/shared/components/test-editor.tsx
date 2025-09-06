@@ -1,352 +1,183 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Button, Progress, Card, Input, Space, Row, Col, Badge } from "antd";
-import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
-import PartForm from "@/shared/ui/part-form";
-import type { Part } from "@/utils/types/types";
-import { QuestionType } from "@/utils/types/types";
+import { useState } from "react";
+import { Button, Card, Input, Space } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { useCreateListeningTestWithAddition } from "@/config/queries/listening/create.queries";
+import toast from "react-hot-toast";
+import PartForm from "../ui/part-form";
 
-const { TextArea } = Input;
+interface Props {
+  ieltsId?: string | null;
+  testType?: "LISTENING" | "READING";
+}
+// types for test editor
+export type QuestionType =
+  | "MULTIPLE_CHOICE"
+  | "TEXT_INPUT"
+  | "TRUE_FALSE"
+  | "MATCHING"
+  | "FILL_BLANK";
 
-interface TestData {
+export interface AnswerDto {
+  text: string; // user-entered answer text
+  isCorrect: boolean;
+}
+
+export interface QuestionDto {
+  text: string;
+  content?: string;
+  answers: AnswerDto[];
+}
+
+export interface SectionDto {
   title: string;
-  description: string;
-  type: "LISTENING" | "READING" | "WRITING";
-  ieltsId: string;
-  parts: Part[];
+  content?: string;
+  imageUrl?: string;
+  type: QuestionType | null;
+  questions: QuestionDto[];
 }
 
-interface TestEditorProps {
-  testType: "LISTENING" | "READING" | "WRITING";
-  backUrl: string;
-  useGetOneTest: (id: string) => any;
-  useCreateTestWithAddition: () => any;
+export interface PartDto {
+  title: string;
+  description?: string;
+  audioUrl?: string;
+  sections: SectionDto[];
 }
 
-export default function TestEditor({
-  testType,
-  backUrl,
-  useGetOneTest,
-  useCreateTestWithAddition,
-}: TestEditorProps) {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [showProgress, setShowProgress] = useState(false);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [testData, setTestData] = useState<TestData>({
-    title: "",
-    description: "",
-    type: testType,
-    ieltsId: "",
-    parts: [],
-  });
+export interface TestDto {
+  title: string;
+  description?: string;
+  type?: "LISTENING" | "READING";
+  ieltsId?: string;
+  parts: PartDto[];
+}
 
-  // Check if this is a new test creation
-  const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
-  const initialTestData = location.state?.testData;
+export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
+  const [testTitle, setTestTitle] = useState("");
+  const [testDescription, setTestDescription] = useState("");
+  const [parts, setParts] = useState<PartDto[]>([]);
 
-  const { mutateAsync: createTest, isPending: isCreating } =
-    useCreateTestWithAddition();
-  const { data: test, isLoading } = useGetOneTest(isNewTest ? "" : id || "");
+  const { mutate } = useCreateListeningTestWithAddition();
 
-  // Initialize test data from location state
-  useEffect(() => {
-    if (isNewTest && initialTestData) {
-      setTestData((prev) => ({
-        ...prev,
-        title: initialTestData.title || "",
-        ieltsId: initialTestData.ieltsId || "",
-        description: `${initialTestData.title} - ${testType} Test`,
-      }));
-    }
-  }, [isNewTest, initialTestData, testType]);
-
-  // Show progress animation for new tests
-  useEffect(() => {
-    if (isNewTest) {
-      setShowProgress(true);
-      const interval = setInterval(() => {
-        setProgressPercent((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => setShowProgress(false), 200);
-            return 100;
-          }
-          return prev + 20;
-        });
-      }, 50);
-
-      return () => clearInterval(interval);
-    }
-  }, [isNewTest]);
-
-  // Add new part
   const addPart = () => {
-    const newPart: Part = {
-      number: testData.parts.length + 1,
-      title: `Part ${testData.parts.length + 1}`,
-      audioUrl: testType === "LISTENING" ? "" : undefined,
-      sections: [],
-    };
-    setTestData((prev) => ({
-      ...prev,
-      parts: [...prev.parts, newPart],
-    }));
+    setParts([
+      ...parts,
+      {
+        title: "",
+        description: "",
+        audioUrl: "",
+        sections: [],
+      },
+    ]);
   };
 
-  // Update part
-  const updatePart = (index: number, updatedPart: Part) => {
-    setTestData((prev) => ({
-      ...prev,
-      parts: prev.parts.map((part, i) => (i === index ? updatedPart : part)),
-    }));
+  const updatePart = (index: number, updated: PartDto) => {
+    const newParts = [...parts];
+    newParts[index] = updated;
+    setParts(newParts);
   };
 
-  // Remove part
   const removePart = (index: number) => {
-    setTestData((prev) => ({
-      ...prev,
-      parts: prev.parts.filter((_, i) => i !== index),
-    }));
+    setParts(parts.filter((_, i) => i !== index));
   };
 
-  // Transform data to match API structure
-  const transformDataForAPI = (data: TestData) => {
+  // Build payload according to API doc
+  const buildPayload = (): any => {
     return {
-      title: data.title,
-      description: data.description,
-      type: data.type,
-      ieltsId: data.ieltsId,
-      parts: data.parts.map((part) => ({
-        number: part.number,
-        title: part.title,
-        audioUrl: part.audioUrl || "",
-        sections: (part.sections || []).map((section, sectionIndex) => ({
-          title: section.title || `Section ${sectionIndex + 1}`,
-          content: section.content || "Read the following passage...",
-          imageUrl: "",
-          questions: (section.questions || []).map(
-            (question, questionIndex) => ({
-              number: questionIndex + 1,
-              type: question.type || "",
-              text: question.question || `Question ${questionIndex + 1}`,
-              answers: (question.answers || []).map((answer, answerIndex) => {
-                // Generate variant text based on question type
-                let variantText: string;
-                switch (question.type) {
-                  case QuestionType.TRUE_FALSE:
-                    if (answerIndex === 0) variantText = "True";
-                    else if (answerIndex === 1) variantText = "False";
-                    else if (answerIndex === 2) variantText = "Not Given";
-                    else variantText = "Variant";
-                    break;
-                  case QuestionType.MULTIPLE_CHOICE:
-                  case QuestionType.MULTI_SELECT:
-                    variantText = String.fromCharCode(65 + answerIndex); // A, B, C, D...
-                    break;
-                  case QuestionType.MATCHING:
-                    variantText = `${answerIndex + 1}`; // 1, 2, 3, 4...
-                    break;
-                  case QuestionType.TEXT_INPUT:
-                  case QuestionType.FILL_BLANK:
-                    variantText = "Text";
-                    break;
-                  default:
-                    variantText = String.fromCharCode(65 + answerIndex);
-                }
-
-                return {
-                  variantText: variantText,
-                  answer: answer.answer || `Option ${variantText}`,
-                  correct: Boolean(answer.isCorrect),
-                };
-              }),
-            })
-          ),
+      title: testTitle,
+      description: testDescription,
+      type: testType,
+      ieltsId: ieltsId ?? undefined,
+      parts: parts.map((p, pIndex) => ({
+        number: pIndex + 1,
+        title: p.title,
+        description: p.description ?? "",
+        audioUrl: p.audioUrl ?? "",
+        sections: p.sections.map((s) => ({
+          title: s.title,
+          content: s.content ?? s.title ?? "",
+          imageUrl: s.imageUrl ?? "",
+          questions: s.questions.map((q, qIndex) => ({
+            number: qIndex + 1,
+            type: s.type ?? "TEXT_INPUT",
+            text: q.text ?? "",
+            content: q.text ?? "",
+            answers: q.answers.map((a, aIndex) => ({
+              variantText: (String.fromCharCode(65 + aIndex)), // A, B, C...
+              answer: String(a.text ?? ""),
+              correct: Boolean(a.isCorrect),
+            })),
+          })),
         })),
       })),
-    };
+    } as any; // cast to any to match API shape; TS types above kept for dev
   };
 
-  // Save test
-  const handleSave = async () => {
-    try {
-      const transformedData = transformDataForAPI(testData);
-      console.log("Sending data to API:", transformedData);
-      await createTest(transformedData);
-      navigate(backUrl);
-    } catch (error) {
-      console.error("Error saving test:", error);
+  const handleSave = () => {
+    if (!testTitle.trim()) {
+      toast.error("Test sarlavhasi bo'sh bo'lmasligi kerak");
+      return;
     }
+    if (!ieltsId) {
+      toast.error("IELTS ID topilmadi. Testni tegishli IELTS ga bog'lang.");
+      return;
+    }
+
+    const payload = buildPayload();
+    mutate(payload, {
+      onSuccess: () => {
+        toast.success("Test muvaffaqiyatli yaratildi");
+        // clear
+        setTestTitle("");
+        setTestDescription("");
+        setParts([]);
+      },
+      onError: (err: any) => {
+        console.error("API Error:", err);
+        const msg = err?.response?.data?.error || "Xatolik yuz berdi";
+        toast.error(msg);
+      },
+    });
   };
-
-  if (isLoading && !isNewTest) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isNewTest && !test?.data) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div>Test not found</div>
-      </div>
-    );
-  }
-
-  // Show progress for new test creation
-  if (showProgress) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <div className="w-96 text-center">
-          <h2 className="text-xl font-semibold mb-4">
-            Creating {testType} Test...
-          </h2>
-          <Progress
-            percent={progressPercent}
-            status="active"
-            strokeColor={{
-              "0%": "#108ee9",
-              "100%": "#87d068",
-            }}
-          />
-          <p className="text-gray-600 mt-4">
-            {testData.title || "Setting up your test"}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const displayTitle = isNewTest ? testData.title : test?.data?.title;
-  const testIcon = testType === "LISTENING" ? "🎧" : "📖";
 
   return (
-    <div className="flex flex-col h-screen ">
-      {/* Top Bar */}
-      <header className="flex items-center justify-between h-16 px-6 border-b  shadow-sm">
-        <div className="flex items-center space-x-4">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(backUrl)}
-            className="flex items-center space-x-2"
-          >
-            Back to {testType} Tests
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 16 }}>
+      <Card
+        title="Create Listening/Reading Test"
+        extra={
+          <Space>
+            <Button type="primary" onClick={handleSave} >
+              Saqlash
+            </Button>
+          </Space>
+        }
+      >
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Input
+            placeholder="Test title"
+            value={testTitle}
+            onChange={(e) => setTestTitle(e.target.value)}
+          />
+          <Input.TextArea
+            placeholder="Test description"
+            value={testDescription}
+            onChange={(e) => setTestDescription(e.target.value)}
+            autoSize={{ minRows: 2, maxRows: 4 }}
+          />
+
+          {parts.map((p, idx) => (
+            <PartForm
+              key={idx}
+              part={p}
+              onChange={(updated) => updatePart(idx, updated)}
+              onRemove={() => removePart(idx)}
+            />
+          ))}
+
+          <Button type="dashed" icon={<PlusOutlined />} onClick={addPart}>
+            + Add Part
           </Button>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-lg font-semibold">
-              {displayTitle || `New ${testType} Test`}
-            </h1>
-            <span className="text-sm text-gray-500">
-              ({testType} Test Editor)
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button type="primary" onClick={handleSave} loading={isCreating}>
-            Save Test
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Test Basic Info */}
-          <Card title={`📝 Test Information`}>
-            <Row gutter={[20, 20]}>
-              <Col span={12}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label style={{ fontWeight: 600, fontSize: "14px" }}>
-                    Test Title
-                  </label>
-                </div>
-                <Input
-                  placeholder="Enter test title"
-                  value={testData.title}
-                  onChange={(e) =>
-                    setTestData((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                  size="large"
-                />
-              </Col>
-              <Col span={12}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label style={{ fontWeight: 600, fontSize: "14px" }}>
-                    Description
-                  </label>
-                </div>
-                <TextArea
-                  placeholder="Enter test description"
-                  value={testData.description}
-                  onChange={(e) =>
-                    setTestData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  rows={3}
-                />
-              </Col>
-            </Row>
-          </Card>
-
-          {/* Parts Section */}
-          <Card
-            title={
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span>{testIcon} Test Parts</span>
-                  <Badge
-                    count={testData.parts.length}
-                    style={{ backgroundColor: "#10b981" }}
-                  />
-                </div>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={addPart}
-                >
-                  Add Part
-                </Button>
-              </div>
-            }
-          >
-            <Space direction="vertical" style={{ width: "100%" }} size="large">
-              {testData.parts.map((part, index) => (
-                <div
-                  key={index}
-                  style={{
-                
-                    borderRadius: "8px",
-                    border: "1px solid #e2e8f0",
-                    overflow: "hidden",
-                  }}
-                >
-                  <PartForm
-                    part={part}
-                    onChange={(updatedPart) => updatePart(index, updatedPart)}
-                    onRemove={() => removePart(index)}
-                    showAudioUpload={testType === "LISTENING"}
-                  />
-                </div>
-              ))}
-
-              {testData.parts.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <p>
-                    No parts added yet. Click "Add Part" to create your first
-                    part.
-                  </p>
-                </div>
-              )}
-            </Space>
-          </Card>
-        </div>
-      </div>
+        </Space>
+      </Card>
     </div>
   );
 }

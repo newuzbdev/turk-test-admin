@@ -38,7 +38,7 @@ export const routerConfig: RouterConfig[] = [
     title: "Listening Editor",
     label: "Listening Editor",
     icon: <Headphones />,
-    path: "listening/:id/edit",
+    path: "listening/:ieltsId/edit",
     page: <ListeningEditor />,
     inMenu: false,
   },
