@@ -1,8 +1,11 @@
 @import "tailwindcss";
+
 .delete-button {
-  color: #000; /* black color */
+  color: #000;
+  /* black color */
 }
 
 .dark-mode .delete-button {
-  color: #fff; /* white color */
+  color: #fff;
+  /* white color */
 }

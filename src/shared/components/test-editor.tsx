@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Button, Card, Input, Space } from "antd";
+import { Button, Card, Divider, Input, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useCreateListeningTestWithAddition } from "@/config/queries/listening/create.queries";
 import toast from "react-hot-toast";
 import PartForm from "../ui/part-form";
+import Title from "antd/es/typography/Title";
 
 interface Props {
   ieltsId?: string | null;
@@ -140,29 +141,29 @@ export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
   };
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 16 }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
+      <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
+        {testType === "LISTENING" ? "Listening Test Editor" : "Reading Test Editor"}
+      </Title>
       <Card
-        title="Create Listening/Reading Test"
-        extra={
-          <Space>
-            <Button type="primary" onClick={handleSave} >
-              Saqlash
-            </Button>
-          </Space>
-        }
+        style={{ marginBottom: 24, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
+        bodyStyle={{ padding: 24 }}
       >
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           <Input
             placeholder="Test title"
             value={testTitle}
             onChange={(e) => setTestTitle(e.target.value)}
+            size="large"
           />
           <Input.TextArea
             placeholder="Test description"
             value={testDescription}
             onChange={(e) => setTestDescription(e.target.value)}
-            autoSize={{ minRows: 2, maxRows: 4 }}
+            autoSize={{ minRows: 3, maxRows: 6 }}
+            size="large"
           />
+          <Divider style={{ margin: "16px 0" }} />
 
           {parts.map((p, idx) => (
             <PartForm
@@ -173,11 +174,14 @@ export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
             />
           ))}
 
-          <Button type="dashed" icon={<PlusOutlined />} onClick={addPart}>
-            + Add Part
+          <Button type="dashed" icon={<PlusOutlined />} onClick={addPart} block>
+            Add New Part
           </Button>
         </Space>
       </Card>
+      <Button type="primary" size="large" onClick={handleSave} block>
+        Save Test
+      </Button>
     </div>
   );
 }

@@ -61,7 +61,6 @@ export default function QuestionForm({
           onChange={(e) => updateField("text", e.target.value)}
         />
       }
-      className="mb-3"
       extra={<Button danger onClick={onRemove}>Remove Question</Button>}
     >
       <Space direction="vertical" style={{ width: "100%" }}>

@@ -1,9 +1,12 @@
-import React from "react";
-import { Button, Card, Input, Select, Space, Upload, message } from "antd";
-import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
+import { Button, Card, Input, Select, Space, Upload, message, Divider, Typography, Progress, Image } from "antd";
+import { DeleteOutlined, UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import QuestionForm from "./question-form";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type { QuestionDto, SectionDto } from "../components/test-editor";
+
+const { Text } = Typography;
+const FILE_BASE = "https://api.turkcetest.uz/";
 
 interface SectionFormProps {
   section: SectionDto;
@@ -11,22 +14,23 @@ interface SectionFormProps {
   onRemove: () => void;
 }
 
-const SectionForm: React.FC<SectionFormProps> = ({
-  section,
-  onChange,
-  onRemove,
-}) => {
+const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }) => {
   const fileUploadMutation = useFileUpload();
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleImageUpload = async (file: File) => {
     try {
+      setUploadProgress(0);
       const result = await fileUploadMutation.mutateAsync(file);
       if (result?.path) {
         onChange({ ...section, imageUrl: result.path });
+        setUploadProgress(100);
+        message.success("Rasm yuklandi");
       }
     } catch (error) {
       console.error("Image upload error:", error);
       message.error("Rasm yuklashda xatolik");
+      setUploadProgress(0);
     }
   };
 
@@ -56,30 +60,37 @@ const SectionForm: React.FC<SectionFormProps> = ({
 
   return (
     <Card
+      style={{ marginBottom: 24, borderRadius: 12, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}
+      bodyStyle={{ padding: 24 }}
       title={
         <Input
           placeholder="Section title"
           value={section.title}
           onChange={(e) => updateField("title", e.target.value)}
+          size="large"
+          style={{ fontWeight: "bold", fontSize: 18 }}
         />
       }
-      className="mb-4"
       extra={
         <Button danger onClick={onRemove} icon={<DeleteOutlined />}>
           O'chirish
         </Button>
       }
     >
-      <Space direction="vertical" style={{ width: "100%" }}>
-        <label>📄 Content</label>
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Text strong>📄 Content</Text>
         <Input.TextArea
-          rows={3}
+          rows={4}
           placeholder="Matn kiriting..."
           value={section.content}
           onChange={(e) => updateField("content", e.target.value)}
+          style={{ borderRadius: 8, padding: 10 }}
         />
 
-        <label>🖼️ Rasm yuklash</label>
+        <Divider />
+
+        {/* Image Upload */}
+        <Text strong>🖼️ Rasm yuklash</Text>
         <Upload
           showUploadList={false}
           accept="image/*"
@@ -91,26 +102,35 @@ const SectionForm: React.FC<SectionFormProps> = ({
           <Button
             icon={<UploadOutlined />}
             loading={fileUploadMutation.isPending}
+            size="large"
+            block
           >
-            {fileUploadMutation.isPending
-              ? "Yuklanmoqda..."
-              : "Rasm faylni tanlang"}
+            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm faylni tanlang"}
           </Button>
         </Upload>
 
+        {uploadProgress > 0 && uploadProgress < 100 && (
+          <Progress percent={uploadProgress} size="small" status="active" />
+        )}
+
         {section.imageUrl && (
-          <img
-            src={section.imageUrl}
+          <Image
+            src={FILE_BASE + section.imageUrl}
             alt="Section"
-            style={{ marginTop: 10, maxHeight: 200 }}
+            className="!w-full"
+            style={{ marginTop: 10, width: "100%", maxHeight: 220, borderRadius: 8 }}
           />
         )}
 
+        <Divider />
+
+        {/* Question Type */}
+        <Text strong>📝 Savol turi</Text>
         <Select
           placeholder="Savol turi"
           value={section.type}
           onChange={(value) => updateField("type", value)}
-          style={{ width: 250 }}
+          style={{ width: "100%" }}
           options={[
             { label: "Multiple Choice", value: "MULTIPLE_CHOICE" },
             { label: "Fill in the Blank", value: "FILL_BLANK" },
@@ -120,18 +140,40 @@ const SectionForm: React.FC<SectionFormProps> = ({
           ]}
         />
 
-        <Button type="dashed" onClick={addQuestion} disabled={!section.type}>
+        <Button
+          type="dashed"
+          onClick={addQuestion}
+          disabled={!section.type}
+          icon={<PlusOutlined />}
+          block
+        >
           + Add Question
         </Button>
 
+        {/* Questions */}
         {section.questions.map((q, idx) => (
-          <QuestionForm
+          <Card
             key={idx}
-            question={q}
-            type={section.type}
-            onChange={(updated) => updateQuestion(idx, updated)}
-            onRemove={() => removeQuestion(idx)}
-          />
+            type="inner"
+            style={{ marginTop: 16, borderRadius: 8 }}
+            title={`Question ${idx + 1}`}
+            extra={
+              <Button
+                danger
+                size="small"
+                onClick={() => removeQuestion(idx)}
+              >
+                O'chirish
+              </Button>
+            }
+          >
+            <QuestionForm
+              question={q}
+              type={section.type}
+              onChange={(updated) => updateQuestion(idx, updated)}
+              onRemove={() => removeQuestion(idx)}
+            />
+          </Card>
         ))}
       </Space>
     </Card>
