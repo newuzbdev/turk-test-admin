@@ -1,14 +1,17 @@
-import { useState } from "react";
 import { Button, Card, Divider, Input, Space } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import { useCreateListeningTestWithAddition } from "@/config/queries/listening/create.queries";
-import toast from "react-hot-toast";
+
 import PartForm from "../ui/part-form";
+import { PlusOutlined } from "@ant-design/icons";
 import Title from "antd/es/typography/Title";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 interface Props {
   ieltsId?: string | null;
   testType?: "LISTENING" | "READING";
+  backUrl: string;
+  useCreateTestWithAddition: any;
 }
 // types for test editor
 export type QuestionType =
@@ -52,12 +55,17 @@ export interface TestDto {
   parts: PartDto[];
 }
 
-export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
+export default function TestEditor({
+  ieltsId,
+  testType,
+  backUrl,
+  useCreateTestWithAddition,
+}: Props) {
   const [testTitle, setTestTitle] = useState("");
   const [testDescription, setTestDescription] = useState("");
   const [parts, setParts] = useState<PartDto[]>([]);
-
-  const { mutate } = useCreateListeningTestWithAddition();
+  const navigate = useNavigate();
+  const { mutate } = useCreateTestWithAddition();
 
   const addPart = () => {
     setParts([
@@ -103,7 +111,7 @@ export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
             text: q.text ?? "",
             content: q.text ?? "",
             answers: q.answers.map((a, aIndex) => ({
-              variantText: (String.fromCharCode(65 + aIndex)), // A, B, C...
+              variantText: String.fromCharCode(65 + aIndex), // A, B, C...
               answer: String(a.text ?? ""),
               correct: Boolean(a.isCorrect),
             })),
@@ -131,6 +139,7 @@ export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
         setTestTitle("");
         setTestDescription("");
         setParts([]);
+        navigate(backUrl);
       },
       onError: (err: any) => {
         console.error("API Error:", err);
@@ -143,10 +152,16 @@ export default function TestEditor({ ieltsId, testType = "LISTENING" }: Props) {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
       <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
-        {testType === "LISTENING" ? "Listening Test Editor" : "Reading Test Editor"}
+        {testType === "LISTENING"
+          ? "Listening Test Editor"
+          : "Reading Test Editor"}
       </Title>
       <Card
-        style={{ marginBottom: 24, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
+        style={{
+          marginBottom: 24,
+          borderRadius: 12,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        }}
         bodyStyle={{ padding: 24 }}
       >
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>

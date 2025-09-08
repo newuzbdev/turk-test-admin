@@ -1,10 +1,11 @@
-import { PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Modal } from "antd";
+
+import { PlusOutlined } from "@ant-design/icons";
+import ReadingForm from "./reading-form";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ReadingForm from "./reading-form";
-import { useUpdateReadingTest } from "@/config/queries/reading/update.queries";
 import { useReadingModalStore } from "../utils/reading-modal-store";
+import { useUpdateReadingTest } from "@/config/queries/reading/update.queries";
 
 interface ReadingModalProps {
   hideAddButton?: boolean;
@@ -36,8 +37,8 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
         // For new test creation, just navigate to editor without API call
         close();
         // Generate a temporary ID for the editor
-        const tempId = `temp-${Date.now()}`;
-        navigate(`/reading/${tempId}/edit`, {
+        // const tempId = `temp-${Date.now()}`;
+        navigate(`/reading/${formData.ieltsId}/edit`, {
           state: {
             isNew: true,
             testData: {
@@ -82,7 +83,9 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
         onCancel={close}
         destroyOnClose
         onOk={form.submit}
-        title={data ? "Reading testini tahrirlash" : "Yangi Reading test qo'shish"}
+        title={
+          data ? "Reading testini tahrirlash" : "Yangi Reading test qo'shish"
+        }
         okText={data ? "Saqlash" : "Qo'shish"}
         cancelText="Bekor qilish"
         modalRender={(node) => (
