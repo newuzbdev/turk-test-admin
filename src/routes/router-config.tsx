@@ -1,17 +1,18 @@
-import { Listening, Reading, Speaking, Writing, Archive } from "@/pages";
+import { Archive, Listening, Reading, Speaking, Writing } from "@/pages";
+import {
+  Archive as ArchiveIcon,
+  BookAudioIcon,
+  BookOpenIcon,
+  Headphones,
+  PenTool,
+  Speaker,
+} from "lucide-react";
+
 import { IELTS } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
 import ReadingEditor from "@/pages/reading/reading-editor";
 import SpeakingEditor from "@/pages/speaking/speaking-editor";
 import WritingEditor from "@/pages/writing/writing-editor";
-import {
-  BookAudioIcon,
-  BookOpenIcon,
-  Headphones,
-  Speaker,
-  PenTool,
-  Archive as ArchiveIcon,
-} from "lucide-react";
 
 export interface RouterConfig {
   title: string;
@@ -54,7 +55,7 @@ export const routerConfig: RouterConfig[] = [
     title: "Reading Editor",
     label: "Reading Editor",
     icon: <BookOpenIcon />,
-    path: "reading/:id/edit",
+    path: "reading/:ieltsId/edit",
     page: <ReadingEditor />,
     inMenu: false,
   },

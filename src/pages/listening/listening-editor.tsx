@@ -7,7 +7,6 @@ import { useParams } from "react-router-dom";
 
 export default function ListeningEditor() {
   const { ieltsId } = useParams<{ ieltsId: string }>();
-  console.log("IELTS ID:", ieltsId);
 
   return (
     <TestEditor
