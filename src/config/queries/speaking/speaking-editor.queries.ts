@@ -379,10 +379,10 @@ export const useSpeakingEditor = () => {
   ) => {
     const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
     const point = updatedPoints[pointIndex];
-    const currentExamples = Array.isArray(point.example)
-      ? point.example
-      : point.example
-      ? [point.example]
+    const currentExamples = Array.isArray(point.examples)
+      ? point.examples
+      : point.examples
+      ? [point.examples]
       : [];
 
     const newExample = {
@@ -392,7 +392,7 @@ export const useSpeakingEditor = () => {
 
     updatedPoints[pointIndex] = {
       ...point,
-      example: [...currentExamples, newExample],
+      examples: [...currentExamples, newExample],
     };
     updateSection(testData, setTestData, sectionIndex, {
       points: updatedPoints,
@@ -409,10 +409,10 @@ export const useSpeakingEditor = () => {
   ) => {
     const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
     const point = updatedPoints[pointIndex];
-    const currentExamples = Array.isArray(point.example)
-      ? point.example
-      : point.example
-      ? [point.example]
+    const currentExamples = Array.isArray(point.examples)
+      ? point.examples
+      : point.examples
+      ? [point.examples]
       : [];
     const updatedExamples = [...currentExamples];
     updatedExamples[exampleIndex] = {
@@ -422,7 +422,7 @@ export const useSpeakingEditor = () => {
 
     updatedPoints[pointIndex] = {
       ...point,
-      example: updatedExamples,
+      examples: updatedExamples,
     };
     updateSection(testData, setTestData, sectionIndex, {
       points: updatedPoints,
@@ -438,10 +438,10 @@ export const useSpeakingEditor = () => {
   ) => {
     const updatedPoints = [...(testData.sections[sectionIndex].points || [])];
     const point = updatedPoints[pointIndex];
-    const currentExamples = Array.isArray(point.example)
-      ? point.example
-      : point.example
-      ? [point.example]
+    const currentExamples = Array.isArray(point.examples)
+      ? point.examples
+      : point.examples
+      ? [point.examples]
       : [];
     const updatedExamples = currentExamples.filter(
       (_, index) => index !== exampleIndex
@@ -449,7 +449,7 @@ export const useSpeakingEditor = () => {
 
     updatedPoints[pointIndex] = {
       ...point,
-      example: updatedExamples.length === 0 ? undefined : updatedExamples,
+      examples: updatedExamples.length === 0 ? undefined : updatedExamples,
     };
     updateSection(testData, setTestData, sectionIndex, {
       points: updatedPoints,

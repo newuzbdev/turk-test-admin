@@ -130,7 +130,7 @@ export default function SpeakingEditor() {
             section.points?.map((point) => ({
               order: point.order,
               type: point.type,
-              example: point.example,
+              examples: point.examples,
             })) || [],
         })),
       };

@@ -67,10 +67,10 @@ export const PointForm: React.FC<PointFormProps> = ({
         <List
           size="small"
           dataSource={
-            Array.isArray(point.example)
-              ? point.example
-              : point.example
-              ? [point.example]
+            Array.isArray(point.examples)
+            ? point.examples
+            : point.examples
+            ? [point.examples]
               : []
           }
           renderItem={(example, exampleIndex) => (

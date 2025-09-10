@@ -35,10 +35,7 @@ interface CreateSpeakingTestDto {
         order: number;
         question: string;
       }[];
-      example?: {
-        text: string;
-        order: number;
-      } | {
+      examples?: {
         text: string;
         order: number;
       }[];

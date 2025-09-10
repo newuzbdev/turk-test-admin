@@ -10,7 +10,7 @@ describe("PointForm", () => {
     order: 1,
     type: "ADVANTAGE",
     speakingSectionId: "section-1",
-    example: [
+    examples: [
       { text: "Test example 1", order: 1 },
       { text: "Test example 2", order: 2 },
     ],
