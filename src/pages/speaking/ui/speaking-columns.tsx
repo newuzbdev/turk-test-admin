@@ -27,7 +27,7 @@ export const SpeakingColumns = ({
       title: "Test nomi",
       dataIndex: "title",
       render: (title: string) => (
-        <span className="font-medium text-black dark:text-white">{title}</span>
+        <span className="font-medium">{title}</span>
       ),
     },
     {
@@ -54,7 +54,7 @@ export const SpeakingColumns = ({
       title: "Yaratilgan sana",
       dataIndex: "createdAt",
       render: (date: string) => (
-        <span className="text-black dark:text-white">
+        <span>
           {new Date(date).toLocaleDateString("uz-UZ")}
         </span>
       ),

@@ -65,10 +65,10 @@ export const SpeakingTable = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-black dark:text-white">
+          <h1 className="text-2xl font-bold ">
             Speaking Tests
           </h1>
-          <p className="text-black dark:text-white mt-1">
+          <p className="mt-1">
             Speaking testlarini boshqaring va tahrirlang
           </p>
         </div>

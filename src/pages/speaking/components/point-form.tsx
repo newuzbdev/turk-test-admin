@@ -48,7 +48,10 @@ export const PointForm: React.FC<PointFormProps> = ({
           danger
           size="small"
           icon={<DeleteOutlined />}
-          onClick={() => onDelete(sectionIndex, pointIndex)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(sectionIndex, pointIndex);
+          }}
         />
       }
     >
@@ -80,9 +83,10 @@ export const PointForm: React.FC<PointFormProps> = ({
                   danger
                   size="small"
                   icon={<DeleteOutlined />}
-                  onClick={() =>
-                    onDeleteExample(sectionIndex, pointIndex, exampleIndex)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteExample(sectionIndex, pointIndex, exampleIndex);
+                  }}
                 />,
               ]}
             >

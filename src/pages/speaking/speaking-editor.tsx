@@ -46,6 +46,8 @@ export default function SpeakingEditor() {
     sections: [],
   });
 
+  const [forceRender, setForceRender] = useState(0);
+
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
 
   // Queries
@@ -78,6 +80,7 @@ export default function SpeakingEditor() {
     handleSubPartImageUpload,
     removeSectionImage,
     removeSubPartImage,
+    processSectionsImages,
   } = useSpeakingEditor();
 
   useEffect(() => {
@@ -92,7 +95,7 @@ export default function SpeakingEditor() {
       setTestData({
         title: test.title,
         ieltsId: test.ieltsId,
-        sections: test.sections || [],
+        sections: processSectionsImages(test.sections || []),
       });
       form.setFieldsValue({
         title: test.title,
@@ -150,7 +153,10 @@ export default function SpeakingEditor() {
     Modal.confirm({
       title: "Sectionni o'chirish",
       content: "Haqiqatan ham bu sectionni o'chirmoqchimisiz?",
-      onOk: () => deleteSection(testData, setTestData, sectionIndex),
+      onOk: () => {
+        deleteSection(testData, setTestData, sectionIndex);
+        setForceRender(prev => prev + 1);
+      }
     });
   };
 
@@ -303,27 +309,34 @@ export default function SpeakingEditor() {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={() => addSection(testData, setTestData, id)}
+                onClick={() => {
+                  addSection(testData, setTestData, id);
+                  setForceRender(prev => prev + 1);
+                }}
               >
                 Section qo'shish
               </Button>
             }
           >
-            <Collapse>
+            <Collapse key={forceRender}>
               {testData.sections.map((section, sectionIndex) => (
                 <Panel
-                  key={section.id || `section-${sectionIndex}`}
-                  header={`${section.title} (${section.type})`}
-                  extra={
-                    <Button
-                      danger
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSection(sectionIndex);
-                      }}
-                    />
+                  key={`section-${sectionIndex}-${section.id}-${forceRender}`}
+                  header={
+                    <div className="flex justify-between items-center">
+                      <span>{`${section.title} (${section.type})`}</span>
+                      <Button
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleDeleteSection(sectionIndex);
+                        }}
+                        className="ml-2"
+                      />
+                    </div>
                   }
                 >
                   <div className="space-y-4">
@@ -441,7 +454,8 @@ export default function SpeakingEditor() {
                                 danger
                                 size="small"
                                 icon={<DeleteOutlined />}
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   const updatedQuestions =
                                     section.questions?.filter(
                                       (_, index) => index !== questionIndex

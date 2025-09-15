@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Upload,
@@ -16,7 +16,6 @@ import {
   DeleteOutlined,
   EyeOutlined,
   DownloadOutlined,
-  CheckCircleOutlined,
 } from "@ant-design/icons";
 import "./image-upload.css";
 
@@ -40,17 +39,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [recentlyUploaded, setRecentlyUploaded] = useState<string[]>([]);
-  const tempUrlsRef = useRef<string[]>([]);
-
-  // Clean up temporary URLs on unmount
-  useEffect(() => {
-    return () => {
-      tempUrlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
-    };
-  }, []);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -72,33 +60,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       setUploadProgress(100);
       console.log("Image uploaded successfully:", file);
 
-      // Add to recently uploaded for visual feedback
-      const tempUrl = URL.createObjectURL(file);
-      tempUrlsRef.current.push(tempUrl);
-      setRecentlyUploaded((prev) => [...prev, tempUrl]);
-
       message.success("Image uploaded successfully!");
 
       // Clear progress after success
       setTimeout(() => {
         setUploadProgress(0);
       }, 2000);
-
-      // Keep the temporary preview for 30 seconds instead of 2 seconds
-      setTimeout(() => {
-        setRecentlyUploaded((prev) => {
-          const newRecentlyUploaded = prev.filter((url) => url !== tempUrl);
-          // Revoke the URL after removing from state
-          console.log("Revoking URL:", tempUrl);
-          if (newRecentlyUploaded.length !== prev.length) {
-            URL.revokeObjectURL(tempUrl);
-            tempUrlsRef.current = tempUrlsRef.current.filter(
-              (url) => url !== tempUrl
-            );
-          }
-          return newRecentlyUploaded;
-        });
-      }, 30000); // 30 seconds instead of 2 seconds
     } catch (error) {
       setUploadProgress(0);
       message.error("Failed to upload image");
@@ -109,6 +76,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const handlePreview = (image: string, index: number) => {
+    console.log("Opening preview for image:", image);
     setPreviewImage(image);
     setPreviewVisible(true);
     setPreviewTitle(`Image ${index + 1}`);
@@ -122,8 +90,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     link.click();
     document.body.removeChild(link);
   };
-
-  const allImages = [...images, ...recentlyUploaded];
 
   return (
     <div className="image-upload-container">
@@ -167,7 +133,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       </div>
 
       {/* Image Preview Grid */}
-      {allImages.length > 0 && (
+      {images.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Text strong>Uploaded Images ({images.length})</Text>
@@ -175,121 +141,82 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           </div>
 
           <Row gutter={[16, 16]}>
-            {allImages.map((image, imageIndex) => {
-              const isRecentlyUploaded = recentlyUploaded.includes(image);
-              const actualIndex =
-                imageIndex < images.length
-                  ? imageIndex
-                  : imageIndex - images.length;
+            {images.map((image, imageIndex) => (
+              <Col key={imageIndex} xs={24} sm={12} md={8} lg={6}>
+                <Card
+                  size="small"
+                  className="image-preview-card"
+                  bodyStyle={{ padding: "8px" }}
+                  hoverable
+                >
+                  <div className="relative group">
+                    {/* Main Image */}
+                    <div className="image-container">
+                      <Image
+                        src={image}
+                        alt={`Image ${imageIndex + 1}`}
+                        width="100%"
+                        height={150}
+                        style={{
+                          objectFit: "cover",
+                          cursor: "pointer",
+                        }}
+                        className="transition-transform duration-200 group-hover:scale-105"
+                        onClick={() => handlePreview(image, imageIndex)}
+                        preview={false}
+                      />
 
-              return (
-                <Col key={imageIndex} xs={24} sm={12} md={8} lg={6}>
-                  <Card
-                    size="small"
-                    className={`image-preview-card ${
-                      isRecentlyUploaded ? "recently-uploaded" : ""
-                    }`}
-                    bodyStyle={{ padding: "8px" }}
-                    hoverable
-                  >
-                    <div className="relative group">
-                      {/* Main Image */}
-                      <div className="image-container">
-                        <Image
-                          src={image}
-                          alt={`Image ${actualIndex + 1}`}
-                          width="100%"
-                          height={150}
-                          style={{
-                            objectFit: "cover",
-                            cursor: "pointer",
-                          }}
-                          className="transition-transform duration-200 group-hover:scale-105"
-                          onClick={() => handlePreview(image, actualIndex)}
-                          preview={false}
-                        />
-
-                        {/* Recently uploaded indicator */}
-                        {isRecentlyUploaded && (
-                          <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
-                            <CheckCircleOutlined className="mr-1" />
-                            New
-                          </div>
-                        )}
-
-                        {/* Remove button for recently uploaded images */}
-                        {isRecentlyUploaded && (
+                      {/* Overlay with actions */}
+                      <div className="image-overlay">
+                        <Space className="action-buttons">
                           <Button
                             type="primary"
+                            size="small"
+                            icon={<EyeOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreview(image, imageIndex);
+                            }}
+                            className="bg-white text-black hover:bg-gray-100 border-white"
+                          >
+                            Preview
+                          </Button>
+                          <Button
+                            type="primary"
+                            size="small"
+                            icon={<DownloadOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(image, imageIndex);
+                            }}
+                            className="bg-white text-black hover:bg-gray-100 border-white"
+                          >
+                            Download
+                          </Button>
+                          <Button
                             danger
                             size="large"
                             icon={<DeleteOutlined />}
-                            className="delete-button recently-uploaded"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const tempUrl = image;
-                              setRecentlyUploaded((prev) =>
-                                prev.filter((url) => url !== tempUrl)
-                              );
-                              URL.revokeObjectURL(tempUrl);
-                              tempUrlsRef.current = tempUrlsRef.current.filter(
-                                (url) => url !== tempUrl
-                              );
-                              message.success("Image removed");
+                              onRemove(imageIndex);
                             }}
+                            className="delete-button permanent"
                           />
-                        )}
-
-                        {/* Overlay with actions */}
-                        <div className="image-overlay">
-                          <Space className="action-buttons">
-                            <Button
-                              type="primary"
-                              size="small"
-                              icon={<EyeOutlined />}
-                              onClick={() => handlePreview(image, actualIndex)}
-                              className="bg-white text-black hover:bg-gray-100 border-white"
-                            >
-                              Preview
-                            </Button>
-                            {!isRecentlyUploaded && (
-                              <>
-                                <Button
-                                  type="primary"
-                                  size="small"
-                                  icon={<DownloadOutlined />}
-                                  onClick={() =>
-                                    handleDownload(image, actualIndex)
-                                  }
-                                  className="bg-white text-black hover:bg-gray-100 border-white"
-                                >
-                                  Download
-                                </Button>
-                                <Button
-                                  danger
-                                  size="large"
-                                  icon={<DeleteOutlined />}
-                                  onClick={() => onRemove(actualIndex)}
-                                  className="delete-button permanent"
-                                />
-                              </>
-                            )}
-                          </Space>
-                        </div>
-                      </div>
-
-                      {/* Image info */}
-                      <div className="image-info">
-                        <Text className="text-xs text-gray-600">
-                          Image {actualIndex + 1}
-                          {isRecentlyUploaded && " (Uploading...)"}
-                        </Text>
+                        </Space>
                       </div>
                     </div>
-                  </Card>
-                </Col>
-              );
-            })}
+
+                    {/* Image info */}
+                    <div className="image-info">
+                      <Text className="text-xs text-gray-600">
+                        Image {imageIndex + 1}
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            ))}
           </Row>
         </div>
       )}

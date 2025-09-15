@@ -455,9 +455,47 @@ export const useSpeakingEditor = () => {
       points: updatedPoints,
     });
   };
-  // helper
+  // helper functions
+  const constructFullImageUrl = (path: string): string => {
+    if (!path) return "";
+    
+    // If the path already contains http/https, return it as is
+    if (path.startsWith('http')) {
+      return path;
+    }
+    
+    // Construct full URL using base API URL
+    const baseURL = import.meta.env.VITE_API_URL;
+    if (!baseURL) {
+      console.warn("VITE_API_URL is not defined");
+      return path;
+    }
+    
+    // Remove leading slash from path if it exists to avoid double slashes
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    // Remove trailing slash from baseURL if it exists
+    const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+    
+    return `${cleanBaseURL}/${cleanPath}`;
+  };
+
   const getUploadedPath = (res: any) => {
-    return res?.data?.path || res?.data?.url || res?.path || res?.url || "";
+    const path = res?.data?.path || res?.data?.url || res?.path || res?.url || "";
+    const fullUrl = constructFullImageUrl(path);
+    console.log("Image upload - original path:", path, "full URL:", fullUrl);
+    return fullUrl;
+  };
+
+  // Process sections to ensure all images have full URLs
+  const processSectionsImages = (sections: SpeakingSection[]): SpeakingSection[] => {
+    return sections.map(section => ({
+      ...section,
+      images: section.images?.map(constructFullImageUrl) || [],
+      subParts: section.subParts?.map(subPart => ({
+        ...subPart,
+        images: subPart.images?.map(constructFullImageUrl) || [],
+      })) || [],
+    }));
   };
 
   const handleSectionImageUpload = async (
@@ -590,5 +628,8 @@ export const useSpeakingEditor = () => {
     handleSubPartImageUpload,
     removeSectionImage,
     removeSubPartImage,
+    
+    // Helper functions
+    processSectionsImages,
   };
 };

@@ -45,7 +45,10 @@ export const SectionForm: React.FC<SectionFormProps> = ({
           danger
           size="small"
           icon={<DeleteOutlined />}
-          onClick={() => onDelete(sectionIndex)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(sectionIndex);
+          }}
         />
       }
     >

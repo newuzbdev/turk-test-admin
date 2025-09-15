@@ -71,7 +71,10 @@ export const SubPartForm: React.FC<SubPartFormProps> = ({
           danger
           size="small"
           icon={<DeleteOutlined />}
-          onClick={() => onDelete(sectionIndex, subPartIndex)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(sectionIndex, subPartIndex);
+          }}
         />
       }
     >
@@ -131,9 +134,10 @@ export const SubPartForm: React.FC<SubPartFormProps> = ({
                   danger
                   size="small"
                   icon={<DeleteOutlined />}
-                  onClick={() =>
-                    onDeleteQuestion(sectionIndex, subPartIndex, questionIndex)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteQuestion(sectionIndex, subPartIndex, questionIndex);
+                  }}
                 />,
               ]}
             >
