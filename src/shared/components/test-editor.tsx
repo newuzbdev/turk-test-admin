@@ -109,7 +109,7 @@ export default function TestEditor({
             number: qIndex + 1,
             type: s.type ?? "TEXT_INPUT",
             text: q.text ?? "",
-            content: q.text ?? "",
+            content: q.content ?? "",
             answers: q.answers.map((a, aIndex) => ({
               variantText: String.fromCharCode(65 + aIndex), // A, B, C...
               answer: String(a.text ?? ""),
