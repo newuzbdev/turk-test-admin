@@ -16,7 +16,7 @@ interface CreateSpeakingPointDto {
     order: number;
     question: string;
   }[];
-  example?: {
+  examples?: {
     text: string;
     order: number;
   } | {
