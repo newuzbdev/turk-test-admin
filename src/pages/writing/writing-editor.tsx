@@ -215,11 +215,16 @@ export default function WritingEditor() {
             order: subPart.order,
             label: subPart.title,
             description: subPart.description || "",
-            question: subPart.description || `Question for ${subPart.title}`,
-            questions: (subPart.questions || []).map((question) => ({
-              text: question.text,
-              order: question.order,
-            })),
+            questions: [
+              {
+                text: subPart.description || `Question for ${subPart.title}`,
+                order: 1,
+              },
+              ...(subPart.questions || []).map((question) => ({
+                text: question.text,
+                order: question.order,
+              })),
+            ],
           })),
           questions: (section.questions || []).map((question) => ({
             text: question.text,

@@ -21,8 +21,7 @@ interface CreateWritingTestWithAdditionDto {
       order: number;
       label: string;
       description: string;
-      question: string;
-      questions?: {
+      questions: {
         text: string;
         order: number;
       }[];
