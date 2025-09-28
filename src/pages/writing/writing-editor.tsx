@@ -214,6 +214,7 @@ export default function WritingEditor() {
           subParts: (section.subParts || []).map((subPart) => ({
             order: subPart.order,
             label: subPart.title,
+            description: subPart.description || "",
             question: subPart.description || `Question for ${subPart.title}`,
             questions: (subPart.questions || []).map((question) => ({
               text: question.text,

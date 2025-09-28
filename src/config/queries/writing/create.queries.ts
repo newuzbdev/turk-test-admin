@@ -20,6 +20,7 @@ interface CreateWritingTestWithAdditionDto {
     subParts: {
       order: number;
       label: string;
+      description: string;
       question: string;
       questions?: {
         text: string;
