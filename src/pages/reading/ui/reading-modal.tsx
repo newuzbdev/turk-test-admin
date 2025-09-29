@@ -73,7 +73,7 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
           icon={<PlusOutlined />}
           onClick={() => useReadingModalStore.getState().onOpen()}
         >
-          Yangi Reading Test
+          Yangi Reading Test (Demo bilan boshlash)
         </Button>
       )}
 
@@ -84,7 +84,7 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
         destroyOnClose
         onOk={form.submit}
         title={
-          data ? "Reading testini tahrirlash" : "Yangi Reading test qo'shish"
+          data ? "Reading testini tahrirlash" : "Yangi Reading test qo'shish (Demo bilan boshlash)"
         }
         okText={data ? "Saqlash" : "Qo'shish"}
         cancelText="Bekor qilish"

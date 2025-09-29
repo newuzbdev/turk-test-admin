@@ -1,19 +1,17 @@
-import TestEditor from "@/shared/components/test-editor";
-import { useCreateReadingTestWithAddition } from "@/config/queries/reading/create.queries";
 import { useParams } from "react-router-dom";
-
-// import { useGetOneReadingTest } from "@/config/queries/reading/get-one.queries";
+import ReadingTestEditor from "./components/reading-test-editor";
 
 export default function ReadingEditor() {
   const { ieltsId } = useParams<{ ieltsId: string }>();
 
+  if (!ieltsId) {
+    return <div>IELTS ID not found</div>;
+  }
+
   return (
-    <TestEditor
+    <ReadingTestEditor
       ieltsId={ieltsId}
-      testType="READING"
       backUrl="/reading"
-      // useGetOneTest={useGetOneReadingTest}
-      useCreateTestWithAddition={useCreateReadingTestWithAddition}
     />
   );
 }
