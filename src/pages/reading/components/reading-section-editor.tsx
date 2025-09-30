@@ -316,6 +316,32 @@ export default function ReadingSectionEditor({
                   style={{ backgroundColor: "#fafafa" }}
                 >
                   <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                    {/* Question text editor */}
+                    <div>
+                      <Text strong style={{ marginBottom: 8, display: "block" }}>
+                        Savol matni
+                      </Text>
+                      <Input.TextArea
+                        rows={3}
+                        placeholder="Savol matnini kiriting (ixtiyoriy)"
+                        value={question.text || ""}
+                        onChange={(e) => updateQuestion(question.id, { ...question, text: e.target.value })}
+                      />
+                    </div>
+
+                    {question.text && (
+                      <div
+                        style={{
+                          padding: 12,
+                          background: "#fffbe6",
+                          border: "1px solid #ffe58f",
+                          borderRadius: 6,
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <Text>{question.text}</Text>
+                      </div>
+                    )}
                     <div>
                       <Text strong style={{ marginBottom: 8, display: "block" }}>
                         To'g'ri javob:

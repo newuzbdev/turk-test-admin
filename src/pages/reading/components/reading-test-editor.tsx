@@ -350,6 +350,143 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
     ],
   });
 
+  // Build Part 4 demo (reading comprehension S21–S24)
+  const buildDemoPart4 = (): ReadingPart => ({
+    id: "demo-part-4",
+    title: "Part 4 - Dünüyle Bugünüyle Halk Oyunları ve Dans",
+    description: "21-29. sorular için metin ve çoktan seçmeli sorular (S21–S24)",
+    sections: [
+      {
+        id: "demo-section-4-text",
+        title: "Okuma Metni",
+        content:
+          `Dünya tek bir hareketle ortaya çıktı. Sonra bu ilk hareket bir ritim tutturdu, insanlık tarihi boyunca renklerini değiştirerek, kendini geliştirerek varlığını sürdürmeye devam etti.\n\n` +
+          `Arjantin’in fakir işçi sınıfından doğan, hayal kırıklığı, asilik ve hırçınlığın dansı “Tango”, dans dünyasındaki ölümsüz yerlerini aldılar. II. Dünya Savaşı’ndan sonra dans, yeni dünyada yeniden kendi dünyasını kurdu. Dans salonları “Rock’n Roll” ve “Twist”le sallandı. Gençlerin kanını kaynatacak dansların ardı arkası kesilmedi. 20. yüzyılın ikinci yarısında, hızla gelişme gösteren ve çeşitlenen danslar birer uzmanlık alanı hâline gelerek büyük bir heyecan ve hevesle öğretilen-öğrenilen bir kimlik kazandı. Dans kursları açıldı. Danslar hangi müzikle icra ediliyorsa o isimle anılmaya, kategorilere ayrılmaya başlandı.\n\n` +
+          `Dans federasyonları kuruldu ve ülkeler arası dans şampiyonaları düzenlenmeye başlandı. Dansla ilgili dünyadaki tüm bu gelişmelerin, Türkiye’de de yansımalarını görebiliriz. Ancak Türk kültürü ve geleneklerinin hayat bulduğu dans türlerinin, bilhassa Anadolu’daki dansın, temelde üç ayrı kültür etkisinde kaldığı görülmektedir. Eski Anadolu uygarlıkları, Orta Asya’daki Şaman kültürü ve İslam dini, Anadolu’daki dans kültürünün oluşumuna etkide bulunmuşlardır. Bu bağlamda tek bir tarz ve biçimden bahsetmek oldukça zordur.\n\n` +
+          `İçinde bulunduğu çok kültürlülük ortamı dolayısıyla Türkiye’de dans, çok farklı görünümler sergilemektedir. Ege’de ağır ve mağrur bir duruş sergileyen “Zeybek”, Trakya’da dokuz sekizlik darbuka ritmiyle can bulan kıvrak figürlerle süslü “Roman Havası”, Karadeniz’de hızlı ve sert adımlarla oynanan “Horon”… Bunlar gibi daha niceleri, duyguların farklı dile getirilişinin örneklerini bizlere sunuyor. Vücut dili, kimi zaman tango, kimi zaman sambayla konuşuyor. Bazen bale, bazen de halayda hayat buluyor. Ama sonunda tüm danslar bir araya gelip 29 Nisan’da buluşuyor.\n\n` +
+          `Dans dünyasına büyük katkı sağlayan ünlü bir Fransız dansçı ve koreografın doğum günü olan bu tarih, 1982’den bu yana, tüm dünyada “Dünya Dans Günü” olarak kutlanıyor. İnsanlığın varoluşu ile ortaya çıkan ve günümüzün sevilen sanatları arasında gösterilen dans, ona eşlik eden müziği ile kulakların pasını silmiş, estetik ve ritmik hareketleri ile göz doldurmuştur.`,
+        questions: [],
+      },
+      {
+        id: "demo-section-4-questions",
+        title: "Çoktan Seçmeli Sorular (S21–S24)",
+        content: `Sorular 21-24. Metne göre doğru seçeneği (A, B, C veya D) işaretleyiniz.`,
+        questions: [
+          {
+            id: "demo-q21",
+            blankNumber: 21,
+            text: "Metnin bütününe göre aşağıdaki yargılardan hangisine varılamaz?",
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "Dans sanatı zaman içinde modernleşmiş ve tüm dünyaya yayılmıştır." },
+              { letter: "B", text: "Eski insanlar dinî ritüellerinde danstan yararlanmıştır." },
+              { letter: "C", text: "Dans, çok kültürlülükten etkilenmeyip tek kültür etrafında toplamıştır." },
+              { letter: "D", text: "Dansın gücü bazı kemikleşmiş düşünceleri kırmayı başarmıştır." },
+            ],
+          },
+          {
+            id: "demo-q22",
+            blankNumber: 22,
+            text: "Metinde geçen ‘yeni dünyada yeniden kendi dünyasını kurmak’ sözüyle ne anlatılmaktadır?",
+            correctAnswer: "B",
+            options: [
+              { letter: "A", text: "Bir sebeple bir yerde yeniden hayata başlamak" },
+              { letter: "B", text: "Yenilenen dünyada yeniden kendi düzenini kurmak" },
+              { letter: "C", text: "Başka bir coğrafyada kendi kurallarıyla yaşamak" },
+              { letter: "D", text: "Dünyaya ayak uydurmayarak kendi kurallarıyla yaşamak" },
+            ],
+          },
+          {
+            id: "demo-q23",
+            blankNumber: 23,
+            text: "Aşağıdakilerden hangisinde Avrupa ve Asya’daki dans ve onlara verilen vasıflandırmalar bir-birine uyumsuzdur?",
+            correctAnswer: "A",
+            options: [
+              { letter: "A", text: "Üst kademe sınıfından doğan, hayal kırıklığı ve asiliğin dansı ‘Tango’" },
+              { letter: "B", text: "Ağır ve gururlu bir duruş sergileyen ‘Zeybek’" },
+              { letter: "C", text: "Çevik figürlerle süslü ‘Roman Havası’" },
+              { letter: "D", text: "Hızlı ve haşin adımlarla oynanan ‘Horon’" },
+            ],
+          },
+          {
+            id: "demo-q24",
+            blankNumber: 24,
+            text: "Metne göre, aşağıdaki bilgilerden hangisi doğrudur?",
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "Dans bilinçli gerçekleştirilen kurallı bir hareket olarak ortaya çıkmıştır." },
+              { letter: "B", text: "Danslar sadece çıktıkları ülkede ses getirmiştir." },
+              { letter: "C", text: "20. yüzyılın sonlarına doğru tüm dünyada ortak bir günde kutlanır olmuştur." },
+              { letter: "D", text: "Türkiye’de dans daha çok Batı etkisinde gelişmiştir." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "demo-section-4-tnv",
+        title: "Doğru / Yanlış / Verilmemiş (S25–S29)",
+        content: `Sorular 25-29. Cümleleri metne göre değerlendiriniz ve Doğru (A), Yanlış (B) ya da Verilmemiş (C) seçeneğini işaretleyiniz.`,
+        questions: [
+          {
+            id: "demo-q25",
+            blankNumber: 25,
+            text: "Dansın ilk örnekleri dini törenler ve ibadetlerle ilgili olarak ortaya çıkmıştır.",
+            correctAnswer: "A",
+            options: [
+              { letter: "A", text: "Doğru" },
+              { letter: "B", text: "Yanlış" },
+              { letter: "C", text: "Verilmemiş" },
+            ],
+          },
+          {
+            id: "demo-q26",
+            blankNumber: 26,
+            text: "Dans, insanlığın varoluşundan bu yana sürekli olarak müzikle birlikte icra edilmiştir.",
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "Doğru" },
+              { letter: "B", text: "Yanlış" },
+              { letter: "C", text: "Verilmemiş" },
+            ],
+          },
+          {
+            id: "demo-q27",
+            blankNumber: 27,
+            text: "İlk insanlar hayvanları avlamadan önce onların hareketlerini taklit etmek suretiyle dans etmişlerdir.",
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "Doğru" },
+              { letter: "B", text: "Yanlış" },
+              { letter: "C", text: "Verilmemiş" },
+            ],
+          },
+          {
+            id: "demo-q28",
+            blankNumber: 28,
+            text: "Anadolu'daki dans kültürü, iki etkenden, Orta Asya’daki Şaman kültürü ve İslam dininden etkilenmiştir.",
+            correctAnswer: "B",
+            options: [
+              { letter: "A", text: "Doğru" },
+              { letter: "B", text: "Yanlış" },
+              { letter: "C", text: "Verilmemiş" },
+            ],
+          },
+          {
+            id: "demo-q29",
+            blankNumber: 29,
+            text: "Dansın bilinç ve gelişme kazanması ile kurallara uyması aynı dönemde yaşanmıştır.",
+            correctAnswer: "A",
+            options: [
+              { letter: "A", text: "Doğru" },
+              { letter: "B", text: "Yanlış" },
+              { letter: "C", text: "Verilmemiş" },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
   // Initialize with demo data
   React.useEffect(() => {
     if (parts.length === 0) {
@@ -481,7 +618,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
         ],
       };
       // preload three demos: Part 1, Part 2 and Part 3
-      const initialParts = [demoPart, buildDemoPart2(), buildDemoPart3()];
+      const initialParts = [demoPart, buildDemoPart2(), buildDemoPart3(), buildDemoPart4()];
       setParts(initialParts);
       setExpandedPartIds(initialParts.map((p) => p.id));
     }
