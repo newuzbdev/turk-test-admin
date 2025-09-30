@@ -138,20 +138,6 @@ export default function ReadingSectionEditor({
     updateQuestion(questionId, updatedQuestion);
   };
 
-  // Aggregate shared options across all questions (use first non-empty text per letter)
-  const aggregatedOptions = React.useMemo(() => {
-    const map = new Map<string, string>();
-    section.questions.forEach((q) => {
-      q.options?.forEach((opt) => {
-        if (!map.has(opt.letter) && (opt.text?.trim() || "") !== "") {
-          map.set(opt.letter, opt.text);
-        }
-      });
-    });
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([letter, text]) => ({ letter, text }));
-  }, [section.questions]);
 
   const handleContentSave = () => {
     updateField("content", tempContent);
@@ -169,7 +155,8 @@ export default function ReadingSectionEditor({
       style={{
         marginBottom: 16,
         borderRadius: 8,
-        border: "1px solid #d9d9d9",
+        border: "none",
+        background: "transparent",
       }}
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -243,10 +230,10 @@ export default function ReadingSectionEditor({
           ) : (
             <div
               style={{
-                padding: 16,
-                backgroundColor: "#f5f5f5",
-                borderRadius: 8,
-                border: "1px solid #d9d9d9",
+                padding: 0,
+                backgroundColor: "transparent",
+                borderRadius: 0,
+                border: "none",
                 whiteSpace: "pre-wrap",
                 lineHeight: 1.6,
                 fontSize: 16,
@@ -268,22 +255,6 @@ export default function ReadingSectionEditor({
         <Divider />
 
         {/* Shared options preview for Matching-style sections */}
-        {aggregatedOptions.length > 0 && (
-          <div>
-            <Text strong style={{ fontSize: 16, marginBottom: 8, display: "block" }}>
-              Variantlar (A–Z)
-            </Text>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 16 }}>
-              {aggregatedOptions.map((opt, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fafafa", border: "1px solid #eee", borderRadius: 6, padding: "8px 10px" }}>
-                  <Text strong style={{ minWidth: 22 }}>{opt.letter}.</Text>
-                  <Text>{opt.text || "—"}</Text>
-                </div>
-              ))}
-            </div>
-            <Divider />
-          </div>
-        )}
 
         {/* Questions */}
         <div>
@@ -313,7 +284,7 @@ export default function ReadingSectionEditor({
                       O'chirish
                     </Button>
                   }
-                  style={{ backgroundColor: "#fafafa" }}
+                  style={{ backgroundColor: "transparent", border: "1px dashed var(--ant-border-color, #d9d9d9)" }}
                 >
                   <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                     {/* Question text editor */}
@@ -329,19 +300,6 @@ export default function ReadingSectionEditor({
                       />
                     </div>
 
-                    {question.text && (
-                      <div
-                        style={{
-                          padding: 12,
-                          background: "#fffbe6",
-                          border: "1px solid #ffe58f",
-                          borderRadius: 6,
-                          lineHeight: 1.6,
-                        }}
-                      >
-                        <Text>{question.text}</Text>
-                      </div>
-                    )}
                     <div>
                       <Text strong style={{ marginBottom: 8, display: "block" }}>
                         To'g'ri javob:

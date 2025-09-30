@@ -1031,7 +1031,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                     />
                   ))}
 
-                  <Button
+            <Button
                     type="dashed"
                     onClick={() => addSection(part.id)}
                     icon={<PlusOutlined />}
@@ -1041,6 +1041,9 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   >
                     + Section qo'shish
                   </Button>
+            <div style={{ textAlign: "right", marginTop: 8 }}>
+              <Text type="secondary">Yoki shablonlardan foydalaning: Part 2/3/4/5 demo allaqachon qo'shilgan.</Text>
+            </div>
                 </div>
               </Space>
               )}
