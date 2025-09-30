@@ -35,8 +35,9 @@ export default function ReadingSectionEditor({
 
   const blanks = extractBlanks(section.content);
 
-  // Auto-generate questions for blanks that don't have questions yet
+  // Auto-generate questions for blanks that don't have questions yet (only when blanks exist)
   useEffect(() => {
+    if (blanks.length === 0) return; // Do not touch questions if there are no (S1) style blanks
     const newQuestions: ReadingQuestion[] = [];
     
     blanks.forEach(blankNumber => {
@@ -136,6 +137,21 @@ export default function ReadingSectionEditor({
     };
     updateQuestion(questionId, updatedQuestion);
   };
+
+  // Aggregate shared options across all questions (use first non-empty text per letter)
+  const aggregatedOptions = React.useMemo(() => {
+    const map = new Map<string, string>();
+    section.questions.forEach((q) => {
+      q.options?.forEach((opt) => {
+        if (!map.has(opt.letter) && (opt.text?.trim() || "") !== "") {
+          map.set(opt.letter, opt.text);
+        }
+      });
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([letter, text]) => ({ letter, text }));
+  }, [section.questions]);
 
   const handleContentSave = () => {
     updateField("content", tempContent);
@@ -251,6 +267,24 @@ export default function ReadingSectionEditor({
 
         <Divider />
 
+        {/* Shared options preview for Matching-style sections */}
+        {aggregatedOptions.length > 0 && (
+          <div>
+            <Text strong style={{ fontSize: 16, marginBottom: 8, display: "block" }}>
+              Variantlar (A–Z)
+            </Text>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 16 }}>
+              {aggregatedOptions.map((opt, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fafafa", border: "1px solid #eee", borderRadius: 6, padding: "8px 10px" }}>
+                  <Text strong style={{ minWidth: 22 }}>{opt.letter}.</Text>
+                  <Text>{opt.text || "—"}</Text>
+                </div>
+              ))}
+            </div>
+            <Divider />
+          </div>
+        )}
+
         {/* Questions */}
         <div>
           <Text strong style={{ fontSize: 16, marginBottom: 16, display: "block" }}>
@@ -290,14 +324,13 @@ export default function ReadingSectionEditor({
                         placeholder="To'g'ri javobni tanlang"
                         value={question.correctAnswer || undefined}
                         onChange={(value) => updateQuestion(question.id, { ...question, correctAnswer: value })}
-                        style={{ width: 200 }}
+                        style={{ width: 320 }}
                         options={question.options
-                          .filter(option => option.text.trim())
-                          .map(option => ({
+                          .filter((option) => option.text.trim())
+                          .map((option) => ({
                             label: `${option.letter}. ${option.text}`,
                             value: option.letter,
-                          }))
-                        }
+                          }))}
                       />
                     </div>
 

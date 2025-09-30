@@ -39,12 +39,186 @@ interface ReadingTestEditorProps {
 }
 
 export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEditorProps) {
-  const [testTitle, setTestTitle] = useState("IELTS Reading Test - Batıl İnançlar");
-  const [testDescription, setTestDescription] = useState("Turkish reading comprehension test about superstitions");
+  const [testTitle, setTestTitle] = useState("IELTS Reading Test - Batıl İnançlar & Durum Eşleştirme");
+  const [testDescription, setTestDescription] = useState("Turkish reading comprehension test with blank filling and matching exercises");
   const [parts, setParts] = useState<ReadingPart[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
   const { mutate: createTest, isPending } = useCreateReadingTestWithAddition();
+
+  // Build Part 2 demo (matching exercise)
+  const buildDemoPart2 = (): ReadingPart => ({
+    id: "demo-part-2",
+    title: "Part 2 - Durum Eşleştirme",
+    description: "Matching situations with information texts",
+    sections: [
+      {
+        id: "demo-section-2-cases",
+        title: "Durumlar (A–J)",
+        content:
+          `A) Baytar olarak çalışmak istiyorsunuz.\n` +
+          `B) Aracınızda bir arıza var, onarmak istiyorsunuz.\n` +
+          `C) Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz.\n` +
+          `D) Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor.\n` +
+          `E) Evinizi tamir etmek istiyorsunuz.\n` +
+          `F) Evinizin duvarlarını boyatmak istiyorsunuz.\n` +
+          `G) Gece yarısı kızınız dental implant ağrısıyla uyandı.\n` +
+          `H) Komşunuz, özel bir yemek masası yaptırmak istiyor.\n` +
+          `I) İstanbul’da sakin ve yeşil bir ortamda yeni bir daire satın almak istiyorsunuz.\n` +
+          `J) Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz.`,
+        questions: [],
+      },
+      {
+        id: "demo-section-2-ads",
+        title: "Bilgi Metinleri (7-14)",
+        content: `S7) İSTANBUL-SİLİVRİSARAY EVLERİ — Denize sıfır, yeşil ve huzurlu ortam, hemen teslim satılık daireler.\n\nS8) OTOMOBİL SERVİSİ — Tüm marka araçlar için tamir ve 7/24 yol yardımı.\n\nS9) VETERİNER KLİNİĞİ — Aşı, kuduz tedavisi ve cerrahi hizmetleri.\n\nS10) İNŞAAT VE TADİLAT — Ev tamiri, duvar boyama, elektrik ve su tesisatı.\n\nS11) HOSPİDENT — 7/24 diş tedavisi, lazer ve estetik uygulamalar.\n\nS12) MOBİLYA ATÖLYESİ — Özel tasarım yemek masası ve mobilyalar.\n\nS13) GÖZ KLİNİĞİ — Lazerle göz estetiği, LASIK, PRK, katarakt.\n\nS14) EMLAK OFİSİ — İstanbul'da satılık/kiralık daire, profesyonel danışmanlık.`,
+        questions: [],
+      },
+      {
+        id: "demo-section-2",
+        title: "Matching Exercise",
+        content: `Sorular 7-14. Durum (A-J) → Bilgi metni (7-14) eşleştirin. Her seçenek bir kez kullanılabilir. İki seçenek boş kalır.`,
+        questions: [
+          {
+            id: "demo-q7",
+            blankNumber: 7,
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q8",
+            blankNumber: 8,
+            correctAnswer: "B",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q9",
+            blankNumber: 9,
+            correctAnswer: "A",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q10",
+            blankNumber: 10,
+            correctAnswer: "E",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q11",
+            blankNumber: 11,
+            correctAnswer: "F",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q12",
+            blankNumber: 12,
+            correctAnswer: "G",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q13",
+            blankNumber: 13,
+            correctAnswer: "H",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+          {
+            id: "demo-q14",
+            blankNumber: 14,
+            correctAnswer: "I",
+            options: [
+              { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
+              { letter: "B", text: "Aracınızda bir arıza var, onarmak istiyorsunuz" },
+              { letter: "C", text: "Kangalınız kuduz olduğunda, sorunu çözmek istiyorsunuz" },
+              { letter: "D", text: "Bir yakınınız, yeni ve cazip bir apartmanda bir daire kiralamak istiyor" },
+              { letter: "E", text: "Evinizi tamir etmek istiyorsunuz" },
+              { letter: "F", text: "Evinizin duvarlarını boyatmak istiyorsunuz" },
+              { letter: "G", text: "Gece yarısı kızınız dental implant ağrısıyla uyandı" },
+              { letter: "H", text: "Komşunuz, özel bir yemek masası yaptırmak istiyor" },
+              { letter: "I", text: "İstanbul’da sakin ve yeşil ortamda yeni daire satın almak istiyorsunuz" },
+              { letter: "J", text: "Lazerle göz estetik yöntemleri hakkında bilgi almak istiyorsunuz" },
+            ],
+          },
+        ],
+      },
+    ],
+  });
 
   // Initialize with demo data
   React.useEffect(() => {
@@ -176,7 +350,8 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           },
         ],
       };
-      setParts([demoPart]);
+      // preload both demos: Part 1 and Part 2
+      setParts([demoPart, buildDemoPart2()]);
     }
   }, [parts.length]);
 
