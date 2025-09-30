@@ -89,36 +89,62 @@ export default function TestEditor({
     setParts(parts.filter((_, i) => i !== index));
   };
 
-  // Build payload according to API doc
+  // Build payload according to API doc with global question numbering (1..35)
   const buildPayload = (): any => {
+    let globalQuestionNumber = 1;
+
+    const builtParts = parts.map((p, pIndex) => {
+      return {
+        number: pIndex + 1,
+        title: p.title,
+        description: p.description ?? "",
+        audioUrl: p.audioUrl ?? "",
+        sections: p.sections.map((s) => {
+          const questions = s.questions
+            .map((q) => {
+              if (globalQuestionNumber > 35) return null;
+              const currentNumber = globalQuestionNumber++;
+              return {
+                number: currentNumber,
+                type: s.type ?? "TEXT_INPUT",
+                text: q.text ?? "",
+                content: q.text ?? "",
+                answers: q.answers.map((a, aIndex) => ({
+                  variantText: String.fromCharCode(65 + aIndex),
+                  answer: String(a.text ?? ""),
+                  correct: Boolean(a.isCorrect),
+                })),
+              };
+            })
+            .filter(Boolean) as any[];
+
+          return {
+            title: s.title,
+            content: s.content ?? s.title ?? "",
+            imageUrl: s.imageUrl ?? "",
+            questions,
+          };
+        }),
+      };
+    });
+
+    // Warn if author created more than 35 questions; extras are omitted from payload
+    const totalAuthoredQuestions = parts.reduce((acc, p) => acc + p.sections.reduce((sa, s) => sa + s.questions.length, 0), 0);
+    if (totalAuthoredQuestions > 35) {
+      toast((t) => (
+        <div>
+          {`Only first 35 questions are sent (of ${totalAuthoredQuestions}).`}
+        </div>
+      ));
+    }
+
     return {
       title: testTitle,
       description: testDescription,
       type: testType,
       ieltsId: ieltsId ?? undefined,
-      parts: parts.map((p, pIndex) => ({
-        number: pIndex + 1,
-        title: p.title,
-        description: p.description ?? "",
-        audioUrl: p.audioUrl ?? "",
-        sections: p.sections.map((s) => ({
-          title: s.title,
-          content: s.content ?? s.title ?? "",
-          imageUrl: s.imageUrl ?? "",
-          questions: s.questions.map((q, qIndex) => ({
-            number: qIndex + 1,
-            type: s.type ?? "TEXT_INPUT",
-            text: q.text ?? "",
-            content: q.text ?? "",
-            answers: q.answers.map((a, aIndex) => ({
-              variantText: String.fromCharCode(65 + aIndex), // A, B, C...
-              answer: String(a.text ?? ""),
-              correct: Boolean(a.isCorrect),
-            })),
-          })),
-        })),
-      })),
-    } as any; // cast to any to match API shape; TS types above kept for dev
+      parts: builtParts,
+    } as any;
   };
 
   const handleSave = () => {
