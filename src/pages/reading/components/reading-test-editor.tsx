@@ -43,6 +43,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
   const [testDescription, setTestDescription] = useState("Turkish reading comprehension test with blank filling and matching exercises");
   const [parts, setParts] = useState<ReadingPart[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const [expandedPartIds, setExpandedPartIds] = useState<string[]>([]);
   const navigate = useNavigate();
   const { mutate: createTest, isPending } = useCreateReadingTestWithAddition();
 
@@ -220,6 +221,135 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
     ],
   });
 
+  // Build Part 3 demo (paragraph headings matching S15–S20 with A–H)
+  const buildDemoPart3 = (): ReadingPart => ({
+    id: "demo-part-3",
+    title: "Part 3 - Başlık Eşleştirme (Paragraflar)",
+    description: "Find the best heading (A–H) for each paragraph (S15–S20)",
+    sections: [
+      {
+        id: "demo-section-3-headings",
+        title: "Başlıklar (A–H)",
+        content:
+          `A) Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri\n` +
+          `B) Paris 2024’te Sürdürülebilirlik Projelerinin Rolü\n` +
+          `C) Yeni Kuşağı Meraklandıran Spor Dalları\n` +
+          `D) Genç Sporcuların Olimpik Başarı Dinamikleri\n` +
+          `E) Sunulan Yeni Olanaklar\n` +
+          `F) Sporun Toplumlararası İlişkilere Etkisi\n` +
+          `G) Özbekistan’ın Paris 2024’teki Hedefleri\n` +
+          `H) Yenilikçi Olimpiyat Stratejileri`,
+        questions: [],
+      },
+      {
+        id: "demo-section-3-paragraphs",
+        title: "Paragraflar ve Eşleştirme",
+        content:
+          `Sorular 15-20. Aşağıdaki başlıkları (A-H) ve paragrafları (15-20) okuyunuz. Her paragraf için uygun başlığı seçiniz.\n\n` +
+          `I. Paris 2024 Olimpiyat Oyunları, modern olimpiyat tarihinin en önemli etkinliklerinden biri olarak kabul ediliyor. Bu oyunlar, Paris’in üçüncü kez ev sahipliği yaptığı oyunlar olarak tarihe geçecek. Ancak Paris 2024, sadece tarihi bir olay olmanın ötesinde, yenilikçi yaklaşımları ve çevre dostu projeleriyle de dikkat çekiyor. Sürdürülebilirlik, oyunların merkezinde yer alıyor ve kullanılan malzemelerin büyük çoğunluğu geri dönüştürülebilir olacak şekilde tasarlandı. Olimpiyat Köyü, enerji verimliliği göz önünde bulundurularak inşa edildi ve oyunlar sırasında çevreye verilen zararın minimuma indirgenmesi hedeflendi. Paris 2024, bu anlamda sadece bir spor etkinliği değil, aynı zamanda gelecekteki uluslararası organizasyonlara örnek teşkil edecek bir model olarak da görülüyor.\n\n` +
+          `II. Paris 2024’te tanıtılan yenilikçi teknolojiler, spor deneyimini izleyiciler için daha etkileşimli hale getiriyor. Akıllı biletleme, artırılmış gerçeklik ve canlı veri panoları, seyircilerin müsabakalara anlık erişim sağlamasına yardımcı oluyor.\n\n` +
+          `III. Genç sporcular için oluşturulan destek programları, performans takibi ve psikolojik danışmanlık gibi hizmetlerle olimpik başarıyı artırmayı hedefliyor. Bu programlar, yeni kuşağın sporla bağını güçlendiriyor.\n\n` +
+          `IV. Paris, oyunlar kapsamında düzenlediği kültürel etkinliklerle farklı toplumlar arasında köprü kurmayı amaçlıyor. Sporun birleştirici gücü, uluslararası işbirliği ve anlayışı destekliyor.\n\n` +
+          `V. Şehir içi ulaşımda çevreci çözümler ön plana çıkarılıyor. Bisiklet yolları genişletildi, elektrikli toplu taşıma araçları yaygınlaştırıldı ve gönüllüler için özel servisler planlandı.\n\n` +
+          `VI. Orta Asya’dan katılan ekipler arasında Özbekistan, genç ve dinamik kadrosuyla dikkat çekiyor. Paris 2024 için belirlenen hedefler, belirli branşlarda finale kalmak ve rekorları zorlamak üzerine kurulu.`,
+        questions: [
+          {
+            id: "demo-q15",
+            blankNumber: 15,
+            correctAnswer: "B",
+            options: [
+              { letter: "A", text: "Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri" },
+              { letter: "B", text: "Paris 2024’te Sürdürülebilirlik Projelerinin Rolü" },
+              { letter: "C", text: "Yeni Kuşağı Meraklandıran Spor Dalları" },
+              { letter: "D", text: "Genç Sporcuların Olimpik Başarı Dinamikleri" },
+              { letter: "E", text: "Sunulan Yeni Olanaklar" },
+              { letter: "F", text: "Sporun Toplumlararası İlişkilere Etkisi" },
+              { letter: "G", text: "Özbekistan’ın Paris 2024’teki Hedefleri" },
+              { letter: "H", text: "Yenilikçi Olimpiyat Stratejileri" },
+            ],
+          },
+          // The actual paragraph text for S15
+          // We store the text in the section content just above; here we keep Q/A structure
+          {
+            id: "demo-q16",
+            blankNumber: 16,
+            correctAnswer: "H",
+            options: [
+              { letter: "A", text: "Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri" },
+              { letter: "B", text: "Paris 2024’te Sürdürülebilirlik Projelerinin Rolü" },
+              { letter: "C", text: "Yeni Kuşağı Meraklandıran Spor Dalları" },
+              { letter: "D", text: "Genç Sporcuların Olimpik Başarı Dinamikleri" },
+              { letter: "E", text: "Sunulan Yeni Olanaklar" },
+              { letter: "F", text: "Sporun Toplumlararası İlişkilere Etkisi" },
+              { letter: "G", text: "Özbekistan’ın Paris 2024’teki Hedefleri" },
+              { letter: "H", text: "Yenilikçi Olimpiyat Stratejileri" },
+            ],
+          },
+          {
+            id: "demo-q17",
+            blankNumber: 17,
+            correctAnswer: "D",
+            options: [
+              { letter: "A", text: "Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri" },
+              { letter: "B", text: "Paris 2024’te Sürdürülebilirlik Projelerinin Rolü" },
+              { letter: "C", text: "Yeni Kuşağı Meraklandıran Spor Dalları" },
+              { letter: "D", text: "Genç Sporcuların Olimpik Başarı Dinamikleri" },
+              { letter: "E", text: "Sunulan Yeni Olanaklar" },
+              { letter: "F", text: "Sporun Toplumlararası İlişkilere Etkisi" },
+              { letter: "G", text: "Özbekistan’ın Paris 2024’teki Hedefleri" },
+              { letter: "H", text: "Yenilikçi Olimpiyat Stratejileri" },
+            ],
+          },
+          {
+            id: "demo-q18",
+            blankNumber: 18,
+            correctAnswer: "E",
+            options: [
+              { letter: "A", text: "Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri" },
+              { letter: "B", text: "Paris 2024’te Sürdürülebilirlik Projelerinin Rolü" },
+              { letter: "C", text: "Yeni Kuşağı Meraklandıran Spor Dalları" },
+              { letter: "D", text: "Genç Sporcuların Olimpik Başarı Dinamikleri" },
+              { letter: "E", text: "Sunulan Yeni Olanaklar" },
+              { letter: "F", text: "Sporun Toplumlararası İlişkilere Etkisi" },
+              { letter: "G", text: "Özbekistan’ın Paris 2024’teki Hedefleri" },
+              { letter: "H", text: "Yenilikçi Olimpiyat Stratejileri" },
+            ],
+          },
+          {
+            id: "demo-q19",
+            blankNumber: 19,
+            correctAnswer: "F",
+            options: [
+              { letter: "A", text: "Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri" },
+              { letter: "B", text: "Paris 2024’te Sürdürülebilirlik Projelerinin Rolü" },
+              { letter: "C", text: "Yeni Kuşağı Meraklandıran Spor Dalları" },
+              { letter: "D", text: "Genç Sporcuların Olimpik Başarı Dinamikleri" },
+              { letter: "E", text: "Sunulan Yeni Olanaklar" },
+              { letter: "F", text: "Sporun Toplumlararası İlişkilere Etkisi" },
+              { letter: "G", text: "Özbekistan’ın Paris 2024’teki Hedefleri" },
+              { letter: "H", text: "Yenilikçi Olimpiyat Stratejileri" },
+            ],
+          },
+          {
+            id: "demo-q20",
+            blankNumber: 20,
+            correctAnswer: "G",
+            options: [
+              { letter: "A", text: "Özbekistan’da Olimpiyat Ruhunun Modern Spor Üzerindeki Etkileri" },
+              { letter: "B", text: "Paris 2024’te Sürdürülebilirlik Projelerinin Rolü" },
+              { letter: "C", text: "Yeni Kuşağı Meraklandıran Spor Dalları" },
+              { letter: "D", text: "Genç Sporcuların Olimpik Başarı Dinamikleri" },
+              { letter: "E", text: "Sunulan Yeni Olanaklar" },
+              { letter: "F", text: "Sporun Toplumlararası İlişkilere Etkisi" },
+              { letter: "G", text: "Özbekistan’ın Paris 2024’teki Hedefleri" },
+              { letter: "H", text: "Yenilikçi Olimpiyat Stratejileri" },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
   // Initialize with demo data
   React.useEffect(() => {
     if (parts.length === 0) {
@@ -350,8 +480,10 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           },
         ],
       };
-      // preload both demos: Part 1 and Part 2
-      setParts([demoPart, buildDemoPart2()]);
+      // preload three demos: Part 1, Part 2 and Part 3
+      const initialParts = [demoPart, buildDemoPart2(), buildDemoPart3()];
+      setParts(initialParts);
+      setExpandedPartIds(initialParts.map((p) => p.id));
     }
   }, [parts.length]);
 
@@ -363,6 +495,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       sections: [],
     };
     setParts([...parts, newPart]);
+    setExpandedPartIds([...expandedPartIds, newPart.id]);
   };
 
   const updatePart = (partId: string, updated: ReadingPart) => {
@@ -371,6 +504,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
 
   const removePart = (partId: string) => {
     setParts(parts.filter(p => p.id !== partId));
+    setExpandedPartIds(expandedPartIds.filter((id) => id !== partId));
   };
 
   const addSection = (partId: string) => {
@@ -388,6 +522,12 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       ...part,
       sections: [...part.sections, newSection],
     });
+  };
+
+  const togglePart = (partId: string) => {
+    setExpandedPartIds((prev) =>
+      prev.includes(partId) ? prev.filter((id) => id !== partId) : [...prev, partId]
+    );
   };
 
   const updateSection = (partId: string, sectionId: string, updated: ReadingSection) => {
@@ -594,6 +734,9 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                     size="large"
                     style={{ flex: 1, fontSize: 18, fontWeight: "bold" }}
                   />
+                  <Button onClick={() => togglePart(part.id)}>
+                    {expandedPartIds.includes(part.id) ? "Yopish" : "Ochish"}
+                  </Button>
                   <Button
                     danger
                     onClick={() => removePart(part.id)}
@@ -604,6 +747,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 </div>
               }
             >
+              {expandedPartIds.includes(part.id) && (
               <Space direction="vertical" size="large" style={{ width: "100%" }}>
                 <div>
                   <Text strong style={{ fontSize: 16, marginBottom: 8, display: "block" }}>
@@ -647,6 +791,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   </Button>
                 </div>
               </Space>
+              )}
             </Card>
           ))}
 
