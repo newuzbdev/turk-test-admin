@@ -487,6 +487,115 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
     ],
   });
 
+  // Build Part 5 demo (E-Kitaplar)
+  const buildDemoPart5 = (): ReadingPart => ({
+    id: "demo-part-5",
+    title: "Part 5 - E-Kitaplar Okuma Tarzını Değiştiriyor mu?",
+    description: "30-35. sorular için metin, çoktan seçmeli ve paragraf eşleştirme",
+    sections: [
+      {
+        id: "demo-section-5-paragraphs",
+        title: "Paragraflar (A–E)",
+        content:
+          `A) İlk elektronik kitabın yayımlanmasının üzerinden yirmi yıldan fazla zaman geçti. İlk tepkiler olumsuz olsa da bazıları e-kitapların giderek yaygınlaşacağını, hatta klasik anlamda kitapların varlığını tehdit eder hâle gelebileceğini öngörmüştü.\n\n` +
+          `B) Amerikan Yayıncılar Derneği’ne göre kitap piyasasının yüzde 20’sini teşkil eden e-kitaplar...; gelecekte okumanın daha sosyal bir deneyim hâline gelebileceği ve yazarla okuyucunun dijital ortamda iletişim kurabileceği fikri öne çıkıyor.\n\n` +
+          `C) Kitap basımının tümüyle ortadan kalkması beklenmiyor; ancak gelecekte el sanatları gibi niş bir alana dönüşebileceği öngörülüyor. Bu durum bazı araştırmacıları (ör. Maryanne Wolf) endişelendiriyor.\n\n` +
+          `D) Araştırmalara göre elektronik okuma, beynin metne verdiği anlama ve yoğunlaşma gibi tepkileri olumsuz etkileyebilir; ekran okumasında dikkat daha çabuk dağılır. Kindle gibi cihazlar daha az dikkat dağıtıcı olabilir. Buna karşın bazı çalışmalar, e-kitabın kavrayışı azaltmadığını; disleksili okurlar için faydalı olabildiğini gösterir.\n\n` +
+          `E) 400’den fazla çocukla yapılan deneyler, animasyon içeren e-kitaplarla hikâyelerin daha iyi anlaşıldığını ve daha fazla kelime öğrenildiğini gösterdi. Wolf, çocukların cihazlarla aşırı vakit geçirmesinin sorunlarını kabul etmekle birlikte, gelişmekte olan ülkeler için bilginin demokratikleşmesine katkı sunduğunu ve her iki kitap türünün korunması gerektiğini belirtir; ABD’de basılı kitap satışlarının son zamanlarda arttığını da ekler.`,
+        questions: [],
+      },
+      {
+        id: "demo-section-5-mcq",
+        title: "Çoktan Seçmeli (S30–S32)",
+        content: `Sorular 30-32. Metne göre doğru seçeneği (A, B, C veya D) işaretleyiniz.`,
+        questions: [
+          {
+            id: "demo-q30",
+            blankNumber: 30,
+            text: "Aşağıdaki cümlelerden hangisi metinden çıkarılamaz?",
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "2015 yılında satılan kitapların %80’i basılı kitaplardır." },
+              { letter: "B", text: "Piyasada farklı firmalara ait e-kitap okuyucuları bulunmaktadır." },
+              { letter: "C", text: "Gelecek 50-100 yıl içinde kitaplar tamamen ortadan kalkacaktır." },
+              { letter: "D", text: "2013 yılında, ABD’deki yetişkin insanların yaklaşık %30’u e-kitap okumuştur." },
+            ],
+          },
+          {
+            id: "demo-q31",
+            blankNumber: 31,
+            text: "Metinde aşağıdaki cümlelerden hangisine değinilmemiştir?",
+            correctAnswer: "B",
+            options: [
+              { letter: "A", text: "Son yıllarda basılı kitapların değeri daha fazla kavranmıştır." },
+              { letter: "B", text: "Günümüzde e-kitap satışları, basılı kitap satışlarını geçmiş durumdadır." },
+              { letter: "C", text: "Animasyonlu e-kitaplar çocuklar tarafından daha iyi anlaşılmaktadır." },
+              { letter: "D", text: "Dijital metinler gelecekte okumayı daha sosyal bir olay hâline getirebilir." },
+            ],
+          },
+          {
+            id: "demo-q32",
+            blankNumber: 32,
+            text: "Metinden aşağıdaki yargılardan hangisine ulaşılamaz?",
+            correctAnswer: "D",
+            options: [
+              { letter: "A", text: "Animasyonlu hikâyeler çocukların anlama düzeylerini olumlu etkiler." },
+              { letter: "B", text: "Geçmişe nazaran, bugün daha fazla sayıda insan e-kitap okumaktadır." },
+              { letter: "C", text: "Elektronik kitaplar bazı dezavantajlı okurlar için faydalı olabilmektedir." },
+              { letter: "D", text: "Elektronik kitaplar yüzünden yazarlar telif haklarını koruyamamaktadır." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "demo-section-5-map",
+        title: "Paragraf Eşleştirme (S33–S35)",
+        content: `Sorular 33-35. Cümleleri okuyup hangi paragrafa (A–E) ait olduğunu seçiniz. İki paragraf seçilmemelidir.`,
+        questions: [
+          {
+            id: "demo-q33",
+            blankNumber: 33,
+            text: "Elektronik okumanın beynin kavrama yetisi ve dikkat üzerindeki etkisi hangi paragrafta yer almaktadır?",
+            correctAnswer: "D",
+            options: [
+              { letter: "A", text: "A" },
+              { letter: "B", text: "B" },
+              { letter: "C", text: "C" },
+              { letter: "D", text: "D" },
+              { letter: "E", text: "E" },
+            ],
+          },
+          {
+            id: "demo-q34",
+            blankNumber: 34,
+            text: "Kitap okumanın toplumsal/sosyal bir etkinliğe dönüşebileceği fikri hangi paragrafta yer almaktadır?",
+            correctAnswer: "B",
+            options: [
+              { letter: "A", text: "A" },
+              { letter: "B", text: "B" },
+              { letter: "C", text: "C" },
+              { letter: "D", text: "D" },
+              { letter: "E", text: "E" },
+            ],
+          },
+          {
+            id: "demo-q35",
+            blankNumber: 35,
+            text: "Matbu kitapların geleceği hakkında öngörüler hangi paragrafta yer almaktadır?",
+            correctAnswer: "C",
+            options: [
+              { letter: "A", text: "A" },
+              { letter: "B", text: "B" },
+              { letter: "C", text: "C" },
+              { letter: "D", text: "D" },
+              { letter: "E", text: "E" },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
   // Initialize with demo data
   React.useEffect(() => {
     if (parts.length === 0) {
@@ -618,7 +727,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
         ],
       };
       // preload three demos: Part 1, Part 2 and Part 3
-      const initialParts = [demoPart, buildDemoPart2(), buildDemoPart3(), buildDemoPart4()];
+      const initialParts = [
+        demoPart,
+        buildDemoPart2(),
+        buildDemoPart3(),
+        buildDemoPart4(),
+        buildDemoPart5(),
+      ];
       setParts(initialParts);
       setExpandedPartIds(initialParts.map((p) => p.id));
     }
