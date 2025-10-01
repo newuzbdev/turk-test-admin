@@ -12,6 +12,7 @@ const { Step } = Steps;
 export interface ReadingQuestion {
   id: string;
   blankNumber: number; // S1, S2, S3, etc.
+  text?: string; // Optional custom question text entered by the user
   correctAnswer: string; // The correct option (A, B, C, etc.)
   options: {
     letter: string;
@@ -836,7 +837,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           questions: section.questions.map((question, questionIndex) => ({
             number: questionIndex + 1,
             type: "MULTIPLE_CHOICE",
-            text: `S${question.blankNumber} uchun to'g'ri javobni tanlang`,
+            text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`,
             answers: question.options.map((option, optionIndex) => ({
               variantText: option.letter,
               answer: option.text,
