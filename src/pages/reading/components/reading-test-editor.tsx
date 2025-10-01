@@ -84,6 +84,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q7",
             blankNumber: 7,
+            text: "S7) İSTANBUL-SİLİVRİSARAY EVLERİ — Denize sıfır, yeşil ve huzurlu ortam, hemen teslim satılık daireler.",
             correctAnswer: "C",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -101,6 +102,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q8",
             blankNumber: 8,
+            text: "S8) OTOMOBİL SERVİSİ — Tüm marka araçlar için tamir ve 7/24 yol yardımı.",
             correctAnswer: "B",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -118,6 +120,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q9",
             blankNumber: 9,
+            text: "S9) VETERİNER KLİNİĞİ — Aşı, kuduz tedavisi ve cerrahi hizmetleri.",
             correctAnswer: "A",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -135,6 +138,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q10",
             blankNumber: 10,
+            text: "S10) İNŞAAT VE TADİLAT — Ev tamiri, duvar boyama, elektrik ve su tesisatı.",
             correctAnswer: "E",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -152,6 +156,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q11",
             blankNumber: 11,
+            text: "S11) HOSPİDENT — 7/24 diş tedavisi, lazer ve estetik uygulamalar.",
             correctAnswer: "F",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -169,6 +174,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q12",
             blankNumber: 12,
+            text: "S12) MOBİLYA ATÖLYESİ — Özel tasarım yemek masası ve mobilyalar.",
             correctAnswer: "G",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -186,6 +192,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q13",
             blankNumber: 13,
+            text: "S13) GÖZ KLİNİĞİ — Lazerle göz estetiği, LASIK, PRK, katarakt.",
             correctAnswer: "H",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
@@ -203,6 +210,7 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
           {
             id: "demo-q14",
             blankNumber: 14,
+            text: "S14) EMLAK OFİSİ — İstanbul'da satılık/kiralık daire, profesyonel danışmanlık.",
             correctAnswer: "I",
             options: [
               { letter: "A", text: "Baytar olarak çalışmak istiyorsunuz" },
