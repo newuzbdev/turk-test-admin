@@ -826,7 +826,10 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
         number: partIndex + 1,
         title: part.title,
         audioUrl: "", // Reading tests don't need audio
-        sections: part.sections.map((section, sectionIndex) => ({
+        // For Part 2 (index 1), only include the section that contains questions
+        sections: part.sections
+          .filter((section) => (partIndex === 1 ? section.questions.length > 0 : true))
+          .map((section, sectionIndex) => ({
           title: section.title,
           content: section.content,
           imageUrl: "", // Can be added later if needed
