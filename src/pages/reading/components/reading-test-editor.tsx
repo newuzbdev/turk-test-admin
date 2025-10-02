@@ -13,6 +13,7 @@ export interface ReadingQuestion {
   id: string;
   blankNumber: number; // S1, S2, S3, etc.
   text?: string; // Optional custom question text entered by the user
+  imageUrl?: string; // For Part 2: question image
   correctAnswer: string; // The correct option (A, B, C, etc.)
   options: {
     letter: string;
@@ -24,6 +25,7 @@ export interface ReadingSection {
   id: string;
   title: string;
   content: string;
+  imageUrl?: string;
   questions: ReadingQuestion[];
 }
 
@@ -776,6 +778,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       id: `section-${Date.now()}`,
       title: `Section ${part.sections.length + 1}`,
       content: "",
+      imageUrl: "",
       questions: [],
     };
 
@@ -841,11 +844,14 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           .map((section, sectionIndex) => ({
           title: section.title,
           content: section.content,
-          imageUrl: "", // Can be added later if needed
+          imageUrl: section.imageUrl || "",
           questions: section.questions.map((question, questionIndex) => ({
             number: questionIndex + 1,
             type: "MULTIPLE_CHOICE",
-            text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`,
+            // For Part 2, send image as question
+            text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
+            content: partIndex === 1 ? "" : (question.text || ""),
+            imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
             answers: question.options.map((option, optionIndex) => ({
               variantText: option.letter,
               answer: option.text,
@@ -1034,10 +1040,11 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   </Text>
 
                   {part.sections.map((section, sectionIndex) => (
-                    <ReadingSectionEditor
+                  <ReadingSectionEditor
                       key={section.id}
                       section={section}
                       sectionNumber={sectionIndex + 1}
+                    isPartTwo={partIndex === 1}
                       onChange={(updated) => updateSection(part.id, section.id, updated)}
                       onRemove={() => removeSection(part.id, section.id)}
                     />

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Button, Card, Input, Space, Typography, Divider, Select, message, Alert } from "antd";
-import { DeleteOutlined, PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { Button, Card, Input, Space, Typography, Divider, Select, message, Alert, Upload, Image } from "antd";
+import { DeleteOutlined, PlusOutlined, EditOutlined, UploadOutlined } from "@ant-design/icons";
 import type { ReadingSection, ReadingQuestion } from "./reading-test-editor";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -9,6 +10,7 @@ const { TextArea } = Input;
 interface ReadingSectionEditorProps {
   section: ReadingSection;
   sectionNumber: number;
+  isPartTwo?: boolean;
   onChange: (section: ReadingSection) => void;
   onRemove: () => void;
 }
@@ -16,11 +18,14 @@ interface ReadingSectionEditorProps {
 export default function ReadingSectionEditor({
   section,
   sectionNumber,
+  isPartTwo = false,
   onChange,
   onRemove,
 }: ReadingSectionEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempContent, setTempContent] = useState(section.content);
+  const fileUploadMutation = useFileUpload();
+  const FILE_BASE = "https://api.turkcetest.uz/";
 
   // Extract blanks from content (S1, S2, S3, etc.)
   const extractBlanks = (content: string) => {
@@ -136,6 +141,19 @@ export default function ReadingSectionEditor({
       options: updatedOptions,
     };
     updateQuestion(questionId, updatedQuestion);
+  };
+
+  const handleQuestionImageUpload = async (question: ReadingQuestion, file: File) => {
+    try {
+      const result = await fileUploadMutation.mutateAsync(file);
+      if (result?.path) {
+        updateQuestion(question.id, { ...question, imageUrl: result.path, text: "" });
+        message.success("Savol rasmi yuklandi");
+      }
+    } catch (e) {
+      message.error("Rasm yuklashda xatolik");
+    }
+    return false;
   };
 
 
@@ -287,18 +305,44 @@ export default function ReadingSectionEditor({
                   style={{ backgroundColor: "transparent", border: "1px dashed var(--ant-border-color, #d9d9d9)" }}
                 >
                   <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-                    {/* Question text editor */}
-                    <div>
-                      <Text strong style={{ marginBottom: 8, display: "block" }}>
-                        Savol matni
-                      </Text>
-                      <Input.TextArea
-                        rows={3}
-                        placeholder="Savol matnini kiriting (ixtiyoriy)"
-                        value={question.text || ""}
-                        onChange={(e) => updateQuestion(question.id, { ...question, text: e.target.value })}
-                      />
-                    </div>
+                    {/* Question input or image upload (Part 2) */}
+                    {isPartTwo ? (
+                      <div>
+                        <Text strong style={{ marginBottom: 8, display: "block" }}>
+                          Savol rasmi (Part 2)
+                        </Text>
+                        <Upload
+                          showUploadList={false}
+                          accept="image/*"
+                          beforeUpload={(file) => handleQuestionImageUpload(question, file)}
+                        >
+                          <Button icon={<UploadOutlined />} loading={fileUploadMutation.isPending}>
+                            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm yuklash"}
+                          </Button>
+                        </Upload>
+                        {question.imageUrl && (
+                          <div style={{ marginTop: 8 }}>
+                            <Image
+                              src={FILE_BASE + question.imageUrl}
+                              alt="Question"
+                              style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 6 }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <Text strong style={{ marginBottom: 8, display: "block" }}>
+                          Savol matni
+                        </Text>
+                        <Input.TextArea
+                          rows={3}
+                          placeholder="Savol matnini kiriting (ixtiyoriy)"
+                          value={question.text || ""}
+                          onChange={(e) => updateQuestion(question.id, { ...question, text: e.target.value })}
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <Text strong style={{ marginBottom: 8, display: "block" }}>

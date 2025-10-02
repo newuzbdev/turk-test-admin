@@ -28,6 +28,8 @@ interface CreateTestWithAdditionDto {
         number: number;
         type: string;
         text: string;
+        content?: string;
+        imageUrl?: string;
         answers: {
           variantText: string;
           answer: string;
