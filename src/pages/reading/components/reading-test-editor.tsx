@@ -840,12 +840,19 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           const tnvSection = part.sections.find(
             (s) => s.id === "demo-section-4-tnv" || s.title?.startsWith("Doğru / Yanlış / Verilmemiş")
           );
+          const mcqSection = part.sections.find(
+            (s) => s.id === "demo-section-4-questions" || s.title?.includes("Çoktan Seçmeli")
+          );
           const textSection = part.sections.find(
             (s) => s.id === "demo-section-4-text" || s.title?.toLowerCase().includes("okuma metni")
           );
 
-          const singleSection = tnvSection || part.sections[0];
+          const singleSection = tnvSection || mcqSection || part.sections[0];
           const passageContent = textSection?.content ?? singleSection?.content ?? "";
+          const combinedQuestions = [
+            ...((mcqSection?.questions as any[]) || []),
+            ...((tnvSection?.questions as any[]) || []),
+          ];
 
           return {
             number: partIndex + 1,
@@ -856,13 +863,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 title: singleSection?.title || "Bölüm 4",
                 content: passageContent,
                 imageUrl: singleSection?.imageUrl || "",
-                questions: (singleSection?.questions || []).map((question, questionIndex) => ({
-                  number: questionIndex + 1,
+                questions: combinedQuestions.map((question) => ({
+                  number: Number(question.blankNumber) || 0, // keep original numbering (21..29)
                   type: "MULTIPLE_CHOICE",
                   text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
                   content: question.text || "",
                   imageUrl: "",
-                  answers: question.options.map((option, ) => ({
+                  answers: question.options.map((option: any) => ({
                     variantText: option.letter,
                     answer: option.text,
                     correct: option.letter === question.correctAnswer,
