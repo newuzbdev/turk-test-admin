@@ -834,32 +834,72 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       description: testDescription,
       type: "READING",
       ieltsId: ieltsId,
-      parts: parts.map((part, partIndex) => ({
-        number: partIndex + 1,
-        title: part.title,
-        audioUrl: "", // Reading tests don't need audio
-        // For Part 2 (index 1), only include the section that contains questions
-        sections: part.sections
-          .filter((section) => (partIndex === 1 ? section.questions.length > 0 : true))
-          .map((section, ) => ({
-          title: section.title,
-          content: section.content,
-          imageUrl: section.imageUrl || "",
-          questions: section.questions.map((question, questionIndex) => ({
-            number: questionIndex + 1,
-            type: "MULTIPLE_CHOICE",
-            // For Part 2, send image as question
-            text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
-            content: partIndex === 1 ? "" : (question.text || ""),
-            imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
-            answers: question.options.map((option, ) => ({
-              variantText: option.letter,
-              answer: option.text,
-              correct: option.letter === question.correctAnswer,
+      parts: parts.map((part, partIndex) => {
+        // Special handling for Part 4: send a single section with passage content + questions
+        if (partIndex === 3) {
+          const tnvSection = part.sections.find(
+            (s) => s.id === "demo-section-4-tnv" || s.title?.startsWith("Doğru / Yanlış / Verilmemiş")
+          );
+          const textSection = part.sections.find(
+            (s) => s.id === "demo-section-4-text" || s.title?.toLowerCase().includes("okuma metni")
+          );
+
+          const singleSection = tnvSection || part.sections[0];
+          const passageContent = textSection?.content ?? singleSection?.content ?? "";
+
+          return {
+            number: partIndex + 1,
+            title: part.title,
+            audioUrl: "",
+            sections: [
+              {
+                title: singleSection?.title || "Bölüm 4",
+                content: passageContent,
+                imageUrl: singleSection?.imageUrl || "",
+                questions: (singleSection?.questions || []).map((question, questionIndex) => ({
+                  number: questionIndex + 1,
+                  type: "MULTIPLE_CHOICE",
+                  text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
+                  content: question.text || "",
+                  imageUrl: "",
+                  answers: question.options.map((option, ) => ({
+                    variantText: option.letter,
+                    answer: option.text,
+                    correct: option.letter === question.correctAnswer,
+                  })),
+                })),
+              },
+            ],
+          };
+        }
+
+        return {
+          number: partIndex + 1,
+          title: part.title,
+          audioUrl: "", // Reading tests don't need audio
+          // For Part 2 (index 1), only include the section that contains questions
+          sections: part.sections
+            .filter((section) => (partIndex === 1 ? section.questions.length > 0 : true))
+            .map((section, ) => ({
+              title: section.title,
+              content: section.content,
+              imageUrl: section.imageUrl || "",
+              questions: section.questions.map((question, questionIndex) => ({
+                number: questionIndex + 1,
+                type: "MULTIPLE_CHOICE",
+                // For Part 2, send image as question
+                text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
+                content: partIndex === 1 ? "" : (question.text || ""),
+                imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
+                answers: question.options.map((option, ) => ({
+                  variantText: option.letter,
+                  answer: option.text,
+                  correct: option.letter === question.correctAnswer,
+                })),
+              })),
             })),
-          })),
-        })),
-      })),
+        };
+      }),
     };
 
     createTest(payload, {
