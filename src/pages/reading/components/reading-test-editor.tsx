@@ -880,6 +880,50 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           };
         }
 
+        // Special handling for Part 5: send a single section with paragraph content + all questions (S30–S35)
+        if (partIndex === 4) {
+          const paragraphsSection = part.sections.find(
+            (s) => s.id === "demo-section-5-paragraphs" || s.title?.includes("Paragraflar (A–E)")
+          );
+          const mcqSection = part.sections.find(
+            (s) => s.id === "demo-section-5-mcq" || s.title?.includes("Çoktan Seçmeli")
+          );
+          const mapSection = part.sections.find(
+            (s) => s.id === "demo-section-5-map" || s.title?.includes("Paragraf Eşleştirme")
+          );
+
+          const contentSection = paragraphsSection || part.sections[0];
+          const combinedQuestions = [
+            ...((mcqSection?.questions as any[]) || []),
+            ...((mapSection?.questions as any[]) || []),
+          ];
+
+          return {
+            number: partIndex + 1,
+            title: part.title,
+            audioUrl: "",
+            sections: [
+              {
+                title: contentSection?.title || "Bölüm 5",
+                content: contentSection?.content || "",
+                imageUrl: contentSection?.imageUrl || "",
+                questions: combinedQuestions.map((question) => ({
+                  number: Number(question.blankNumber) || 0, // keep original numbering (30..35)
+                  type: "MULTIPLE_CHOICE",
+                  text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
+                  content: question.text || "",
+                  imageUrl: "",
+                  answers: question.options.map((option: any) => ({
+                    variantText: option.letter,
+                    answer: option.text,
+                    correct: option.letter === question.correctAnswer,
+                  })),
+                })),
+              },
+            ],
+          };
+        }
+
         return {
           number: partIndex + 1,
           title: part.title,
