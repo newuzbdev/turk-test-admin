@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Button, Card, Input, Space, Typography, Divider, Select, message, Alert, Upload, Image } from "antd";
 import { DeleteOutlined, PlusOutlined, EditOutlined, UploadOutlined } from "@ant-design/icons";
 import type { ReadingSection, ReadingQuestion } from "./reading-test-editor";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
 
-const { Title, Text } = Typography;
+const {  Text } = Typography;
 const { TextArea } = Input;
 
 interface ReadingSectionEditorProps {
@@ -17,7 +17,6 @@ interface ReadingSectionEditorProps {
 
 export default function ReadingSectionEditor({
   section,
-  sectionNumber,
   isPartTwo = false,
   onChange,
   onRemove,
@@ -288,7 +287,7 @@ export default function ReadingSectionEditor({
             />
           ) : (
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-              {section.questions.map((question, questionIndex) => (
+              {section.questions.map((question, ) => (
                 <Card
                   key={question.id}
                   size="small"

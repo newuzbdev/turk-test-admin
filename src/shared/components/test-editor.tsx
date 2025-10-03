@@ -29,6 +29,7 @@ export interface AnswerDto {
 export interface QuestionDto {
   text: string;
   content?: string;
+  imageUrl?: string;
   answers: AnswerDto[];
 }
 
@@ -109,6 +110,7 @@ export default function TestEditor({
                 type: s.type ?? "TEXT_INPUT",
                 text: q.text ?? "",
                 content: q.text ?? "",
+                imageUrl: q.imageUrl ?? "",
                 answers: q.answers.map((a, aIndex) => ({
                   variantText: String.fromCharCode(65 + aIndex),
                   answer: String(a.text ?? ""),
@@ -131,7 +133,7 @@ export default function TestEditor({
     // Warn if author created more than 35 questions; extras are omitted from payload
     const totalAuthoredQuestions = parts.reduce((acc, p) => acc + p.sections.reduce((sa, s) => sa + s.questions.length, 0), 0);
     if (totalAuthoredQuestions > 35) {
-      toast((t) => (
+      toast(() => (
         <div>
           {`Only first 35 questions are sent (of ${totalAuthoredQuestions}).`}
         </div>

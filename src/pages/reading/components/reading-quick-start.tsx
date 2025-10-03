@@ -1,9 +1,7 @@
-import React from "react";
 import { Card, Steps, Typography, Space, Button, Alert } from "antd";
 import { CheckCircleOutlined, EditOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons";
 
-const { Title, Text, Paragraph } = Typography;
-const { Step } = Steps;
+const { Title, Text } = Typography;
 
 export default function ReadingQuickStart() {
   const steps = [

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, Card, Input, Space, Typography, Divider, Steps, message } from "antd";
+import React, { useState,  } from "react";
+import { Button, Card, Input, Space, Typography, Divider, Steps, } from "antd";
 import { PlusOutlined, DeleteOutlined, SaveOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useCreateReadingTestWithAddition } from "@/config/queries/reading/create.queries";
@@ -841,7 +841,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
         // For Part 2 (index 1), only include the section that contains questions
         sections: part.sections
           .filter((section) => (partIndex === 1 ? section.questions.length > 0 : true))
-          .map((section, sectionIndex) => ({
+          .map((section, ) => ({
           title: section.title,
           content: section.content,
           imageUrl: section.imageUrl || "",
@@ -852,7 +852,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
             text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
             content: partIndex === 1 ? "" : (question.text || ""),
             imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
-            answers: question.options.map((option, optionIndex) => ({
+            answers: question.options.map((option, ) => ({
               variantText: option.letter,
               answer: option.text,
               correct: option.letter === question.correctAnswer,

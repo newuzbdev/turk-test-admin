@@ -1,5 +1,7 @@
-import { useEffect } from "react";
-import { Button, Card, Input, Space, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Card, Input, Space, Typography, Upload, Image, Progress, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type { AnswerDto, QuestionDto, QuestionType } from "../components/test-editor";
 import AnswerForm from "./answer-form";
 
@@ -19,6 +21,9 @@ export default function QuestionForm({
   onChange,
   onRemove,
 }: Props) {
+  const fileUploadMutation = useFileUpload();
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const FILE_BASE = "https://api.turkcetest.uz/";
   useEffect(() => {
     if (!type) return;
     // default answers for TRUE_FALSE and FILL_BLANK
@@ -52,6 +57,22 @@ export default function QuestionForm({
     });
   };
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadProgress(0);
+      const result = await fileUploadMutation.mutateAsync(file);
+      if (result?.path) {
+        onChange({ ...question, imageUrl: result.path });
+        setUploadProgress(100);
+        message.success("Rasm yuklandi");
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      message.error("Rasm yuklashda xatolik");
+      setUploadProgress(0);
+    }
+  };
+
   return (
     <Card
       title={
@@ -69,6 +90,36 @@ export default function QuestionForm({
           value={question.content}
           onChange={(e) => updateField("content", e.target.value)}
         />
+
+        {/* Image Upload */}
+        <Upload
+          showUploadList={false}
+          accept="image/*"
+          beforeUpload={(file) => {
+            handleImageUpload(file);
+            return false;
+          }}
+        >
+          <Button
+            icon={<UploadOutlined />}
+            loading={fileUploadMutation.isPending}
+            block
+          >
+            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Savol rasmi yuklash"}
+          </Button>
+        </Upload>
+
+        {uploadProgress > 0 && uploadProgress < 100 && (
+          <Progress percent={uploadProgress} size="small" status="active" />
+        )}
+
+        {question.imageUrl && (
+          <Image
+            src={FILE_BASE + question.imageUrl}
+            alt="Question"
+            style={{ marginTop: 10, width: "100%", maxHeight: 220, borderRadius: 8 }}
+          />
+        )}
 
         {question.answers.map((ans, idx) => (
           <div key={idx}>
