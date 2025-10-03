@@ -828,7 +828,8 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       return;
     }
 
-    // Build payload according to API structure
+    // Build payload according to API structure with global question numbering (1-35)
+    let globalQuestionNumber = 1;
     const payload = {
       title: testTitle,
       description: testDescription,
@@ -863,18 +864,22 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 title: singleSection?.title || "Bölüm 4",
                 content: passageContent,
                 imageUrl: singleSection?.imageUrl || "",
-                questions: combinedQuestions.map((question) => ({
-                  number: Number(question.blankNumber) || 0, // keep original numbering (21..29)
-                  type: "MULTIPLE_CHOICE",
-                  text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
-                  content: question.text || "",
-                  imageUrl: "",
-                  answers: question.options.map((option: any) => ({
-                    variantText: option.letter,
-                    answer: option.text,
-                    correct: option.letter === question.correctAnswer,
-                  })),
-                })),
+                questions: combinedQuestions.map((question) => {
+                  if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
+                  const currentNumber = globalQuestionNumber++;
+                  return {
+                    number: currentNumber,
+                    type: "MULTIPLE_CHOICE",
+                    text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
+                    content: question.text || "",
+                    imageUrl: "",
+                    answers: question.options.map((option: any) => ({
+                      variantText: option.letter,
+                      answer: option.text,
+                      correct: option.letter === question.correctAnswer,
+                    })),
+                  };
+                }).filter(Boolean), // Remove null entries
               },
             ],
           };
@@ -907,18 +912,22 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 title: contentSection?.title || "Bölüm 5",
                 content: contentSection?.content || "",
                 imageUrl: contentSection?.imageUrl || "",
-                questions: combinedQuestions.map((question) => ({
-                  number: Number(question.blankNumber) || 0, // keep original numbering (30..35)
-                  type: "MULTIPLE_CHOICE",
-                  text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
-                  content: question.text || "",
-                  imageUrl: "",
-                  answers: question.options.map((option: any) => ({
-                    variantText: option.letter,
-                    answer: option.text,
-                    correct: option.letter === question.correctAnswer,
-                  })),
-                })),
+                questions: combinedQuestions.map((question) => {
+                  if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
+                  const currentNumber = globalQuestionNumber++;
+                  return {
+                    number: currentNumber,
+                    type: "MULTIPLE_CHOICE",
+                    text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
+                    content: question.text || "",
+                    imageUrl: "",
+                    answers: question.options.map((option: any) => ({
+                      variantText: option.letter,
+                      answer: option.text,
+                      correct: option.letter === question.correctAnswer,
+                    })),
+                  };
+                }).filter(Boolean), // Remove null entries
               },
             ],
           };
@@ -935,19 +944,23 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
               title: section.title,
               content: section.content,
               imageUrl: section.imageUrl || "",
-              questions: section.questions.map((question, questionIndex) => ({
-                number: questionIndex + 1,
-                type: "MULTIPLE_CHOICE",
-                // For Part 2, send image as question
-                text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
-                content: partIndex === 1 ? "" : (question.text || ""),
-                imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
-                answers: question.options.map((option, ) => ({
-                  variantText: option.letter,
-                  answer: option.text,
-                  correct: option.letter === question.correctAnswer,
-                })),
-              })),
+              questions: section.questions.map((question, questionIndex) => {
+                if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
+                const currentNumber = globalQuestionNumber++;
+                return {
+                  number: currentNumber,
+                  type: "MULTIPLE_CHOICE",
+                  // For Part 2, send image as question
+                  text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
+                  content: partIndex === 1 ? "" : (question.text || ""),
+                  imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
+                  answers: question.options.map((option, ) => ({
+                    variantText: option.letter,
+                    answer: option.text,
+                    correct: option.letter === question.correctAnswer,
+                  })),
+                };
+              }).filter(Boolean), // Remove null entries
             })),
         };
       }),
