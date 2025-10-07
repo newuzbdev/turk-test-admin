@@ -277,10 +277,97 @@ export default function TestEditor({
     ],
   });
 
+  const buildListeningDemoPart4 = (): PartDto => ({
+    title: "Bölüm 4",
+    description: "Demo – Harita üstünde yerleri işaretleme (A–H)",
+    audioUrl: "",
+    sections: [
+      {
+        title: "Harita – S19–S23",
+        content:
+          "Dinleme metnine göre haritadaki yerleri (A–H) işaretleyiniz. Üç seçenek kullanılmayacak.",
+        imageUrl: "", // kullanıcı harita görselini buradan yükleyebilir
+        type: "MATCHING",
+        questions: [
+          {
+            text: "S19. Spor salonu …",
+            answers: [
+              { text: "A", isCorrect: false },
+              { text: "B", isCorrect: false },
+              { text: "C", isCorrect: false },
+              { text: "D", isCorrect: false },
+              { text: "E", isCorrect: false },
+              { text: "F", isCorrect: false },
+              { text: "G", isCorrect: false },
+              { text: "H", isCorrect: false },
+            ],
+          },
+          {
+            text: "S20. Gıda mağazası …",
+            answers: [
+              { text: "A", isCorrect: false },
+              { text: "B", isCorrect: false },
+              { text: "C", isCorrect: false },
+              { text: "D", isCorrect: false },
+              { text: "E", isCorrect: false },
+              { text: "F", isCorrect: false },
+              { text: "G", isCorrect: false },
+              { text: "H", isCorrect: false },
+            ],
+          },
+          {
+            text: "S21. Eskişehir Oteli …",
+            answers: [
+              { text: "A", isCorrect: false },
+              { text: "B", isCorrect: false },
+              { text: "C", isCorrect: false },
+              { text: "D", isCorrect: false },
+              { text: "E", isCorrect: false },
+              { text: "F", isCorrect: false },
+              { text: "G", isCorrect: false },
+              { text: "H", isCorrect: false },
+            ],
+          },
+          {
+            text: "S22. Lokanta …",
+            answers: [
+              { text: "A", isCorrect: false },
+              { text: "B", isCorrect: false },
+              { text: "C", isCorrect: false },
+              { text: "D", isCorrect: false },
+              { text: "E", isCorrect: false },
+              { text: "F", isCorrect: false },
+              { text: "G", isCorrect: false },
+              { text: "H", isCorrect: false },
+            ],
+          },
+          {
+            text: "S23. Hayvanat bahçesi …",
+            answers: [
+              { text: "A", isCorrect: false },
+              { text: "B", isCorrect: false },
+              { text: "C", isCorrect: false },
+              { text: "D", isCorrect: false },
+              { text: "E", isCorrect: false },
+              { text: "F", isCorrect: false },
+              { text: "G", isCorrect: false },
+              { text: "H", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
   // Auto-initialize demo for Listening when parts are empty
   useEffect(() => {
     if (testType === "LISTENING" && parts.length === 0) {
-      setParts([buildListeningDemoPart1(), buildListeningDemoPart2(), buildListeningDemoPart3()]);
+      setParts([
+        buildListeningDemoPart1(),
+        buildListeningDemoPart2(),
+        buildListeningDemoPart3(),
+        buildListeningDemoPart4(),
+      ]);
       setTestTitle("Listening Demo – Bölüm 1");
       setTestDescription("Bu, dinleme için S1–S8 demo içeriğidir.");
     }

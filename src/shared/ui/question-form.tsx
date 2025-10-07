@@ -32,7 +32,7 @@ export default function QuestionForm({
     } else if (type === "FILL_BLANK" && question.answers.length === 0) {
       onChange({ ...question, answers: [{ text: "", isCorrect: true }] });
     }
-    // do NOT auto-fill MULTIPLE_CHOICE; answers remain empty until user clicks "Add Answer"
+    // do NOT auto-fill MULTIPLE_CHOICE/MATCHING; answers remain empty until user clicks "Add Answer"
   }, [type]);
 
   const updateField = (field: keyof QuestionDto, value: any) => {
@@ -124,7 +124,7 @@ export default function QuestionForm({
         {question.answers.map((ans, idx) => (
           <div key={idx}>
             <Space style={{ width: "100%", alignItems: "center" }}>
-              {type === "MULTIPLE_CHOICE" ? <Text strong>{alphabet[idx]}.</Text> : null}
+              {(type === "MULTIPLE_CHOICE" || type === "MATCHING") ? <Text strong>{alphabet[idx] ?? String(idx + 1)}.</Text> : null}
               <AnswerForm
                 answer={ans}
                 type={type}
@@ -136,7 +136,7 @@ export default function QuestionForm({
           </div>
         ))}
 
-        {type === "MULTIPLE_CHOICE" && (
+        {(type === "MULTIPLE_CHOICE" || type === "MATCHING") && (
           <Button type="dashed" onClick={addAnswer}>
             + Add Answer
           </Button>
