@@ -13,9 +13,10 @@ interface PartFormProps {
   part: PartDto;
   onChange: (part: PartDto) => void;
   onRemove: () => void;
+  hideAudioUpload?: boolean;
 }
 
-const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove }) => {
+const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudioUpload = false }) => {
   const fileUploadMutation = useFileUpload();
   const [activeSections, setActiveSections] = useState<number[]>([]);
 
@@ -78,29 +79,33 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove }) => {
       }
     >
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-        <Text strong>🎧 Audio fayl yuklash</Text>
-        <Upload
-          showUploadList={false}
-          accept="audio/*"
-          beforeUpload={(file) => {
-            handleAudioUpload(file);
-            return false;
-          }}
-        >
-          <Button
-            icon={<UploadOutlined />}
-            loading={fileUploadMutation.isPending}
-            style={{ width: "100%" }}
-          >
-            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Audio faylni tanlang"}
-          </Button>
-        </Upload>
-        {part.audioUrl && (
-          <audio
-            controls
-            src={FILE_BASE + part.audioUrl}
-            style={{ marginTop: 10, width: "100%" }}
-          />
+        {!hideAudioUpload && (
+          <>
+            <Text strong>🎧 Audio fayl yuklash</Text>
+            <Upload
+              showUploadList={false}
+              accept="audio/*"
+              beforeUpload={(file) => {
+                handleAudioUpload(file);
+                return false;
+              }}
+            >
+              <Button
+                icon={<UploadOutlined />}
+                loading={fileUploadMutation.isPending}
+                style={{ width: "100%" }}
+              >
+                {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Audio faylni tanlang"}
+              </Button>
+            </Upload>
+            {part.audioUrl && (
+              <audio
+                controls
+                src={FILE_BASE + part.audioUrl}
+                style={{ marginTop: 10, width: "100%" }}
+              />
+            )}
+          </>
         )}
 
         <Collapse

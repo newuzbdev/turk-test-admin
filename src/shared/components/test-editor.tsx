@@ -1,11 +1,13 @@
-import { Button, Card, Divider, Input, Space } from "antd";
+import { Button, Card, Divider, Input, Space, Upload, Typography, message } from "antd";
 
 import PartForm from "../ui/part-form";
 import { PlusOutlined } from "@ant-design/icons";
 import Title from "antd/es/typography/Title";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { UploadOutlined } from "@ant-design/icons";
+import { useFileUpload } from "@/config/queries/file/upload.queries";
 
 interface Props {
   ieltsId?: string | null;
@@ -65,8 +67,224 @@ export default function TestEditor({
   const [testTitle, setTestTitle] = useState("");
   const [testDescription, setTestDescription] = useState("");
   const [parts, setParts] = useState<PartDto[]>([]);
+  const [globalAudioUrl, setGlobalAudioUrl] = useState<string>("");
   const navigate = useNavigate();
   const { mutate } = useCreateTestWithAddition();
+  const fileUploadMutation = useFileUpload();
+
+  // Demo builder: Listening Bölüm 1 with S1–S8 (A/B/C options)
+  const buildListeningDemoPart1 = (): PartDto => ({
+    title: "Bölüm 1",
+    description: "Demo – S1–S8 çoktan seçmeli",
+    audioUrl: "",
+    sections: [
+      {
+        title: "S1–S8",
+        content: "Demo seçenekler: A/B/C",
+        imageUrl: "",
+        type: "MULTIPLE_CHOICE",
+        questions: [
+          {
+            text: "S1",
+            answers: [
+              { text: "Trafikte takılıp kaldım, her şey arapsaçına döndü.", isCorrect: false },
+              { text: "İşler yolundaydı, sorunsuz geldim.", isCorrect: false },
+              { text: "Yolda hiçbir sorun yaşamadım.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S2",
+            answers: [
+              { text: "Hemen çözüm bulduk.", isCorrect: false },
+              { text: "İşler sarpa sardı, elim kolum bağlı kaldı.", isCorrect: false },
+              { text: "Başkalarına danıştım.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S3",
+            answers: [
+              { text: "Öyledir, o çok konuşkan ve geveze.", isCorrect: false },
+              { text: "Sanmıyorum, cömert insana benziyor.", isCorrect: false },
+              { text: "Evet, uzun zamandır ağzını bıçak açmıyor.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S4",
+            answers: [
+              { text: "Çünkü zaman kısıtlaması vardı.", isCorrect: false },
+              { text: "Sunumu tamamlayamadım.", isCorrect: false },
+              { text: "Sunum çok başarılı geçti.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S5",
+            answers: [
+              { text: "Bu görevi tamamlamak benim için çok zordu.", isCorrect: false },
+              { text: "Görev bana verilmeden önce birkaç kişi denemişti.", isCorrect: false },
+              { text: "Daha önce benzer bir görevde başarılı olmuştum.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S6",
+            answers: [
+              { text: "Yeterince vakit bulamadım.", isCorrect: false },
+              { text: "Proje zaten erken bitti.", isCorrect: false },
+              { text: "Ekip arkadaşım projeye katkıda bulundu.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S7",
+            answers: [
+              { text: "Kitap çok ilginçti.", isCorrect: false },
+              { text: "Okumak için yeterince zamanım olmadı.", isCorrect: false },
+              { text: "Ondan sonra başka bir kitabı okumaya başladım.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S8",
+            answers: [
+              { text: "Çünkü bana yeni bir fırsat sundu.", isCorrect: false },
+              { text: "Henüz bir karar vermedim.", isCorrect: false },
+              { text: "O proje çok fazla zaman alır.", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const buildListeningDemoPart2 = (): PartDto => ({
+    title: "Bölüm 2",
+    description: "Demo – S9–S14 Doğru/Yanlış",
+    audioUrl: "",
+    sections: [
+      {
+        title: "S9–S14",
+        content: "Doğru/Yanlış soruları",
+        imageUrl: "",
+        type: "TRUE_FALSE",
+        questions: [
+          {
+            text:
+              "S9. Vücut tipine uygun bir spor seçmek, kişinin yaşam boyu spor yapma alışkanlığı kazanmasını kolaylaştırabilir.",
+            answers: [
+              { text: "Doğru", isCorrect: false },
+              { text: "Yanlış", isCorrect: false },
+            ],
+          },
+          {
+            text:
+              "S10. Bazı insanlar hiç spor yapmadan atletik ve sağlıklı bir görünüme sahip olabilirler.",
+            answers: [
+              { text: "Doğru", isCorrect: false },
+              { text: "Yanlış", isCorrect: false },
+            ],
+          },
+          {
+            text:
+              "S11. Yuvarlak vücut hatlara sahip kişiler, kolayca kilo verebilir ve spor yapmaya hemen adapte olabilirler.",
+            answers: [
+              { text: "Doğru", isCorrect: false },
+              { text: "Yanlış", isCorrect: false },
+            ],
+          },
+          {
+            text:
+              "S12. İnce yapılı kişilerin enerjileri genellikle uzun süre dayanır ve kilo verirken sadece yağ kaybederler.",
+            answers: [
+              { text: "Doğru", isCorrect: false },
+              { text: "Yanlış", isCorrect: false },
+            ],
+          },
+          {
+            text:
+              "S13. Başka bir tip insanlar metabolizmaları yavaş olduğu halde, spor yapmadan formda kalabilirler.",
+            answers: [
+              { text: "Doğru", isCorrect: false },
+              { text: "Yanlış", isCorrect: false },
+            ],
+          },
+          {
+            text:
+              "S14. Dinleme metninde geçen ‘çocuk oyuncağı’ ifadesi ‘Çocukların oynayıp eğlenmesi için yapılmış oyuncak’ anlamında kullanılmamış.",
+            answers: [
+              { text: "Doğru", isCorrect: false },
+              { text: "Yanlış", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const buildListeningDemoPart3 = (): PartDto => ({
+    title: "Bölüm 3",
+    description: "Demo – S15–S18 Eşleştirme (konuşmacı → ifade)",
+    audioUrl: "",
+    sections: [
+      {
+        title: "S15–S18",
+        content: "Konuşmacıları uygun ifadelerle eşleştirin.",
+        imageUrl: "",
+        type: "MATCHING",
+        questions: [
+          {
+            text: "S15. 1. konuşmacı …",
+            answers: [
+              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
+              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
+              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
+              { text: "D) İvedilik söz konusudur.", isCorrect: false },
+              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
+              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S16. 2. konuşmacı …",
+            answers: [
+              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
+              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
+              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
+              { text: "D) İvedilik söz konusudur.", isCorrect: false },
+              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
+              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S17. 3. konuşmacı …",
+            answers: [
+              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
+              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
+              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
+              { text: "D) İvedilik söz konusudur.", isCorrect: false },
+              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
+              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S18. 4. konuşmacı …",
+            answers: [
+              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
+              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
+              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
+              { text: "D) İvedilik söz konusudur.", isCorrect: false },
+              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
+              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  // Auto-initialize demo for Listening when parts are empty
+  useEffect(() => {
+    if (testType === "LISTENING" && parts.length === 0) {
+      setParts([buildListeningDemoPart1(), buildListeningDemoPart2(), buildListeningDemoPart3()]);
+      setTestTitle("Listening Demo – Bölüm 1");
+      setTestDescription("Bu, dinleme için S1–S8 demo içeriğidir.");
+    }
+  }, [testType]);
 
   const addPart = () => {
     setParts([
@@ -99,7 +317,7 @@ export default function TestEditor({
         number: pIndex + 1,
         title: p.title,
         description: p.description ?? "",
-        audioUrl: p.audioUrl ?? "",
+        audioUrl: globalAudioUrl || p.audioUrl || "",
         sections: p.sections.map((s) => {
           const questions = s.questions
             .map((q) => {
@@ -144,6 +362,7 @@ export default function TestEditor({
       title: testTitle,
       description: testDescription,
       type: testType,
+      audioUrl: globalAudioUrl || undefined,
       ieltsId: ieltsId ?? undefined,
       parts: builtParts,
     } as any;
@@ -193,6 +412,35 @@ export default function TestEditor({
         bodyStyle={{ padding: 24 }}
       >
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+          {testType === "LISTENING" && (
+            <>
+              <Typography.Text strong>🎧 Global audio (barcha partlar uchun)</Typography.Text>
+              <Upload
+                showUploadList={false}
+                accept="audio/*"
+                beforeUpload={async (file) => {
+                  try {
+                    const result = await fileUploadMutation.mutateAsync(file);
+                    if (result?.path) {
+                      setGlobalAudioUrl(result.path);
+                      message.success("Audio yuklandi");
+                    }
+                  } catch (e) {
+                    message.error("Audio yuklashda xatolik");
+                  }
+                  return false;
+                }}
+              >
+                <Button icon={<UploadOutlined />} loading={fileUploadMutation.isPending}>
+                  {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Audio faylni tanlang"}
+                </Button>
+              </Upload>
+              {globalAudioUrl && (
+                <audio controls src={globalAudioUrl} style={{ marginTop: 8 }} />
+              )}
+              <Divider style={{ margin: "8px 0" }} />
+            </>
+          )}
           <Input
             placeholder="Test title"
             value={testTitle}
@@ -214,6 +462,7 @@ export default function TestEditor({
               part={p}
               onChange={(updated) => updatePart(idx, updated)}
               onRemove={() => removePart(idx)}
+              hideAudioUpload={testType === "LISTENING"}
             />
           ))}
 
