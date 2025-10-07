@@ -359,6 +359,150 @@ export default function TestEditor({
     ],
   });
 
+  const buildListeningDemoPart5 = (): PartDto => ({
+    title: "Bölüm 5",
+    description: "",
+    audioUrl: "",
+    sections: [
+      {
+        title: "1. diyalog",
+        content: "",
+        imageUrl: "",
+        type: "MULTIPLE_CHOICE",
+        questions: [
+          {
+            text: "S24. Karşılıklı konuşmada, salgınla ilgili hangi çıkarım yapılabilir?",
+            answers: [
+              { text: "A) Her iki kişi de seyahat kısıtlamaları nedeniyle belirsizlik yaşıyor.", isCorrect: false },
+              { text: "B) Sadece biri etkileniyor, diğeri seyahatine devam edecek.", isCorrect: false },
+              { text: "C) İkisi de salgının yakında biteceğine inanıyor.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S25. Konuşmadaki gelecek planları hakkında ne söylenebilir?",
+            answers: [
+              { text: "A) İkisi de hedeflerini net belirlemiş ve garanti altına almış.", isCorrect: false },
+              { text: "B) Biri uzun vadeli plan belirtmemişken, diğeri ekonomik çıkar planı yapıyor.", isCorrect: false },
+              { text: "C) Biri zengin olmaya azimli, diğeri zengin eş bulup evlenmeyi planlıyor.", isCorrect: false },
+            ],
+          },
+        ],
+      },
+      {
+        title: "2. diyalog",
+        content: "",
+        imageUrl: "",
+        type: "MULTIPLE_CHOICE",
+        questions: [
+          {
+            text: "S26. Dinçer’in Günay’a karşı tavrı, konuşmanın başından itibaren nasıl şekilleniyor?",
+            answers: [
+              { text: "A) yardım etmeye istekli ve açık", isCorrect: false },
+              { text: "B) mesafeli ve cimri", isCorrect: false },
+              { text: "C) samimi fakat maddi yardıma yanaşmayan", isCorrect: false },
+            ],
+          },
+          {
+            text: "S27. Dinçer’in tavrı, hangi toplumsal değeri ya da normu yansıtıyor?",
+            answers: [
+              { text: "A) yardımseverlik ve fedakârlık", isCorrect: false },
+              { text: "B) bireysel sorumluluk ve bağımsızlık", isCorrect: false },
+              { text: "C) karşılıklı çıkar ilişkisine dayalı dostluk", isCorrect: false },
+            ],
+          },
+        ],
+      },
+      {
+        title: "3. diyalog",
+        content: "",
+        imageUrl: "",
+        type: "MULTIPLE_CHOICE",
+        questions: [
+          {
+            text: "S28. Mete, tatilinde yaşadığı sorunları nasıl çözümlemeye çalışmış olabilir?",
+            answers: [
+              { text: "A) Tatili iptal ederek her şeyi yoluna koymak.", isCorrect: false },
+              { text: "B) Sabredip sonraki tatilde daha iyi plan yapmak.", isCorrect: false },
+              { text: "C) Başka bir otele geçerek tatile devam etmek.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S29. Aşağıdakilerden hangisi hem Mete hem de Ezgi için söylenebilir?",
+            answers: [
+              { text: "A) Kötü tatil deneyimi yaşamak", isCorrect: false },
+              { text: "B) İyi ders çıkarmak", isCorrect: false },
+              { text: "C) Planları daha düzgün yapmak", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const buildListeningDemoPart6 = (): PartDto => ({
+    title: "Bölüm 6",
+    description: "",
+    audioUrl: "",
+    sections: [
+      {
+        title: "Metin – S30–S35",
+        content: "",
+        imageUrl: "",
+        type: "MULTIPLE_CHOICE",
+        questions: [
+          {
+            text: "S30. Dil gelişimi …",
+            answers: [
+              { text: "A) doğuştan gelen bir yetiye sahiptir.", isCorrect: false },
+              { text: "B) bebeklikte kazanılan kurallar bütünüdür.", isCorrect: false },
+              { text: "C) çocukluğun ilk sekiz yılında neredeyse tamamlanır.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S31. Aşağıdaki yargılardan hangisi çıkarılamaz?",
+            answers: [
+              { text: "A) Çevresel koşullar da etkilidir.", isCorrect: false },
+              { text: "B) Jest ve mimik açıklamaları etkilidir.", isCorrect: false },
+              { text: "C) Dil zamanla kazanılan bir kurallar bütünüdür.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S32. Aşağıdakilerden hangisi çocuğun dil gelişimini destekler?",
+            answers: [
+              { text: "A) Anlık durumlara açıklama yapmak", isCorrect: false },
+              { text: "B) Kendi sözcüklerini uydurmasını desteklemek", isCorrect: false },
+              { text: "C) Uzun ve kompleks cümleler kurmak", isCorrect: false },
+            ],
+          },
+          {
+            text: "S33. Çocukla iletişimde onun uydurduğu sözcükler …",
+            answers: [
+              { text: "A) tercih edilmelidir.", isCorrect: false },
+              { text: "B) dil gelişiminin en önemli şartıdır.", isCorrect: false },
+              { text: "C) tekrar edilmemelidir.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S34. Çocuğun isteğini işaretle anlatma davranışı …",
+            answers: [
+              { text: "A) farkında değilmiş gibi davranılmalıdır.", isCorrect: false },
+              { text: "B) ödüllendirilmelidir.", isCorrect: false },
+              { text: "C) anormal bir durumdur.", isCorrect: false },
+            ],
+          },
+          {
+            text: "S35. Dinlediğiniz metinde hangisine değinilmemiştir?",
+            answers: [
+              { text: "A) Sözcük dağarcığını geliştiren oyunlara", isCorrect: false },
+              { text: "B) Dilin toplumların oluşmasındaki katkılarına", isCorrect: false },
+              { text: "C) Konuşmayı iletişim yolu yapmaya yönelik yapılacaklara", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
   // Auto-initialize demo for Listening when parts are empty
   useEffect(() => {
     if (testType === "LISTENING" && parts.length === 0) {
@@ -367,6 +511,8 @@ export default function TestEditor({
         buildListeningDemoPart2(),
         buildListeningDemoPart3(),
         buildListeningDemoPart4(),
+        buildListeningDemoPart5(),
+        buildListeningDemoPart6(),
       ]);
       setTestTitle("Listening Demo – Bölüm 1");
       setTestDescription("Bu, dinleme için S1–S8 demo içeriğidir.");
