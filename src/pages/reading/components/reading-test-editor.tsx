@@ -864,22 +864,45 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 title: singleSection?.title || "Bölüm 4",
                 content: passageContent,
                 imageUrl: singleSection?.imageUrl || "",
-                questions: combinedQuestions.map((question) => {
-                  if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
-                  const currentNumber = globalQuestionNumber++;
-                  return {
-                    number: currentNumber,
-                    type: "MULTIPLE_CHOICE",
-                    text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
-                    content: question.text || "",
-                    imageUrl: "",
-                    answers: question.options.map((option: any) => ({
-                      variantText: option.letter,
-                      answer: option.text,
-                      correct: option.letter === question.correctAnswer,
-                    })),
-                  };
-                }).filter(Boolean), // Remove null entries
+                questions: combinedQuestions.reduce(
+                  (
+                    acc: {
+                      number: number;
+                      type: string;
+                      text: string;
+                      content?: string;
+                      imageUrl?: string;
+                      answers: { variantText: string; answer: string; correct: boolean }[];
+                    }[],
+                    question: any
+                  ) => {
+                    if (globalQuestionNumber > 35) return acc;
+                    const currentNumber = globalQuestionNumber++;
+                    acc.push({
+                      number: currentNumber,
+                      type: "MULTIPLE_CHOICE",
+                      text:
+                        (question.text && String(question.text).trim()) ||
+                        `S${question.blankNumber} uchun to'g'ri javobni tanlang`,
+                      content: question.text ? String(question.text) : "",
+                      imageUrl: "",
+                      answers: (question.options || []).map((option: any) => ({
+                        variantText: option.letter,
+                        answer: option.text,
+                        correct: option.letter === question.correctAnswer,
+                      })),
+                    });
+                    return acc;
+                  },
+                  [] as {
+                    number: number;
+                    type: string;
+                    text: string;
+                    content?: string;
+                    imageUrl?: string;
+                    answers: { variantText: string; answer: string; correct: boolean }[];
+                  }[]
+                ),
               },
             ],
           };
@@ -912,22 +935,45 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 title: contentSection?.title || "Bölüm 5",
                 content: contentSection?.content || "",
                 imageUrl: contentSection?.imageUrl || "",
-                questions: combinedQuestions.map((question) => {
-                  if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
-                  const currentNumber = globalQuestionNumber++;
-                  return {
-                    number: currentNumber,
-                    type: "MULTIPLE_CHOICE",
-                    text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
-                    content: question.text || "",
-                    imageUrl: "",
-                    answers: question.options.map((option: any) => ({
-                      variantText: option.letter,
-                      answer: option.text,
-                      correct: option.letter === question.correctAnswer,
-                    })),
-                  };
-                }).filter(Boolean), // Remove null entries
+                questions: combinedQuestions.reduce(
+                  (
+                    acc: {
+                      number: number;
+                      type: string;
+                      text: string;
+                      content?: string;
+                      imageUrl?: string;
+                      answers: { variantText: string; answer: string; correct: boolean }[];
+                    }[],
+                    question: any
+                  ) => {
+                    if (globalQuestionNumber > 35) return acc;
+                    const currentNumber = globalQuestionNumber++;
+                    acc.push({
+                      number: currentNumber,
+                      type: "MULTIPLE_CHOICE",
+                      text:
+                        (question.text && String(question.text).trim()) ||
+                        `S${question.blankNumber} uchun to'g'ri javobni tanlang`,
+                      content: question.text ? String(question.text) : "",
+                      imageUrl: "",
+                      answers: (question.options || []).map((option: any) => ({
+                        variantText: option.letter,
+                        answer: option.text,
+                        correct: option.letter === question.correctAnswer,
+                      })),
+                    });
+                    return acc;
+                  },
+                  [] as {
+                    number: number;
+                    type: string;
+                    text: string;
+                    content?: string;
+                    imageUrl?: string;
+                    answers: { variantText: string; answer: string; correct: boolean }[];
+                  }[]
+                ),
               },
             ],
           };
@@ -944,23 +990,47 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
               title: section.title,
               content: section.content,
               imageUrl: section.imageUrl || "",
-              questions: section.questions.map((question, questionIndex) => {
-                if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
-                const currentNumber = globalQuestionNumber++;
-                return {
-                  number: currentNumber,
-                  type: "MULTIPLE_CHOICE",
-                  // For Part 2, send image as question
-                  text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
-                  content: partIndex === 1 ? "" : (question.text || ""),
-                  imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
-                  answers: question.options.map((option, ) => ({
-                    variantText: option.letter,
-                    answer: option.text,
-                    correct: option.letter === question.correctAnswer,
-                  })),
-                };
-              }).filter(Boolean), // Remove null entries
+              questions: section.questions.reduce(
+                (
+                  acc: {
+                    number: number;
+                    type: string;
+                    text: string;
+                    content?: string;
+                    imageUrl?: string;
+                    answers: { variantText: string; answer: string; correct: boolean }[];
+                  }[],
+                  question,
+                ) => {
+                  if (globalQuestionNumber > 35) return acc;
+                  const currentNumber = globalQuestionNumber++;
+                  acc.push({
+                    number: currentNumber,
+                    type: "MULTIPLE_CHOICE",
+                    // For Part 2, send image as question
+                    text:
+                      partIndex === 1
+                        ? ""
+                        : ((question.text && String(question.text).trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
+                    content: partIndex === 1 ? "" : (question.text ? String(question.text) : ""),
+                    imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
+                    answers: question.options.map((option, ) => ({
+                      variantText: option.letter,
+                      answer: option.text,
+                      correct: option.letter === question.correctAnswer,
+                    })),
+                  });
+                  return acc;
+                },
+                [] as {
+                  number: number;
+                  type: string;
+                  text: string;
+                  content?: string;
+                  imageUrl?: string;
+                  answers: { variantText: string; answer: string; correct: boolean }[];
+                }[]
+              ),
             })),
         };
       }),
