@@ -44,6 +44,76 @@ export interface IELTS {
   updatedAt?: string;
 }
 
+// Banner Interface
+export interface Banner {
+  id?: string;
+  name: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  isActive?: boolean;
+  order?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateBanner {
+  name: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  isActive?: boolean;
+  order?: number;
+}
+
+export interface UpdateBanner {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  linkUrl?: string;
+  isActive?: boolean;
+  order?: number;
+}
+
+// Product Interface
+export interface Product {
+  id?: string;
+  name: string;
+  price: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateProduct {
+  name: string;
+  price: number;
+}
+
+export interface UpdateProduct {
+  id: string;
+  name?: string;
+  price?: number;
+}
+
+// TestCoinPrice Interface
+export interface TestCoinPrice {
+  id?: string;
+  testType: string;
+  coin: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateTestCoinPrice {
+  id: string;
+  testType?: string;
+  coin?: number;
+}
+
 // Test Interfaces
 export interface Test {
   id?: string;

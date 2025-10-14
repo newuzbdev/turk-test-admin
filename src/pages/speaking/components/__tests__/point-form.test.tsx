@@ -1,4 +1,3 @@
-//@ts-expect-error
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PointForm } from "../point-form";

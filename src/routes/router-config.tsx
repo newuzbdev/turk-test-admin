@@ -6,9 +6,11 @@ import {
   Headphones,
   PenTool,
   Speaker,
+  ImageIcon,
+  Package,
 } from "lucide-react";
 
-import { IELTS } from "./lazy-pages";
+import { IELTS, Banner, Product, TestCoinPrice } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
 import ReadingEditor from "@/pages/reading/reading-editor";
 import SpeakingEditor from "@/pages/speaking/speaking-editor";
@@ -106,6 +108,30 @@ export const routerConfig: RouterConfig[] = [
     icon: <BookAudioIcon />,
     path: "test",
     page: <IELTS />,
+    inMenu: true,
+  },
+  {
+    title: "Banner",
+    label: "Banner",
+    icon: <ImageIcon />,
+    path: "banner",
+    page: <Banner />,
+    inMenu: true,
+  },
+  {
+    title: "Product",
+    label: "Mahsulotlar",
+    icon: <Package />,
+    path: "product",
+    page: <Product />,
+    inMenu: true,
+  },
+  {
+    title: "TestCoinPrice",
+    label: "Test Coin Price",
+    icon: <Package />,
+    path: "test-coin-price",
+    page: <TestCoinPrice />,
     inMenu: true,
   },
   {

@@ -5,7 +5,6 @@ import { authEndpoints } from "./endpoint";
 const baseURL = import.meta.env.VITE_API_URL;
 const axiosPrivate = axios.create({
   baseURL,
-  withCredentials: true,
 });
 
 axiosPrivate.interceptors.request.use(

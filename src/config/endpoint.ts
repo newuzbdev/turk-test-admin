@@ -146,3 +146,21 @@ export const writingQuestionEndpoints = {
   updateOrder: (id: string) => `/api/writing-question/${id}/order`,
 };
 
+// Banner endpoints
+export const bannerEndpoints = {
+  all: "/api/banner",
+  one: (id: string) => `/api/banner/${id}`,
+};
+
+// Product endpoints
+export const productEndpoints = {
+  all: "/api/product",
+  one: (id: string) => `/api/product/${id}`,
+};
+
+// Test Coin Price endpoints
+export const testCoinPriceEndpoints = {
+  all: "/api/test-coin-price",
+  one: (id: string) => `/api/test-coin-price/${id}`,
+};
+

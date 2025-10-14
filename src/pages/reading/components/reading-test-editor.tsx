@@ -944,7 +944,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
               title: section.title,
               content: section.content,
               imageUrl: section.imageUrl || "",
-              questions: section.questions.map((question, questionIndex) => {
+              questions: section.questions.map((question, ) => {
                 if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
                 const currentNumber = globalQuestionNumber++;
                 return {
