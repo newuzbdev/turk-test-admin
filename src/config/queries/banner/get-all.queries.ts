@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ApiResponse, Banner } from "../../../utils/types/types";
 import { bannerEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
 

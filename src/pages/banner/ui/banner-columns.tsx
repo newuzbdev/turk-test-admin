@@ -57,7 +57,7 @@ export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): T
     dataIndex: "order",
     key: "order",
     width: 80,
-    sorter: (a, b) => a.order - b.order,
+    sorter: (a, b) => (a.order || 0) - (b.order || 0),
   },
   {
     title: "Holat",

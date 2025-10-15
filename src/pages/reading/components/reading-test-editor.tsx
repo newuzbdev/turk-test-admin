@@ -879,7 +879,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                       correct: option.letter === question.correctAnswer,
                     })),
                   };
-                }).filter(Boolean), // Remove null entries
+                }).filter((q) => q !== null), // Remove null entries
               },
             ],
           };
@@ -927,7 +927,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                       correct: option.letter === question.correctAnswer,
                     })),
                   };
-                }).filter(Boolean), // Remove null entries
+                }).filter((q) => q !== null), // Remove null entries
               },
             ],
           };
@@ -966,7 +966,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       }),
     };
 
-    createTest(payload, {
+    createTest(payload as any, {
       onSuccess: () => {
         toast.success("Reading test muvaffaqiyatli yaratildi");
         navigate(backUrl);

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, InputNumber, message } from "antd";
+import { useEffect } from "react";
+import { Modal, Form, Input, Button, InputNumber } from "antd";
 import { useCreateProduct, useUpdateProduct } from "@/config/queries/product";
 import type { Product, CreateProduct, UpdateProduct } from "@/utils/types/types";
 
@@ -103,7 +103,7 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
             style={{ width: "100%" }}
             size="large"
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+            parser={(value) => (Number(value!.replace(/\$\s?|(,*)/g, '')) || 0) as 1 | 999999999}
             min={1}
             max={999999999}
           />

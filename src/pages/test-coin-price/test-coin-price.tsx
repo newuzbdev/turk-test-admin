@@ -1,30 +1,22 @@
-import React, { useMemo, useState } from "react";
-import { Card, Table, Button, InputNumber, Modal, Form, Typography, Space, Divider } from "antd";
+import { useMemo, useState } from "react";
+import { Card, Table, Button, InputNumber, Modal, Form, Typography } from "antd";
 import { useGetAllTestCoinPrices, useUpdateTestCoinPrice } from "@/config/queries/test-coin-price";
-import { useGetAllProducts } from "@/config/queries/product";
-import type { TestCoinPrice, Product } from "@/utils/types/types";
+import type { TestCoinPrice } from "@/utils/types/types";
 
 const { Title } = Typography;
 
 export default function TestCoinPricePage() {
   const { data, isLoading, refetch } = useGetAllTestCoinPrices();
   const { mutate: updatePrice, isPending } = useUpdateTestCoinPrice();
-  const { data: productsData } = useGetAllProducts();
 
   const [editItem, setEditItem] = useState<TestCoinPrice | null>(null);
-  const [purchaseModal, setPurchaseModal] = useState(false);
   const [form] = Form.useForm();
-  const [purchaseForm] = Form.useForm();
 
   const items: TestCoinPrice[] = useMemo(() => {
     const raw = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
     return raw;
   }, [data]);
 
-  const products: Product[] = useMemo(() => {
-    const raw = Array.isArray(productsData?.data) ? productsData.data : Array.isArray(productsData) ? productsData : [];
-    return raw;
-  }, [productsData]);
 
   const columns = [
     { title: "Test Turi", dataIndex: "testType", key: "testType" },
@@ -78,7 +70,7 @@ export default function TestCoinPricePage() {
               min={0}
               style={{ width: "100%" }}
               formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+              parser={(value) => (Number(value!.replace(/\$\s?|(,*)/g, '')) || 0) as 0}
             />
           </Form.Item>
         </Form>

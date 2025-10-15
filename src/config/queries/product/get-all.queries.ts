@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ApiResponse, Product } from "../../../utils/types/types";
 import { productEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
 

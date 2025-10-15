@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, Upload, message, Switch, InputNumber } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useCreateBanner, useUpdateBanner } from "@/config/queries/banner";
