@@ -1,4 +1,4 @@
-import { Button, Space, Tag, Image } from "antd";
+import { Button, Space, Tag, Image, Popconfirm } from "antd";
 import type { TableColumnsType } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import type { Banner } from "../../../utils/types/types";
@@ -89,14 +89,21 @@ export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): T
           title="Tahrirlash"
           onClick={() => onEdit(record)}
         />
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          size="small"
-          title="O'chirish"
-          onClick={() => onDelete(record.id!)}
-        />
+        <Popconfirm
+          title="Bannerni o'chirishni tasdiqlaysizmi?"
+          okText="Ha, o'chir"
+          cancelText="Bekor qilish"
+          okButtonProps={{ danger: true }}
+          onConfirm={() => onDelete((record as any).id ?? (record as any)._id)}
+        >
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            title="O'chirish"
+          />
+        </Popconfirm>
       </Space>
     ),
   },

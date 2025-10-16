@@ -19,39 +19,11 @@ export default function ProductTable() {
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
   // Handle different possible response structures
-  const products = Array.isArray(productsResponse?.data) 
-    ? productsResponse.data 
-    : Array.isArray(productsResponse) 
-    ? productsResponse 
+  const products = Array.isArray(productsResponse?.data)
+    ? productsResponse.data
+    : Array.isArray(productsResponse)
+    ? productsResponse
     : [];
-
-  // Temporary mock data for testing
-  const mockProducts = [
-    {
-      id: "1",
-      name: "iPhone 15 Pro",
-      price: 15000000,
-      createdAt: "2024-01-01T10:00:00Z",
-      updatedAt: "2024-01-01T10:00:00Z"
-    },
-    {
-      id: "2", 
-      name: "Samsung Galaxy S24",
-      price: 12000000,
-      createdAt: "2024-01-02T10:00:00Z",
-      updatedAt: "2024-01-02T10:00:00Z"
-    },
-    {
-      id: "3",
-      name: "MacBook Pro M3",
-      price: 25000000,
-      createdAt: "2024-01-03T10:00:00Z",
-      updatedAt: "2024-01-03T10:00:00Z"
-    }
-  ];
-
-  // Use mock data if no real data
-  const displayProducts = products.length > 0 ? products : mockProducts;
 
   // Debug logging
   console.log("Product data:", productsResponse);
@@ -59,8 +31,14 @@ export default function ProductTable() {
   console.log("Loading:", isLoading);
   console.log("Error:", error);
 
+  // Normalize potential backend id field variations
+  const normalizedProducts: Product[] = products.map((p: any) => ({
+    ...p,
+    id: p?.id ?? p?._id,
+  }));
+
   // Filter products based on search
-  const filteredProducts = displayProducts.filter((product: Product) => {
+  const filteredProducts = normalizedProducts.filter((product: Product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchText.toLowerCase());
     return matchesSearch;
   });
@@ -78,7 +56,11 @@ export default function ProductTable() {
   };
 
   const handleDelete = (id: string) => {
-    deleteProduct(id, {
+    if (!id) {
+      message.error("Mahsulot ID topilmadi");
+      return;
+    }
+    deleteProduct(String(id), {
       onSuccess: () => {
         message.success("Mahsulot o'chirildi");
       },
@@ -158,7 +140,7 @@ export default function ProductTable() {
       <Table
         columns={productColumns}
         dataSource={filteredProducts}
-        rowKey="id"
+        rowKey={(record: any) => record.id ?? record._id}
         loading={isLoading}
         rowSelection={rowSelection}
         pagination={{

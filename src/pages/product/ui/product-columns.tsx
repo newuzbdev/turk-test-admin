@@ -1,4 +1,4 @@
-import { Button, Space, Tag } from "antd";
+import { Button, Space, Tag, Popconfirm } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import type { Product } from "../../../utils/types/types";
 import type { TableColumnsType } from "antd";
@@ -54,14 +54,21 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
           title="Tahrirlash"
           onClick={() => onEdit(record)}
         />
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          size="small"
-          title="O'chirish"
-          onClick={() => onDelete(record.id!)}
-        />
+        <Popconfirm
+          title="Mahsulotni o'chirishni tasdiqlaysizmi?"
+          okText="Ha, o'chir"
+          cancelText="Bekor qilish"
+          okButtonProps={{ danger: true }}
+          onConfirm={() => onDelete((record as any).id ?? (record as any)._id)}
+        >
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            title="O'chirish"
+          />
+        </Popconfirm>
       </Space>
     ),
   },

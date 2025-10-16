@@ -21,42 +21,11 @@ export default function BannerTable() {
   const { mutate: deleteBanner, isPending: isDeleting } = useDeleteBanner();
 
   // Handle different possible response structures
-  const banners = Array.isArray(bannersResponse?.data) 
-    ? bannersResponse.data 
-    : Array.isArray(bannersResponse) 
-    ? bannersResponse 
+  const banners = Array.isArray(bannersResponse?.data)
+    ? bannersResponse.data
+    : Array.isArray(bannersResponse)
+    ? bannersResponse
     : [];
-
-  // Temporary mock data for testing
-  const mockBanners = [
-    {
-      id: "1",
-      name: "Summer Sale",
-      title: "Test Banner 1",
-      description: "Test description",
-      imageUrl: "test-image.jpg",
-      linkUrl: "https://example.com",
-      isActive: true,
-      order: 1,
-      createdAt: "2024-01-01",
-      updatedAt: "2024-01-01"
-    },
-    {
-      id: "2", 
-      name: "Winter Sale",
-      title: "Test Banner 2",
-      description: "Another test description",
-      imageUrl: "test-image2.jpg",
-      linkUrl: "https://example2.com",
-      isActive: false,
-      order: 2,
-      createdAt: "2024-01-02",
-      updatedAt: "2024-01-02"
-    }
-  ];
-
-  // Use mock data if no real data
-  const displayBanners = banners.length > 0 ? banners : mockBanners;
 
   // Debug logging
   console.log("Banner data:", bannersResponse);
@@ -64,8 +33,14 @@ export default function BannerTable() {
   console.log("Loading:", isLoading);
   console.log("Error:", error);
 
+  // Normalize potential backend id field variations
+  const normalizedBanners: Banner[] = banners.map((b: any) => ({
+    ...b,
+    id: b?.id ?? b?._id,
+  }));
+
   // Filter banners based on search and status
-  const filteredBanners = displayBanners.filter((banner: Banner) => {
+  const filteredBanners = normalizedBanners.filter((banner: Banner) => {
     const matchesSearch = banner.title.toLowerCase().includes(searchText.toLowerCase()) ||
                          (banner.description && banner.description.toLowerCase().includes(searchText.toLowerCase()));
     const matchesStatus = statusFilter === "all" || 
@@ -87,7 +62,11 @@ export default function BannerTable() {
   };
 
   const handleDelete = (id: string) => {
-    deleteBanner(id, {
+    if (!id) {
+      message.error("Banner ID topilmadi");
+      return;
+    }
+    deleteBanner(String(id), {
       onSuccess: () => {
         message.success("Banner o'chirildi");
       },
@@ -176,7 +155,7 @@ export default function BannerTable() {
       <Table
         columns={bannerColumns}
         dataSource={filteredBanners}
-        rowKey="id"
+        rowKey={(record: any) => record.id ?? record._id}
         loading={isLoading}
         rowSelection={rowSelection}
         pagination={{
