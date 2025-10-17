@@ -145,9 +145,34 @@ export default function ReadingSectionEditor({
   const handleQuestionImageUpload = async (question: ReadingQuestion, file: File) => {
     try {
       const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.path) {
-        updateQuestion(question.id, { ...question, imageUrl: result.path, text: "" });
+      const uploadedPath =
+        (result as any)?.path ||
+        (result as any)?.url ||
+        (result as any)?.data?.path ||
+        (result as any)?.data?.url;
+      console.log('[Reading] Uploaded question image result:', result, 'resolvedPath:', uploadedPath);
+      if (uploadedPath) {
+        updateQuestion(question.id, { ...question, imageUrl: uploadedPath, text: "" });
         message.success("Savol rasmi yuklandi");
+      }
+    } catch (e) {
+      message.error("Rasm yuklashda xatolik");
+    }
+    return;
+  };
+
+  const handleSectionImageUpload = async (file: File) => {
+    try {
+      const result = await fileUploadMutation.mutateAsync(file);
+      const uploadedPath =
+        (result as any)?.path ||
+        (result as any)?.url ||
+        (result as any)?.data?.path ||
+        (result as any)?.data?.url;
+      console.log('[Reading] Uploaded section image result:', result, 'resolvedPath:', uploadedPath);
+      if (uploadedPath) {
+        updateField("imageUrl", uploadedPath);
+        message.success("Section rasmi yuklandi");
       }
     } catch (e) {
       message.error("Rasm yuklashda xatolik");
@@ -271,7 +296,30 @@ export default function ReadingSectionEditor({
 
         <Divider />
 
-        {/* Shared options preview for Matching-style sections */}
+        {/* Section image (optional) */}
+        <div>
+          <Text strong style={{ marginBottom: 8, display: "block" }}>Section rasmi (ixtiyoriy)</Text>
+          <Upload
+            showUploadList={false}
+            accept="image/*"
+            beforeUpload={(file) => { void handleSectionImageUpload(file); return false; }}
+          >
+            <Button icon={<UploadOutlined />} loading={fileUploadMutation.isPending}>
+              {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm yuklash"}
+            </Button>
+          </Upload>
+          {section.imageUrl && (
+            <div style={{ marginTop: 8 }}>
+              <Image
+                src={section.imageUrl?.startsWith("http") ? section.imageUrl : (FILE_BASE + section.imageUrl)}
+                alt="Section"
+                style={{ width: "100%", maxHeight: 260, objectFit: "contain", borderRadius: 6 }}
+              />
+            </div>
+          )}
+        </div>
+
+        <Divider />
 
         {/* Questions */}
         <div>
@@ -313,7 +361,7 @@ export default function ReadingSectionEditor({
                         <Upload
                           showUploadList={false}
                           accept="image/*"
-                          beforeUpload={(file) => handleQuestionImageUpload(question, file)}
+                          beforeUpload={(file) => { void handleQuestionImageUpload(question, file); return false; }}
                         >
                           <Button icon={<UploadOutlined />} loading={fileUploadMutation.isPending}>
                             {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm yuklash"}
@@ -322,10 +370,13 @@ export default function ReadingSectionEditor({
                         {question.imageUrl && (
                           <div style={{ marginTop: 8 }}>
                             <Image
-                              src={FILE_BASE + question.imageUrl}
+                              src={question.imageUrl?.startsWith("http") ? question.imageUrl : (FILE_BASE + question.imageUrl)}
                               alt="Question"
                               style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 6 }}
                             />
+                            <Text type="secondary" style={{ display: "block", marginTop: 4, wordBreak: "break-all" }}>
+                              {question.imageUrl}
+                            </Text>
                           </div>
                         )}
                       </div>

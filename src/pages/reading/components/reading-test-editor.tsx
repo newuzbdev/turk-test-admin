@@ -836,8 +836,9 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       type: "READING",
       ieltsId: ieltsId,
       parts: parts.map((part, partIndex) => {
+        const isPartTwo = /part\s*2|durum eşleştirme|matching exercise/i.test(part.title);
         // Special handling for Part 4: send a single section with passage content + questions
-        if (partIndex === 3) {
+        if (/part\s*4|halk oyunları|okuma metni/i.test(part.title)) {
           const tnvSection = part.sections.find(
             (s) => s.id === "demo-section-4-tnv" || s.title?.startsWith("Doğru / Yanlış / Verilmemiş")
           );
@@ -886,7 +887,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
         }
 
         // Special handling for Part 5: send a single section with paragraph content + all questions (S30–S35)
-        if (partIndex === 4) {
+        if (/part\s*5|e-kitaplar/i.test(part.title)) {
           const paragraphsSection = part.sections.find(
             (s) => s.id === "demo-section-5-paragraphs" || s.title?.includes("Paragraflar (A–E)")
           );
@@ -937,9 +938,9 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           number: partIndex + 1,
           title: part.title,
           audioUrl: "", // Reading tests don't need audio
-          // For Part 2 (index 1), only include the section that contains questions
+          // For Part 2, only include the section that contains questions
           sections: part.sections
-            .filter((section) => (partIndex === 1 ? section.questions.length > 0 : true))
+            .filter((section) => (isPartTwo ? section.questions.length > 0 : true))
             .map((section, ) => ({
               title: section.title,
               content: section.content,
@@ -951,9 +952,10 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   number: currentNumber,
                   type: "MULTIPLE_CHOICE",
                   // For Part 2, send image as question
-                  text: partIndex === 1 ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
-                  content: partIndex === 1 ? "" : (question.text || ""),
-                  imageUrl: partIndex === 1 ? (question.imageUrl || "") : "",
+                  text: isPartTwo ? "" : ((question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang`),
+                  content: isPartTwo ? "" : (question.text || ""),
+                  // Always include question imageUrl if present, even outside Part 2
+                  imageUrl: (isPartTwo ? question.imageUrl : (question.imageUrl || "")) || "",
                   answers: question.options.map((option, ) => ({
                     variantText: option.letter,
                     answer: option.text,
@@ -966,6 +968,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       }),
     };
 
+    console.log("[Reading] Final payload:", payload);
     createTest(payload as any, {
       onSuccess: () => {
         toast.success("Reading test muvaffaqiyatli yaratildi");
@@ -1148,7 +1151,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                       key={section.id}
                       section={section}
                       sectionNumber={sectionIndex + 1}
-                    isPartTwo={partIndex === 1}
+                    isPartTwo={/part\s*2|durum eşleştirme|matching exercise/i.test(part.title)}
                       onChange={(updated) => updateSection(part.id, section.id, updated)}
                       onRemove={() => removeSection(part.id, section.id)}
                     />
