@@ -6,7 +6,7 @@ import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type { Banner, CreateBanner, UpdateBanner } from "@/utils/types/types";
 
 const { TextArea } = Input;
-const FILE_BASE = "https://api.turkcetest.uz/";
+const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
 
 interface BannerModalProps {
   open: boolean;

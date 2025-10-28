@@ -7,7 +7,7 @@ import type { PartDto, SectionDto } from "../components/test-editor";
 
 const { Panel } = Collapse;
 const { Text } = Typography;
-const FILE_BASE = "https://api.turkcetest.uz/";
+const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
 
 interface PartFormProps {
   part: PartDto;

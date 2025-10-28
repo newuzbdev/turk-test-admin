@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const refreshToken = localStorage.getItem("refreshToken");
         if (refreshToken) {
           // Attempt to refresh token
-          fetch(`${import.meta.env.VITE_API_URL}/api/auth/refresh`, {
+          fetch(`${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz")}/api/auth/refresh`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

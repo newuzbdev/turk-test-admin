@@ -24,7 +24,7 @@ export default function ReadingSectionEditor({
   const [isEditing, setIsEditing] = useState(false);
   const [tempContent, setTempContent] = useState(section.content);
   const fileUploadMutation = useFileUpload();
-  const FILE_BASE = "https://api.turkcetest.uz/";
+  const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
 
   // Extract blanks from content (S1, S2, S3, etc.)
   const extractBlanks = (content: string) => {

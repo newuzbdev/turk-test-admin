@@ -6,7 +6,7 @@ import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type { QuestionDto, SectionDto } from "../components/test-editor";
 
 const { Text } = Typography;
-const FILE_BASE = "https://api.turkcetest.uz/";
+const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
 
 interface SectionFormProps {
   section: SectionDto;

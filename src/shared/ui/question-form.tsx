@@ -23,7 +23,7 @@ export default function QuestionForm({
 }: Props) {
   const fileUploadMutation = useFileUpload();
   const [uploadProgress, setUploadProgress] = useState(0);
-  const FILE_BASE = "https://api.turkcetest.uz/";
+  const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
   useEffect(() => {
     if (!type) return;
     // default answers for TRUE_FALSE and FILL_BLANK

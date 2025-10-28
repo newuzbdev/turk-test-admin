@@ -3,7 +3,7 @@ import type { TableColumnsType } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import type { Banner } from "../../../utils/types/types";
 
-const FILE_BASE = "https://api.turkcetest.uz/";
+const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
 
 interface BannerColumnsProps {
   onEdit: (banner: Banner) => void;

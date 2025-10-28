@@ -2,9 +2,9 @@ import axios from "axios";
 import { api } from ".";
 import { authEndpoints } from "./endpoint";
 
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.VITE_API_URL || "https://api.turkishmock.uz";
 const axiosPrivate = axios.create({
-  baseURL,
+	baseURL,
 });
 
 axiosPrivate.interceptors.request.use(
