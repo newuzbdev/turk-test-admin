@@ -61,13 +61,16 @@ export default function QuestionForm({
     try {
       setUploadProgress(0);
       const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.path) {
-        onChange({ ...question, imageUrl: result.path });
+      console.log("Question image upload result:", result);
+      const imageUrl = (result as any)?.data?.url || (result as any)?.path;
+      if (imageUrl) {
+        onChange({ ...question, imageUrl: imageUrl });
+        console.log("Set question imageUrl to:", imageUrl);
         setUploadProgress(100);
         message.success("Rasm yuklandi");
       }
     } catch (error) {
-      console.error("Image upload error:", error);
+      console.error("Question image upload error:", error);
       message.error("Rasm yuklashda xatolik");
       setUploadProgress(0);
     }
@@ -115,7 +118,7 @@ export default function QuestionForm({
 
         {question.imageUrl && (
           <Image
-            src={FILE_BASE + question.imageUrl}
+            src={question.imageUrl.startsWith("http") ? question.imageUrl : FILE_BASE + question.imageUrl}
             alt="Question"
             style={{ marginTop: 10, width: "100%", maxHeight: 220, borderRadius: 8 }}
           />

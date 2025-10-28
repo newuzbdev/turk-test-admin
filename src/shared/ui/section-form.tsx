@@ -22,8 +22,11 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
     try {
       setUploadProgress(0);
       const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.path) {
-        onChange({ ...section, imageUrl: result.path });
+      console.log("Image upload result:", result);
+      const imageUrl = (result as any)?.data?.url || (result as any)?.path;
+      if (imageUrl) {
+        onChange({ ...section, imageUrl: imageUrl });
+        console.log("Set section imageUrl to:", imageUrl);
         setUploadProgress(100);
         message.success("Rasm yuklandi");
       }
@@ -114,12 +117,19 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
         )}
 
         {section.imageUrl && (
-          <Image
-            src={FILE_BASE + section.imageUrl}
-            alt="Section"
-            className="!w-full"
-            style={{ marginTop: 10, width: "100%", maxHeight: 220, borderRadius: 8 }}
-          />
+          <div>
+            <Image
+              src={section.imageUrl.startsWith("http") ? section.imageUrl : FILE_BASE + section.imageUrl}
+              alt="Section"
+              className="!w-full"
+              style={{ marginTop: 10, width: "100%", maxHeight: 220, borderRadius: 8 }}
+              onError={(e) => {
+                console.error("Image load error:", e);
+                console.log("Failed to load image URL:", section.imageUrl ? section.imageUrl.startsWith("http") ? section.imageUrl : FILE_BASE + section.imageUrl : "");
+              }}
+            />
+            
+          </div>
         )}
 
         <Divider />

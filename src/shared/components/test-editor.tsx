@@ -654,11 +654,15 @@ export default function TestEditor({
                 beforeUpload={async (file) => {
                   try {
                     const result = await fileUploadMutation.mutateAsync(file);
-                    if (result?.path) {
-                      setGlobalAudioUrl(result.path);
+                    console.log("Audio upload result:", result);
+                    const audioUrl = (result as any)?.data?.url || (result as any)?.path;
+                    if (audioUrl) {
+                      setGlobalAudioUrl(audioUrl);
+                      console.log("Set globalAudioUrl to:", audioUrl);
                       message.success("Audio yuklandi");
                     }
                   } catch (e) {
+                    console.error("Audio upload error:", e);
                     message.error("Audio yuklashda xatolik");
                   }
                   return false;
@@ -669,7 +673,20 @@ export default function TestEditor({
                 </Button>
               </Upload>
               {globalAudioUrl && (
-                <audio controls src={globalAudioUrl} style={{ marginTop: 8 }} />
+                <div style={{ marginTop: 8 }}>
+                  <audio 
+                    controls 
+                    src={globalAudioUrl} 
+                    style={{ width: "100%" }}
+                    onError={(e) => {
+                      console.error("Audio load error:", e);
+                      console.log("Failed to load audio URL:", globalAudioUrl);
+                    }}
+                  />
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                    Audio URL: {globalAudioUrl}
+                  </div>
+                </div>
               )}
               <Divider style={{ margin: "8px 0" }} />
             </>

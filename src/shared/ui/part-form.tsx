@@ -23,12 +23,15 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudio
   const handleAudioUpload = async (file: File) => {
     try {
       const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.path) {
-        onChange({ ...part, audioUrl: result.path });
+      console.log("Part audio upload result:", result);
+      const audioUrl = (result as any)?.data?.url || (result as any)?.path;
+      if (audioUrl) {
+        onChange({ ...part, audioUrl: audioUrl });
+        console.log("Set part audioUrl to:", audioUrl);
         message.success("Audio fayl yuklandi");
       }
     } catch (error) {
-      console.error("Audio upload error:", error);
+      console.error("Part audio upload error:", error);
       message.error("Audio yuklashda xatolik");
     }
   };
@@ -101,7 +104,7 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudio
             {part.audioUrl && (
               <audio
                 controls
-                src={FILE_BASE + part.audioUrl}
+                src={part.audioUrl.startsWith("http") ? part.audioUrl : FILE_BASE + part.audioUrl}
                 style={{ marginTop: 10, width: "100%" }}
               />
             )}

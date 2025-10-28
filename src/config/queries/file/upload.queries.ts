@@ -4,9 +4,14 @@ import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 
 interface FileUploadResponse {
-  filename: string;
-  originalname: string;
-  path: string;
+  success: boolean;
+  message: string;
+  data: {
+    filename: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
 }
 
 export const useFileUpload = () => {
@@ -27,7 +32,7 @@ export const useFileUpload = () => {
     },
     onSuccess: (data) => {
       toast.success("Fayl muvaffaqiyatli yuklandi");
-      console.log("Uploaded path:", data.path);
+      console.log("Uploaded URL:", data.data.url);
     },
     onError: () => {
       toast.error("Fayl yuklashda xatolik yuz berdi");
