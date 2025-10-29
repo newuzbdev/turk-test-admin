@@ -25,6 +25,8 @@ export default function ReadingSectionEditor({
   const [tempContent, setTempContent] = useState(section.content);
   const fileUploadMutation = useFileUpload();
   const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
+  const [uploadingQuestionIndex, setUploadingQuestionIndex] = useState<number | null>(null);
+  const [isSectionUploading, setIsSectionUploading] = useState(false);
 
   // Extract blanks from content (S1, S2, S3, etc.)
   const extractBlanks = (content: string) => {
@@ -142,40 +144,41 @@ export default function ReadingSectionEditor({
     updateQuestion(questionId, updatedQuestion);
   };
 
-  const handleQuestionImageUpload = async (question: ReadingQuestion, file: File) => {
+  const handleQuestionImageUpload = async (questionIndex: number, question: ReadingQuestion, file: File) => {
     try {
+      setUploadingQuestionIndex(questionIndex);
       const result = await fileUploadMutation.mutateAsync(file);
-      const uploadedPath =
-        (result as any)?.path ||
-        (result as any)?.url ||
-        (result as any)?.data?.path ||
-        (result as any)?.data?.url;
-      console.log('[Reading] Uploaded question image result:', result, 'resolvedPath:', uploadedPath);
-      if (uploadedPath) {
-        updateQuestion(question.id, { ...question, imageUrl: uploadedPath, text: "" });
+      const uploadedUrl = (result as any)?.data?.url;
+      console.log('[Reading] Uploaded question image result:', result, 'resolvedUrl:', uploadedUrl);
+      if (uploadedUrl) {
+        // Replace by index to avoid any id-mismatch issues
+        const nextQuestions = [...section.questions];
+        nextQuestions[questionIndex] = { ...question, imageUrl: uploadedUrl, text: "" };
+        onChange({ ...section, questions: nextQuestions });
         message.success("Savol rasmi yuklandi");
       }
     } catch (e) {
       message.error("Rasm yuklashda xatolik");
+    } finally {
+      setUploadingQuestionIndex(null);
     }
     return;
   };
 
   const handleSectionImageUpload = async (file: File) => {
     try {
+      setIsSectionUploading(true);
       const result = await fileUploadMutation.mutateAsync(file);
-      const uploadedPath =
-        (result as any)?.path ||
-        (result as any)?.url ||
-        (result as any)?.data?.path ||
-        (result as any)?.data?.url;
-      console.log('[Reading] Uploaded section image result:', result, 'resolvedPath:', uploadedPath);
-      if (uploadedPath) {
-        updateField("imageUrl", uploadedPath);
+      const uploadedUrl = (result as any)?.data?.url;
+      console.log('[Reading] Uploaded section image result:', result, 'resolvedUrl:', uploadedUrl);
+      if (uploadedUrl) {
+        updateField("imageUrl", uploadedUrl);
         message.success("Section rasmi yuklandi");
       }
     } catch (e) {
       message.error("Rasm yuklashda xatolik");
+    } finally {
+      setIsSectionUploading(false);
     }
     return false;
   };
@@ -361,9 +364,9 @@ export default function ReadingSectionEditor({
                         <Upload
                           showUploadList={false}
                           accept="image/*"
-                          beforeUpload={(file) => { void handleQuestionImageUpload(question, file); return false; }}
+                          beforeUpload={(file) => { void handleQuestionImageUpload(section.questions.findIndex(q => q.id === question.id), question, file); return false; }}
                         >
-                          <Button icon={<UploadOutlined />} loading={fileUploadMutation.isPending}>
+                          <Button icon={<UploadOutlined />} loading={uploadingQuestionIndex === section.questions.findIndex(q => q.id === question.id)}>
                             {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm yuklash"}
                           </Button>
                         </Upload>
