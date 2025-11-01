@@ -16,7 +16,7 @@ import {
   PlusOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { SpeakingSection } from "@/utils/types/types";
 import { SectionForm, SubPartForm, PointForm } from "./components";
 import {
@@ -49,6 +49,7 @@ export default function SpeakingEditor() {
   const [forceRender, setForceRender] = useState(0);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sectionToDeleteId, setSectionToDeleteId] = useState<string | null>(null);
+  const initializedRef = useRef(false);
 
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
 
@@ -85,31 +86,32 @@ export default function SpeakingEditor() {
   } = useSpeakingEditor();
 
   useEffect(() => {
+    // Prevent re-initialization if already initialized
+    if (initializedRef.current) return;
+    
     if (isNewTest && location.state?.testData) {
       setTestData({
         ...location.state.testData,
         sections: [],
       });
       form.setFieldsValue(location.state.testData);
+      initializedRef.current = true;
     } else if (existingTest?.data) {
       const test = existingTest.data;
+      const processedSections = processSectionsImages(test.sections || []);
       setTestData({
         title: test.title,
         ieltsId: test.ieltsId,
-        sections: processSectionsImages(test.sections || []),
+        sections: processedSections,
       });
       form.setFieldsValue({
         title: test.title,
         ieltsId: test.ieltsId,
       });
+      initializedRef.current = true;
     }
-  }, [existingTest, location.state, isNewTest, form, processSectionsImages]);
-
-  // Debug effect to track section changes
-  useEffect(() => {
-    console.log("=== SECTIONS CHANGED ===", testData.sections);
-    console.log("Sections count:", testData.sections.length);
-  }, [testData.sections]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingTest?.data?.id, isNewTest]);
 
   const handleSave = async () => {
     try {
