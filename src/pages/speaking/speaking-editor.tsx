@@ -47,6 +47,8 @@ export default function SpeakingEditor() {
   });
 
   const [forceRender, setForceRender] = useState(0);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [sectionToDeleteId, setSectionToDeleteId] = useState<string | null>(null);
 
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
 
@@ -102,7 +104,13 @@ export default function SpeakingEditor() {
         ieltsId: test.ieltsId,
       });
     }
-  }, [existingTest, location.state, isNewTest, form]);
+  }, [existingTest, location.state, isNewTest, form, processSectionsImages]);
+
+  // Debug effect to track section changes
+  useEffect(() => {
+    console.log("=== SECTIONS CHANGED ===", testData.sections);
+    console.log("Sections count:", testData.sections.length);
+  }, [testData.sections]);
 
   const handleSave = async () => {
     try {
@@ -150,14 +158,80 @@ export default function SpeakingEditor() {
   };
 
   const handleDeleteSection = (sectionIndex: number) => {
-    Modal.confirm({
-      title: "Sectionni o'chirish",
-      content: "Haqiqatan ham bu sectionni o'chirmoqchimisiz?",
-      onOk: () => {
-        deleteSection(testData, setTestData, sectionIndex);
-        setForceRender(prev => prev + 1);
+    console.log("=== DELETE SECTION HANDLER CALLED ===");
+    console.log("Section index:", sectionIndex);
+    console.log("Current sections:", testData.sections);
+    
+    const sectionToDelete = testData.sections[sectionIndex];
+    if (!sectionToDelete) {
+      console.error("Section not found at index:", sectionIndex);
+      notification.error({
+        message: "Xatolik",
+        description: "Section topilmadi",
+      });
+      return;
+    }
+    
+    const sectionId = sectionToDelete.id;
+    console.log("Section ID to delete:", sectionId);
+    
+    // Store the section ID to delete and open modal
+    setSectionToDeleteId(sectionId);
+    setDeleteModalOpen(true);
+  };
+
+  const performDelete = () => {
+    if (!sectionToDeleteId) {
+      console.error("No section ID to delete!");
+      return;
+    }
+
+    console.log("=== PERFORMING DELETE ===");
+    console.log("Deleting section with ID:", sectionToDeleteId);
+    
+    // Use functional update to ensure we have the latest state
+    setTestData((prev) => {
+      console.log("=== SETTING TEST DATA (FUNCTIONAL UPDATE) ===");
+      console.log("Previous sections:", prev.sections);
+      console.log("Previous sections count:", prev.sections.length);
+      
+      const filteredSections = prev.sections.filter((section) => {
+        const shouldKeep = section.id !== sectionToDeleteId;
+        console.log(`Section ${section.id} ${shouldKeep ? 'KEPT' : 'DELETED'}`);
+        return shouldKeep;
+      });
+      
+      console.log("Filtered sections:", filteredSections);
+      console.log(`Removed ${prev.sections.length - filteredSections.length} section(s)`);
+      
+      if (filteredSections.length === prev.sections.length) {
+        console.error("!!! WARNING: Section not filtered out!");
+        console.error("Section ID to delete:", sectionToDeleteId);
+        console.error("All section IDs:", prev.sections.map(s => s.id));
       }
+      
+      const newState = {
+        ...prev,
+        sections: filteredSections,
+      };
+      
+      console.log("Returning new state with", newState.sections.length, "sections");
+      return newState;
     });
+    
+    // Close modal and reset
+    setDeleteModalOpen(false);
+    setSectionToDeleteId(null);
+    
+    // Force re-render after state update
+    setTimeout(() => {
+      setForceRender(prev => {
+        console.log("=== FORCING RERENDER ===", prev + 1);
+        return prev + 1;
+      });
+    }, 50);
+    
+    console.log("=== DELETE FUNCTION CALLED ===");
   };
 
   const handleDeleteSubPart = (sectionIndex: number, subPartIndex: number) => {
@@ -318,24 +392,35 @@ export default function SpeakingEditor() {
               </Button>
             }
           >
-            <Collapse key={forceRender}>
+            <Collapse key={`collapse-${testData.sections.length}-${forceRender}-${testData.sections.map(s => s.id).join('-')}`}>
               {testData.sections.map((section, sectionIndex) => (
                 <Panel
-                  key={`section-${sectionIndex}-${section.id}-${forceRender}`}
+                  key={`section-${section.id || `temp-${sectionIndex}`}`}
                   header={
-                    <div className="flex justify-between items-center">
-                      <span>{`${section.title} (${section.type})`}</span>
-                      <Button
-                        danger
-                        size="small"
-                        icon={<DeleteOutlined />}
+                    <div className="flex justify-between items-center w-full">
+                      <span className="flex-1">{`${section.title} (${section.type})`}</span>
+                      <div 
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          handleDeleteSection(sectionIndex);
                         }}
-                        className="ml-2"
-                      />
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          danger
+                          size="small"
+                          icon={<DeleteOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            console.log("=== DELETE BUTTON CLICKED ===");
+                            console.log("Section index:", sectionIndex);
+                            console.log("Section ID:", section.id);
+                            handleDeleteSection(sectionIndex);
+                          }}
+                          className="ml-2"
+                        />
+                      </div>
                     </div>
                   }
                 >
@@ -602,6 +687,23 @@ export default function SpeakingEditor() {
           </Card>
         </Col>
       </Row>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={deleteModalOpen}
+        title="Sectionni o'chirish"
+        onOk={performDelete}
+        onCancel={() => {
+          console.log("=== MODAL CANCELLED ===");
+          setDeleteModalOpen(false);
+          setSectionToDeleteId(null);
+        }}
+        okText="Ha"
+        cancelText="Yo'q"
+        okButtonProps={{ danger: true }}
+      >
+        <p>Haqiqatan ham bu sectionni o'chirmoqchimisiz?</p>
+      </Modal>
     </div>
   );
 }
