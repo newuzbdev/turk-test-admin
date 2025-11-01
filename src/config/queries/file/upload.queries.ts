@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 
 interface FileUploadResponse {
+  path: string;
   success: boolean;
   message: string;
   data: {

@@ -1094,7 +1094,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
 
       {currentStep === 1 && (
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          {parts.map((part, partIndex) => (
+          {parts.map((part, _partIndex) => (
             <Card
               key={part.id}
               style={{

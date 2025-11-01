@@ -64,7 +64,6 @@ export default function SpeakingEditor() {
   const {
     addSection,
     updateSection,
-    deleteSection,
     addSubPart,
     updateSubPart,
     deleteSubPart,
@@ -176,7 +175,7 @@ export default function SpeakingEditor() {
     console.log("Section ID to delete:", sectionId);
     
     // Store the section ID to delete and open modal
-    setSectionToDeleteId(sectionId);
+    setSectionToDeleteId(sectionId ?? null);
     setDeleteModalOpen(true);
   };
 
