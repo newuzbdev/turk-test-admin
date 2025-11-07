@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Input, Space, Typography, Upload, Image, Progress, message } from "antd";
+import { Button, Card, Input, Space, Typography, Upload, Image, Progress, message, Radio } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type { AnswerDto, QuestionDto, QuestionType } from "../components/test-editor";
@@ -11,6 +11,7 @@ const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 interface Props {
   question: QuestionDto;
   type: QuestionType | null;
+  sharedVariants?: AnswerDto[]; // Shared variants for MATCHING type
   onChange: (q: QuestionDto) => void;
   onRemove: () => void;
 }
@@ -18,6 +19,7 @@ interface Props {
 export default function QuestionForm({
   question,
   type,
+  sharedVariants,
   onChange,
   onRemove,
 }: Props) {
@@ -124,25 +126,53 @@ export default function QuestionForm({
           />
         )}
 
-        {question.answers.map((ans, idx) => (
-          <div key={idx}>
-            <Space style={{ width: "100%", alignItems: "center" }}>
-              {(type === "MULTIPLE_CHOICE" || type === "MATCHING") ? <Text strong>{alphabet[idx] ?? String(idx + 1)}.</Text> : null}
-              <AnswerForm
-                answer={ans}
-                type={type}
-                index={idx}
-                onChange={(u) => updateAnswer(idx, u)}
-                onRemove={() => removeAnswer(idx)}
-              />
-            </Space>
-          </div>
-        ))}
+        {/* For MATCHING type with shared variants, show variant selector */}
+        {type === "MATCHING" && sharedVariants && sharedVariants.length > 0 ? (
+          <>
+            <Text strong>To'g'ri variantni tanlang:</Text>
+            <Radio.Group
+              value={question.correctVariantIndex}
+              onChange={(e) => {
+                onChange({ ...question, correctVariantIndex: e.target.value });
+              }}
+            >
+              <Space direction="vertical" style={{ width: "100%", marginTop: 8 }}>
+                {sharedVariants.map((variant, idx) => (
+                  <Radio key={idx} value={idx}>
+                    <Text strong>{String.fromCharCode(65 + idx)}.</Text> {variant.text || `Variant ${idx + 1}`}
+                  </Radio>
+                ))}
+              </Space>
+            </Radio.Group>
+            {question.correctVariantIndex === undefined && (
+              <Text type="warning" style={{ display: "block", marginTop: 8 }}>
+                Iltimos, to'g'ri variantni tanlang
+              </Text>
+            )}
+          </>
+        ) : (
+          <>
+            {question.answers.map((ans, idx) => (
+              <div key={idx}>
+                <Space style={{ width: "100%", alignItems: "center" }}>
+                  {(type === "MULTIPLE_CHOICE" || type === "MATCHING") ? <Text strong>{alphabet[idx] ?? String(idx + 1)}.</Text> : null}
+                  <AnswerForm
+                    answer={ans}
+                    type={type}
+                    index={idx}
+                    onChange={(u) => updateAnswer(idx, u)}
+                    onRemove={() => removeAnswer(idx)}
+                  />
+                </Space>
+              </div>
+            ))}
 
-        {(type === "MULTIPLE_CHOICE" || type === "MATCHING") && (
-          <Button type="dashed" onClick={addAnswer}>
-            + Add Answer
-          </Button>
+            {(type === "MULTIPLE_CHOICE" || (type === "MATCHING" && !sharedVariants)) && (
+              <Button type="dashed" onClick={addAnswer}>
+                + Add Answer
+              </Button>
+            )}
+          </>
         )}
       </Space>
     </Card>

@@ -324,6 +324,65 @@ export default function ReadingSectionEditor({
 
         <Divider />
 
+        {/* Shared Variants (optional) */}
+        <div>
+          <Text strong style={{ fontSize: 16, marginBottom: 8, display: "block" }}>
+            🔗 Umumiy variantlar (ixtiyoriy)
+          </Text>
+          <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+            Agar bu bo'limdagi barcha savollar bir xil variantlardan foydalansa, ularni shu yerda bir marta kiriting. Keyin har bir savol uchun to'g'ri variantni tanlaysiz.
+          </Text>
+          <Space direction="vertical" size="small" style={{ width: "100%" }}>
+            {(section.sharedVariants || []).map((variant, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Text strong style={{ minWidth: 24 }}>{variant.letter || String.fromCharCode(65 + idx)}.</Text>
+                <Input
+                  value={variant.text}
+                  onChange={(e) => {
+                    const next = [...(section.sharedVariants || [])];
+                    next[idx] = { letter: variant.letter || String.fromCharCode(65 + idx), text: e.target.value };
+                    updateField("sharedVariants", next);
+                  }}
+                  placeholder="Variant matni"
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  danger
+                  size="small"
+                  onClick={() => {
+                    const next = (section.sharedVariants || []).filter((_, i) => i !== idx);
+                    updateField("sharedVariants", next);
+                    // If removed letter was selected as correct, clear it in questions
+                    const removedLetter = variant.letter || String.fromCharCode(65 + idx);
+                    const updatedQuestions = section.questions.map((q) =>
+                      q.correctAnswer === removedLetter ? { ...q, correctAnswer: "" } : q
+                    );
+                    onChange({ ...section, sharedVariants: next, questions: updatedQuestions });
+                  }}
+                >
+                  ×
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="dashed"
+              size="small"
+              onClick={() => {
+                const next = [...(section.sharedVariants || [])];
+                const nextLetter = String.fromCharCode(65 + next.length);
+                next.push({ letter: nextLetter, text: "" });
+                updateField("sharedVariants", next);
+              }}
+              icon={<PlusOutlined />}
+              style={{ marginTop: 8 }}
+            >
+              Variant qo'shish
+            </Button>
+          </Space>
+        </div>
+
+        <Divider />
+
         {/* Questions */}
         <div>
           <Text strong style={{ fontSize: 16, marginBottom: 16, display: "block" }}>
@@ -406,12 +465,17 @@ export default function ReadingSectionEditor({
                         value={question.correctAnswer || undefined}
                         onChange={(value) => updateQuestion(question.id, { ...question, correctAnswer: value })}
                         style={{ width: 320 }}
-                        options={question.options
-                          .filter((option) => option.text.trim())
+                        options={
+                          (section.sharedVariants && section.sharedVariants.length > 0
+                            ? section.sharedVariants
+                            : question.options
+                          )
+                          .filter((option) => (option.text || "").toString().trim())
                           .map((option) => ({
                             label: `${option.letter}. ${option.text}`,
                             value: option.letter,
-                          }))}
+                          }))
+                        }
                       />
                     </div>
 
@@ -419,42 +483,45 @@ export default function ReadingSectionEditor({
                       <Text strong style={{ marginBottom: 8, display: "block" }}>
                         Variantlar:
                       </Text>
-                      <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                        {question.options.map((option, optionIndex) => (
-                          <div key={optionIndex} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <Text strong style={{ minWidth: 24 }}>
-                              {option.letter}.
-                            </Text>
-                            <Input
-                              value={option.text}
-                              onChange={(e) => updateOption(question.id, optionIndex, e.target.value)}
-                              placeholder={`${option.letter} variantini kiriting`}
-                              style={{ flex: 1 }}
-                            />
-                            {question.options.length > 2 && (
-                              <Button
-                                danger
-                                size="small"
-                                onClick={() => removeOption(question.id, optionIndex)}
-                              >
-                                ×
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                        
-                        {question.options.length < 8 && (
-                          <Button
-                            type="dashed"
-                            size="small"
-                            onClick={() => addOption(question.id)}
-                            icon={<PlusOutlined />}
-                            style={{ marginTop: 8 }}
-                          >
-                            Variant qo'shish
-                          </Button>
-                        )}
-                      </Space>
+                      {section.sharedVariants && section.sharedVariants.length > 0 ? (
+                        <Text type="secondary">Variantlar bu bo'lim uchun umumiy. Yuqoridagi ro'yxatdan tahrir qiling.</Text>
+                      ) : (
+                        <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                          {question.options.map((option, optionIndex) => (
+                            <div key={optionIndex} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <Text strong style={{ minWidth: 24 }}>
+                                {option.letter}.
+                              </Text>
+                              <Input
+                                value={option.text}
+                                onChange={(e) => updateOption(question.id, optionIndex, e.target.value)}
+                                placeholder={`${option.letter} variantini kiriting`}
+                                style={{ flex: 1 }}
+                              />
+                              {question.options.length > 2 && (
+                                <Button
+                                  danger
+                                  size="small"
+                                  onClick={() => removeOption(question.id, optionIndex)}
+                                >
+                                  ×
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                          {question.options.length < 8 && (
+                            <Button
+                              type="dashed"
+                              size="small"
+                              onClick={() => addOption(question.id)}
+                              icon={<PlusOutlined />}
+                              style={{ marginTop: 8 }}
+                            >
+                              Variant qo'shish
+                            </Button>
+                          )}
+                        </Space>
+                      )}
                     </div>
                   </Space>
                 </Card>

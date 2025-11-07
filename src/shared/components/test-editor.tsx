@@ -33,6 +33,7 @@ export interface QuestionDto {
   content?: string;
   imageUrl?: string;
   answers: AnswerDto[];
+  correctVariantIndex?: number; // Index of correct variant from sharedVariants (for MATCHING type)
 }
 
 export interface SectionDto {
@@ -41,6 +42,7 @@ export interface SectionDto {
   imageUrl?: string;
   type: QuestionType | null;
   questions: QuestionDto[];
+  sharedVariants?: AnswerDto[]; // Shared variants for MATCHING type sections
 }
 
 export interface PartDto {
@@ -227,50 +229,34 @@ export default function TestEditor({
         content: "Konuşmacıları uygun ifadelerle eşleştirin.",
         imageUrl: "",
         type: "MATCHING",
+        sharedVariants: [
+          { text: "Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
+          { text: "Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
+          { text: "Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
+          { text: "İvedilik söz konusudur.", isCorrect: false },
+          { text: "Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
+          { text: "Mesai zamanı belirtilmiştir.", isCorrect: false },
+        ],
         questions: [
           {
             text: "S15. 1. konuşmacı …",
-            answers: [
-              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
-              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
-              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
-              { text: "D) İvedilik söz konusudur.", isCorrect: false },
-              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
-              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 0, // Example: first variant is correct
           },
           {
             text: "S16. 2. konuşmacı …",
-            answers: [
-              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
-              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
-              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
-              { text: "D) İvedilik söz konusudur.", isCorrect: false },
-              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
-              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 1, // Example: second variant is correct
           },
           {
             text: "S17. 3. konuşmacı …",
-            answers: [
-              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
-              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
-              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
-              { text: "D) İvedilik söz konusudur.", isCorrect: false },
-              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
-              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 2, // Example: third variant is correct
           },
           {
             text: "S18. 4. konuşmacı …",
-            answers: [
-              { text: "A) Terapi merkezinin tanıtım reklamı verilmiştir.", isCorrect: false },
-              { text: "B) Manav ürünlerinin fiyatlarında indirim fırsatı.", isCorrect: false },
-              { text: "C) Kara yolu seferleri düzenlendiğine dair bilgiler var.", isCorrect: false },
-              { text: "D) İvedilik söz konusudur.", isCorrect: false },
-              { text: "E) Kara yolu ulaşım aracıyla ilgili uyarı niteliğindedir", isCorrect: false },
-              { text: "F) Mesai zamanı belirtilmiştir.", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 3, // Example: fourth variant is correct
           },
         ],
       },
@@ -288,71 +274,41 @@ export default function TestEditor({
           "Dinleme metnine göre haritadaki yerleri (A–H) işaretleyiniz. Üç seçenek kullanılmayacak.",
         imageUrl: "", // kullanıcı harita görselini buradan yükleyebilir
         type: "MATCHING",
+        sharedVariants: [
+          { text: "A", isCorrect: false },
+          { text: "B", isCorrect: false },
+          { text: "C", isCorrect: false },
+          { text: "D", isCorrect: false },
+          { text: "E", isCorrect: false },
+          { text: "F", isCorrect: false },
+          { text: "G", isCorrect: false },
+          { text: "H", isCorrect: false },
+        ],
         questions: [
           {
             text: "S19. Spor salonu …",
-            answers: [
-              { text: "A", isCorrect: false },
-              { text: "B", isCorrect: false },
-              { text: "C", isCorrect: false },
-              { text: "D", isCorrect: false },
-              { text: "E", isCorrect: false },
-              { text: "F", isCorrect: false },
-              { text: "G", isCorrect: false },
-              { text: "H", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 0, // Example: first variant (A) is correct
           },
           {
             text: "S20. Gıda mağazası …",
-            answers: [
-              { text: "A", isCorrect: false },
-              { text: "B", isCorrect: false },
-              { text: "C", isCorrect: false },
-              { text: "D", isCorrect: false },
-              { text: "E", isCorrect: false },
-              { text: "F", isCorrect: false },
-              { text: "G", isCorrect: false },
-              { text: "H", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 1, // Example: second variant (B) is correct
           },
           {
             text: "S21. Eskişehir Oteli …",
-            answers: [
-              { text: "A", isCorrect: false },
-              { text: "B", isCorrect: false },
-              { text: "C", isCorrect: false },
-              { text: "D", isCorrect: false },
-              { text: "E", isCorrect: false },
-              { text: "F", isCorrect: false },
-              { text: "G", isCorrect: false },
-              { text: "H", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 2, // Example: third variant (C) is correct
           },
           {
             text: "S22. Lokanta …",
-            answers: [
-              { text: "A", isCorrect: false },
-              { text: "B", isCorrect: false },
-              { text: "C", isCorrect: false },
-              { text: "D", isCorrect: false },
-              { text: "E", isCorrect: false },
-              { text: "F", isCorrect: false },
-              { text: "G", isCorrect: false },
-              { text: "H", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 3, // Example: fourth variant (D) is correct
           },
           {
             text: "S23. Hayvanat bahçesi …",
-            answers: [
-              { text: "A", isCorrect: false },
-              { text: "B", isCorrect: false },
-              { text: "C", isCorrect: false },
-              { text: "D", isCorrect: false },
-              { text: "E", isCorrect: false },
-              { text: "F", isCorrect: false },
-              { text: "G", isCorrect: false },
-              { text: "H", isCorrect: false },
-            ],
+            answers: [],
+            correctVariantIndex: 4, // Example: fifth variant (E) is correct
           },
         ],
       },
@@ -556,17 +512,32 @@ export default function TestEditor({
             .map((q) => {
               if (globalQuestionNumber > 35) return null;
               const currentNumber = globalQuestionNumber++;
+              
+              // For MATCHING type with shared variants, use shared variants
+              let answers: any[] = [];
+              if (s.type === "MATCHING" && s.sharedVariants && s.sharedVariants.length > 0) {
+                // Use shared variants and mark the correct one based on correctVariantIndex
+                answers = s.sharedVariants.map((variant, vIndex) => ({
+                  variantText: String.fromCharCode(65 + vIndex),
+                  answer: String(variant.text ?? ""),
+                  correct: q.correctVariantIndex === vIndex,
+                }));
+              } else {
+                // Use question's own answers (for other types or MATCHING without shared variants)
+                answers = q.answers.map((a, aIndex) => ({
+                  variantText: String.fromCharCode(65 + aIndex),
+                  answer: String(a.text ?? ""),
+                  correct: Boolean(a.isCorrect),
+                }));
+              }
+              
               return {
                 number: currentNumber,
                 type: s.type ?? "TEXT_INPUT",
                 text: q.text ?? "",
                 content: q.text ?? "",
                 imageUrl: q.imageUrl ?? "",
-                answers: q.answers.map((a, aIndex) => ({
-                  variantText: String.fromCharCode(65 + aIndex),
-                  answer: String(a.text ?? ""),
-                  correct: Boolean(a.isCorrect),
-                })),
+                answers,
               };
             })
             .filter(Boolean) as any[];

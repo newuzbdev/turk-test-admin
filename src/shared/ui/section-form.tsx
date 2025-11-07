@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Button, Card, Input, Select, Space, Upload, message, Divider, Typography, Progress, Image } from "antd";
-import { DeleteOutlined, UploadOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, UploadOutlined, PlusOutlined, CloseOutlined } from "@ant-design/icons";
 import QuestionForm from "./question-form";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
-import type { QuestionDto, SectionDto } from "../components/test-editor";
+import type { QuestionDto, SectionDto, AnswerDto } from "../components/test-editor";
 
 const { Text } = Typography;
 const FILE_BASE = `${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz").replace(/\/+$/, "")}/`;
@@ -59,6 +59,40 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
   const removeQuestion = (index: number) => {
     const newQuestions = section.questions.filter((_, i) => i !== index);
     onChange({ ...section, questions: newQuestions });
+  };
+
+  // Shared variants management for MATCHING type
+  const addSharedVariant = () => {
+    const newVariant: AnswerDto = { text: "", isCorrect: false };
+    const sharedVariants = section.sharedVariants || [];
+    onChange({ ...section, sharedVariants: [...sharedVariants, newVariant] });
+  };
+
+  const updateSharedVariant = (index: number, updated: AnswerDto) => {
+    const sharedVariants = section.sharedVariants || [];
+    const newVariants = [...sharedVariants];
+    newVariants[index] = updated;
+    onChange({ ...section, sharedVariants: newVariants });
+  };
+
+  const removeSharedVariant = (index: number) => {
+    const sharedVariants = section.sharedVariants || [];
+    const newVariants = sharedVariants.filter((_, i) => i !== index);
+    onChange({ ...section, sharedVariants: newVariants });
+    // Also update questions that reference this variant
+    const updatedQuestions = section.questions.map((q) => {
+      if (q.correctVariantIndex !== undefined && q.correctVariantIndex >= index) {
+        if (q.correctVariantIndex === index) {
+          // Remove the correct variant index if it was the removed variant
+          return { ...q, correctVariantIndex: undefined };
+        } else if (q.correctVariantIndex > index) {
+          // Decrement the index if it was after the removed variant
+          return { ...q, correctVariantIndex: q.correctVariantIndex - 1 };
+        }
+      }
+      return q;
+    });
+    onChange({ ...section, sharedVariants: newVariants, questions: updatedQuestions });
   };
 
   return (
@@ -139,7 +173,13 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
         <Select
           placeholder="Savol turi"
           value={section.type}
-          onChange={(value) => updateField("type", value)}
+          onChange={(value) => {
+            updateField("type", value);
+            // Initialize shared variants for MATCHING type
+            if (value === "MATCHING" && !section.sharedVariants) {
+              onChange({ ...section, type: value, sharedVariants: [] });
+            }
+          }}
           style={{ width: "100%" }}
           options={[
             { label: "Multiple Choice", value: "MULTIPLE_CHOICE" },
@@ -149,6 +189,56 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
             { label: "Text Input", value: "TEXT_INPUT" },
           ]}
         />
+
+        {/* Shared Variants for MATCHING type */}
+        {section.type === "MATCHING" && (
+          <>
+            <Divider />
+            <Text strong>🔗 Umumiy variantlar (barcha savollar uchun)</Text>
+            <Text type="secondary" style={{ display: "block", marginBottom: 8, fontSize: 12 }}>
+              Variantlarni bir marta kiriting, keyin har bir savol uchun to'g'ri variantni tanlang
+            </Text>
+            {(section.sharedVariants || []).map((variant, idx) => (
+              <Card
+                key={idx}
+                type="inner"
+                size="small"
+                style={{ marginBottom: 8 }}
+                extra={
+                  <Button
+                    danger
+                    size="small"
+                    icon={<CloseOutlined />}
+                    onClick={() => removeSharedVariant(idx)}
+                  >
+                    O'chirish
+                  </Button>
+                }
+              >
+                <Space style={{ width: "100%" }}>
+                  <Text strong>{String.fromCharCode(65 + idx)}.</Text>
+                  <Input
+                    placeholder="Variant matni"
+                    value={variant.text}
+                    onChange={(e) =>
+                      updateSharedVariant(idx, { ...variant, text: e.target.value })
+                    }
+                    style={{ flex: 1 }}
+                  />
+                </Space>
+              </Card>
+            ))}
+            <Button
+              type="dashed"
+              onClick={addSharedVariant}
+              icon={<PlusOutlined />}
+              block
+              style={{ marginBottom: 16 }}
+            >
+              + Variant qo'shish
+            </Button>
+          </>
+        )}
 
         <Button
           type="dashed"
@@ -180,6 +270,7 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
             <QuestionForm
               question={q}
               type={section.type}
+              sharedVariants={section.type === "MATCHING" ? section.sharedVariants : undefined}
               onChange={(updated) => updateQuestion(idx, updated)}
               onRemove={() => removeQuestion(idx)}
             />
