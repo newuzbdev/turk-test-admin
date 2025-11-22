@@ -667,6 +667,21 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       return;
     }
 
+    // Validate that all questions have non-empty answers
+    for (const part of parts) {
+      for (const section of part.sections) {
+        const useShared = Array.isArray(section.sharedVariants) && section.sharedVariants.length > 0;
+        for (const question of section.questions) {
+          const options = useShared ? section.sharedVariants! : question.options;
+          const validOptions = options.filter((opt: any) => opt.text && opt.text.trim());
+          if (validOptions.length === 0) {
+            toast.error(`Part ${parts.indexOf(part) + 1}, Section "${section.title}", S${question.blankNumber}: kamida bitta to'ldirilgan variant bo'lishi kerak`);
+            return;
+          }
+        }
+      }
+    }
+
     // Build payload according to API structure with global question numbering (1-35)
     let globalQuestionNumber = 1;
     const payload = {
@@ -713,11 +728,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                     text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
                     content: question.text || "",
                     imageUrl: "",
-                    answers: question.options.map((option: any) => ({
-                      variantText: option.letter,
-                      answer: option.text,
-                      correct: option.letter === question.correctAnswer,
-                    })),
+                    answers: question.options
+                      .filter((option: any) => option.text && option.text.trim())
+                      .map((option: any) => ({
+                        variantText: option.letter,
+                        answer: option.text,
+                        correct: option.letter === question.correctAnswer,
+                      })),
                   };
                 }).filter((q) => q !== null), // Remove null entries
               },
@@ -761,11 +778,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                     text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
                     content: question.text || "",
                     imageUrl: "",
-                    answers: question.options.map((option: any) => ({
-                      variantText: option.letter,
-                      answer: option.text,
-                      correct: option.letter === question.correctAnswer,
-                    })),
+                    answers: question.options
+                      .filter((option: any) => option.text && option.text.trim())
+                      .map((option: any) => ({
+                        variantText: option.letter,
+                        answer: option.text,
+                        correct: option.letter === question.correctAnswer,
+                      })),
                   };
                 }).filter((q) => q !== null), // Remove null entries
               },
@@ -790,16 +809,20 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 // Build answers: prefer section.sharedVariants if provided
                 const useShared = Array.isArray(section.sharedVariants) && section.sharedVariants.length > 0;
                 const answers = useShared
-                  ? section.sharedVariants!.map((option) => ({
-                      variantText: option.letter,
-                      answer: option.text,
-                      correct: option.letter === question.correctAnswer,
-                    }))
-                  : question.options.map((option, ) => ({
-                      variantText: option.letter,
-                      answer: option.text,
-                      correct: option.letter === question.correctAnswer,
-                    }));
+                  ? section.sharedVariants!
+                      .filter((option) => option.text && option.text.trim())
+                      .map((option) => ({
+                        variantText: option.letter,
+                        answer: option.text,
+                        correct: option.letter === question.correctAnswer,
+                      }))
+                  : question.options
+                      .filter((option) => option.text && option.text.trim())
+                      .map((option, ) => ({
+                        variantText: option.letter,
+                        answer: option.text,
+                        correct: option.letter === question.correctAnswer,
+                      }));
                 return {
                   number: currentNumber,
                   type: "MULTIPLE_CHOICE",
