@@ -16,15 +16,18 @@ export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): T
     dataIndex: "imageUrl",
     key: "imageUrl",
     width: 100,
-    render: (imageUrl: string) => (
-      <Image
-        src={FILE_BASE + imageUrl}
-        alt="Banner"
-        width={60}
-        height={40}
-        style={{ objectFit: "cover", borderRadius: 4 }}
-      />
-    ),
+    render: (imageUrl: string) => {
+      const src = imageUrl?.startsWith("http") ? imageUrl : FILE_BASE + imageUrl;
+      return (
+        <Image
+          src={src}
+          alt="Banner"
+          width={60}
+          height={40}
+          style={{ objectFit: "cover", borderRadius: 4 }}
+        />
+      );
+    },
   },
   {
     title: "Nomi",

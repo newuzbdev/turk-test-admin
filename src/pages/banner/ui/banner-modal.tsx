@@ -48,16 +48,27 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
   const handleImageUpload = async (file: File) => {
     try {
       setUploading(true);
-      const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.path) {
-        setImageUrl(result.path);
+      const result: any = await fileUploadMutation.mutateAsync(file);
+
+      // Support both relative `path` and absolute `url` / nested paths from backend
+      const uploadedPath: string =
+        result?.path ||
+        result?.data?.url ||
+        result?.data?.path ||
+        "";
+
+      if (uploadedPath) {
+        setImageUrl(uploadedPath);
         message.success("Rasm yuklandi");
+      } else {
+        message.error("Rasm manzili aniqlanmadi");
       }
     } catch (error) {
       message.error("Rasm yuklashda xatolik");
     } finally {
       setUploading(false);
     }
+    // prevent Upload from doing its own request
     return false;
   };
 
@@ -170,7 +181,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
             {imageUrl && (
               <div style={{ marginTop: 8 }}>
                 <img
-                  src={FILE_BASE + imageUrl}
+                  src={imageUrl.startsWith("http") ? imageUrl : FILE_BASE + imageUrl}
                   alt="Preview"
                   style={{
                     width: "100%",
