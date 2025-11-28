@@ -90,6 +90,8 @@ export function QuestionEditor() {
           value={currentQuestion.questionText}
           onChange={handleQuestionTextChange}
           rows={4}
+          autoSize={{ minRows: 3, maxRows: 10 }}
+          style={{ resize: "vertical" }}
         />
       </Card>
 
@@ -101,13 +103,14 @@ export function QuestionEditor() {
           {currentQuestion.choices.map((choice) => (
             <div key={choice.id} className="flex items-center space-x-2 mb-2">
               <Radio value={choice.id} />
-              <Input
+              <TextArea
                 value={choice.text}
                 onChange={(e) =>
                   handleChoiceTextChange(choice.id, e.target.value)
                 }
                 placeholder="Enter choice text"
-                style={{ flex: 1 }}
+                autoSize={{ minRows: 1, maxRows: 4 }}
+                style={{ flex: 1, resize: "vertical" }}
               />
               <Button
                 icon={<CloseOutlined />}

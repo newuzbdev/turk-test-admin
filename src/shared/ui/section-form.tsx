@@ -121,7 +121,8 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
           placeholder="Matn kiriting..."
           value={section.content}
           onChange={(e) => updateField("content", e.target.value)}
-          style={{ borderRadius: 8, padding: 10 }}
+          autoSize={{ minRows: 4, maxRows: 12 }}
+          style={{ borderRadius: 8, padding: 10, resize: "vertical" }}
         />
 
         <Divider />

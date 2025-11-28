@@ -81,19 +81,23 @@ export default function QuestionForm({
   return (
     <Card
       title={
-        <Input
+        <Input.TextArea
           placeholder="Question text"
           value={question.text}
           onChange={(e) => updateField("text", e.target.value)}
+          autoSize={{ minRows: 1, maxRows: 4 }}
+          style={{ resize: "vertical" }}
         />
       }
       extra={<Button danger onClick={onRemove}>Remove Question</Button>}
     >
       <Space direction="vertical" style={{ width: "100%" }}>
-        <Input
+        <Input.TextArea
           placeholder="Question content (optional)"
           value={question.content}
           onChange={(e) => updateField("content", e.target.value)}
+          autoSize={{ minRows: 1, maxRows: 6 }}
+          style={{ resize: "vertical" }}
         />
 
         {/* Image Upload */}

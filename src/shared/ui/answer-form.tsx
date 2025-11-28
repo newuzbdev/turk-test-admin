@@ -19,12 +19,13 @@ export default function AnswerForm({ answer, type, onChange, onRemove }: Props) 
 
   return (
     <Space style={{ width: "100%" }}>
-      <Input
+      <Input.TextArea
         placeholder={isEditable ? "Answer text" : undefined}
         value={answer.text}
         disabled={!isEditable}
         onChange={(e) => updateField("text", e.target.value)}
-        style={{ flex: 1 }}
+        autoSize={{ minRows: 1, maxRows: 4 }}
+        style={{ flex: 1, resize: "vertical" }}
       />
       <Checkbox
         checked={answer.isCorrect}
