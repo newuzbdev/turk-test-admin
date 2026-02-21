@@ -8,9 +8,10 @@ import {
   Speaker,
   ImageIcon,
   Package,
+  User,
 } from "lucide-react";
 
-import { IELTS, Banner, Product, TestCoinPrice } from "./lazy-pages";
+import { IELTS, Banner, Product, TestCoinPrice, UpdateAdmin } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
 import ReadingEditor from "@/pages/reading/reading-editor";
 import SpeakingEditor from "@/pages/speaking/speaking-editor";
@@ -140,6 +141,14 @@ export const routerConfig: RouterConfig[] = [
     icon: <ArchiveIcon />,
     path: "archive",
     page: <Archive />,
+    inMenu: true,
+  },
+  {
+    title: "Parolni yangilash",
+    label: "Parolni yangilash",
+    icon: <User />,
+    path: "profile",
+    page: <UpdateAdmin />,
     inMenu: true,
   },
 

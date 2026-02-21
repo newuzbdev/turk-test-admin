@@ -12,6 +12,12 @@ type LoginInput = {
   password: string;
 };
 
+export type UpdateAdminInput = {
+  name?: string;
+  oldPassword?: string;
+  newPassword?: string;
+};
+
 type TokenResponse = {
   accessToken: string;
   refreshToken: string;
@@ -69,6 +75,31 @@ export const useAdminRefresh = () => {
         const errorResponse = error?.response?.data as ErrorResponse;
         throw new Error(errorResponse?.error || "Token refresh failed");
       }
+    },
+  });
+};
+
+export const useUpdateAdmin = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...body
+    }: UpdateAdminInput & { id: string }) => {
+      const { data } = await axiosPrivate.patch(
+        authEndpoints.update(id),
+        body
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast.success("Admin muvaffaqiyatli yangilandi");
+    },
+    onError: (error: any) => {
+      const errorResponse = error?.response?.data as ErrorResponse;
+      toast.error(errorResponse?.error || "Admin yangilashda xatolik");
     },
   });
 };
