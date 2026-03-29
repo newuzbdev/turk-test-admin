@@ -34,3 +34,17 @@ export const useGetOneOnlySpeakingTest = (id: string) => {
     enabled: !!id,
   });
 };
+
+export const useGetSpeakingTestWithAddition = (id: string) => {
+  return useQuery({
+    queryKey: [speakingTestEndpoints.one(id)],
+    queryFn: async () => {
+      return (
+        await axiosPrivate.get<ApiResponse<SpeakingTest>>(
+          speakingTestEndpoints.one(id)
+        )
+      ).data;
+    },
+    enabled: !!id,
+  });
+};

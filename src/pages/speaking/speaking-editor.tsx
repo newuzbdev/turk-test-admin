@@ -20,10 +20,11 @@ import { useState, useEffect, useRef } from "react";
 import type { SpeakingSection } from "@/utils/types/types";
 import { SectionForm, SubPartForm, PointForm } from "./components";
 import {
-  useGetOneSpeakingTest,
+  useGetSpeakingTestWithAddition,
   useCreateSpeakingTest,
   useSpeakingEditor,
 } from "@/config/queries/speaking/speaking-editor.queries";
+import { useUpdateSpeakingTestWithAddition } from "@/config/queries/speaking/update.queries";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
 
 const { Panel } = Collapse;
@@ -52,13 +53,15 @@ export default function SpeakingEditor() {
   const initializedRef = useRef(false);
 
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
+  const isEditing = !isNewTest && !!id;
 
-  // Queries
-  const { data: existingTest, isLoading } = useGetOneSpeakingTest(
+  // Queries - only use one query to avoid duplicate requests
+  const { data: fetchedTest, isLoading } = useGetSpeakingTestWithAddition(
     isNewTest ? "" : id || ""
   );
   const { mutateAsync: createSpeakingTest, isPending: isCreating } =
     useCreateSpeakingTest();
+  const { mutateAsync: updateSpeakingTest, isPending: isUpdating } = useUpdateSpeakingTestWithAddition();
   const { mutateAsync: uploadFile } = useFileUpload();
 
   // Editor utilities
@@ -86,8 +89,7 @@ export default function SpeakingEditor() {
   } = useSpeakingEditor();
 
   useEffect(() => {
-    // Prevent re-initialization if already initialized
-    if (initializedRef.current) return;
+    console.log("useEffect running", { isEditing, isNewTest, fetchedTest, initialized: initializedRef.current });
     
     if (isNewTest && location.state?.testData) {
       setTestData({
@@ -95,9 +97,9 @@ export default function SpeakingEditor() {
         sections: [],
       });
       form.setFieldsValue(location.state.testData);
-      initializedRef.current = true;
-    } else if (existingTest?.data) {
-      const test = existingTest.data;
+    } else if (isEditing && fetchedTest && !initializedRef.current) {
+      console.log("Initializing with fetched test data:", fetchedTest);
+      const test = fetchedTest;
       const processedSections = processSectionsImages(test.sections || []);
       setTestData({
         title: test.title,
@@ -111,7 +113,7 @@ export default function SpeakingEditor() {
       initializedRef.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingTest?.data?.id, isNewTest]);
+  }, [fetchedTest, isNewTest, isEditing]);
 
   const handleSave = async () => {
     try {
@@ -127,6 +129,11 @@ export default function SpeakingEditor() {
           description: section.description || "",
           content: section.content || "",
           images: section.images || [],
+          questions:
+            section.questions?.map((question) => ({
+              order: question.order,
+              question: question.question,
+            })) || [],
           subParts:
             section.subParts?.map((subPart) => ({
               label: subPart.label,
@@ -147,7 +154,13 @@ export default function SpeakingEditor() {
         })),
       };
 
-      await createSpeakingTest(speakingTestData);
+      if (isEditing && id) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { ieltsId, ...updateData } = speakingTestData;
+        await updateSpeakingTest({ id, ...updateData });
+      } else {
+        await createSpeakingTest(speakingTestData);
+      }
       navigate("/speaking");
     } catch (error) {
       console.error("Error saving speaking test:", error);
@@ -324,7 +337,7 @@ export default function SpeakingEditor() {
         <Button
           type="primary"
           onClick={handleSave}
-          loading={isCreating}
+          loading={isCreating || isUpdating}
           size="large"
         >
           Saqlash

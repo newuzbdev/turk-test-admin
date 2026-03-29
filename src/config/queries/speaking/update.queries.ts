@@ -34,3 +34,24 @@ export const useUpdateSpeakingTest = () => {
     },
   });
 };
+
+export const useUpdateSpeakingTestWithAddition = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string } & Record<string, any>) =>
+      (
+        await axiosPrivate.patch<ApiResponse<SpeakingTest>>(
+          speakingTestEndpoints.full(id),
+          data
+        )
+      ).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
+      queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.only] });
+    },
+    onError: (error: any) => {
+      console.error("API Error:", error.response?.data);
+      toast.error(error.response?.data?.error || "Speaking test yangilashda xatolik yuz berdi");
+    },
+  });
+};

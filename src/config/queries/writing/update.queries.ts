@@ -34,6 +34,26 @@ export const useUpdateWritingTest = () => {
   });
 };
 
+export const useUpdateWritingTestWithAddition = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string } & Record<string, any>) =>
+      (
+        await axiosPrivate.patch<ApiResponse<WritingTest>>(
+          writingTestEndpoints.full(id),
+          data
+        )
+      ).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [writingTestEndpoints.all] });
+    },
+    onError: (error: any) => {
+      console.error("API Error:", error.response?.data);
+      toast.error(error.response?.data?.error || "Writing test yangilashda xatolik yuz berdi");
+    },
+  });
+};
+
 // Update only writing test title
 interface UpdateWritingTestTitleDto {
   id: string;

@@ -77,6 +77,7 @@ export const speakingTestEndpoints = {
   one: (id: string) => `/api/speaking-test/${id}`,
   only: "/api/speaking-test/only",
   onlyOne: (id: string) => `/api/speaking-test/only/${id}`,
+  full: (id: string) => `/api/speaking-test/full/${id}`,
 };
 
 // Speaking Section endpoints
@@ -116,6 +117,7 @@ export const writingTestEndpoints = {
   // Specific update endpoints
   updateTitle: (id: string) => `/api/writing-test/${id}/title`,
   updateInstruction: (id: string) => `/api/writing-test/${id}/instruction`,
+  full: (id: string) => `/api/writing-test/full/${id}`,
 };
 
 // Writing Section endpoints

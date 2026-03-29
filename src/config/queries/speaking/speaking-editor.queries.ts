@@ -64,6 +64,23 @@ export const useGetOneSpeakingTest = (id: string) => {
   });
 };
 
+// Get speaking test with full additions (sections, subparts, etc.)
+export const useGetSpeakingTestWithAddition = (id: string) => {
+  return useQuery({
+    queryKey: ["speaking", "with-addition", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const response = await axiosPrivate.get(speakingTestEndpoints.one(id), {
+        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+      });
+      return response.data;
+    },
+    enabled: !!id,
+    staleTime: 0,
+    gcTime: 0,
+  });
+};
+
 // Create speaking test
 export const useCreateSpeakingTest = () => {
   const queryClient = useQueryClient();
@@ -494,6 +511,10 @@ export const useSpeakingEditor = () => {
       subParts: section.subParts?.map(subPart => ({
         ...subPart,
         images: subPart.images?.map(constructFullImageUrl) || [],
+        questions: subPart.questions?.map(q => ({
+          ...q,
+          question: (q as { questionText?: string }).questionText || q.question,
+        })) || [],
       })) || [],
     }));
   };

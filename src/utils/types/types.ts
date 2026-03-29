@@ -325,6 +325,8 @@ export interface WritingTest {
   id?: string;
   title: string;
   instruction?: string;
+  type?: string;
+  isDeleted?: boolean;
   ieltsId: string;
   createdAt?: string;
   updatedAt?: string;

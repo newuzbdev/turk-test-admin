@@ -15,9 +15,10 @@ import {
   PlusOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect } from "react";
-import { useGetOneWritingTest } from "@/config/queries/writing/get-one.queries";
+import { useState, useEffect, useRef } from "react";
+import { useGetWritingTestWithAddition } from "@/config/queries/writing/get-one.queries";
 import { useCreateWritingTestWithAddition } from "@/config/queries/writing/create.queries";
+import { useUpdateWritingTestWithAddition } from "@/config/queries/writing/update.queries";
 import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
 import type { WritingSection, WritingSubPart } from "@/utils/types/types";
 
@@ -47,18 +48,29 @@ export default function WritingEditor() {
 
   // Check if this is a new test creation
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
+  const isEditing = !isNewTest && !!id;
   const initialTestData = location.state?.testData;
+  const initializedRef = useRef(false);
+
+  // Reset initializedRef when id changes
+  useEffect(() => {
+    initializedRef.current = false;
+  }, [id]);
 
   const { mutateAsync: createTest, isPending: isCreating } =
     useCreateWritingTestWithAddition();
-  const { data: test, isLoading } = useGetOneWritingTest(
+  const { mutateAsync: updateTest, isPending: isUpdating } = useUpdateWritingTestWithAddition();
+  const { data: fetchedTest, isLoading } = useGetWritingTestWithAddition(
     isNewTest ? "" : id || ""
   );
   const { data: ieltsData, isLoading: isIeltsLoading } = useGetAllIelts();
 
   // Initialize test data from location state or API
   useEffect(() => {
+    console.log("Writing useEffect running", { isEditing, isNewTest, fetchedTest, initialized: initializedRef.current });
+    
     if (isNewTest && initialTestData) {
+      console.log("Initializing new test from location state");
       setTestData((prev) => ({
         ...prev,
         title: initialTestData.title || "",
@@ -72,23 +84,51 @@ export default function WritingEditor() {
         ieltsId: initialTestData.ieltsId || "",
         instruction: "You have 60 minutes to complete both tasks.",
       });
-    } else if (test?.data && !isNewTest) {
-      const testInfo = test.data;
+      initializedRef.current = true;
+    } else if (isEditing && fetchedTest && fetchedTest.id && !initializedRef.current) {
+      console.log("Initializing from fetched test data:", fetchedTest);
+      const testInfo = fetchedTest;
+      
+      // Map API response to component's expected structure
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mappedSections = (testInfo.sections || []).map((section: any) => ({
+        ...section,
+        writingTestId: section.writingTestId || id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subParts: (section.subParts || []).map((subPart: any) => ({
+          ...subPart,
+          title: subPart.label || subPart.title || "",
+          writingSectionId: section.id || "",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          questions: (subPart.questions || []).map((q: any) => ({
+            ...q,
+            writingSubPartId: subPart.id || "",
+          })),
+        })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        questions: (section.questions || []).map((q: any) => ({
+          ...q,
+          writingSectionId: section.id || "",
+        })),
+      }));
+      
       setTestData({
         title: testInfo.title || "",
         instruction: testInfo.instruction || "",
-        type: (testInfo as any).type || "academic", // WritingTest type doesn't have type field yet
+        type: testInfo.type || "academic",
         ieltsId: testInfo.ieltsId || "",
-        sections: testInfo.sections || [],
+        sections: mappedSections,
       });
       form.setFieldsValue({
         title: testInfo.title || "",
-        type: "academic", // Default since WritingTest doesn't have type field yet
+        type: testInfo.type || "academic",
         ieltsId: testInfo.ieltsId || "",
         instruction: testInfo.instruction || "",
       });
+      initializedRef.current = true;
     }
-  }, [isNewTest, initialTestData, test, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchedTest, isNewTest, isEditing]);
 
   const addSection = () => {
     const newSection: WritingSection = {
@@ -142,9 +182,22 @@ export default function WritingEditor() {
     updates: Partial<WritingSubPart>
   ) => {
     const section = testData.sections[sectionIndex];
-    const updatedSubParts = (section.subParts || []).map((subPart, i) =>
-      i === subPartIndex ? { ...subPart, ...updates } : subPart
-    );
+    const updatedSubParts = (section.subParts || []).map((subPart, i) => {
+      if (i !== subPartIndex) return subPart;
+      
+      let updatedSubPart = { ...subPart, ...updates };
+      
+      if (updates.description !== undefined && subPart.questions?.[0]) {
+        updatedSubPart = {
+          ...updatedSubPart,
+          questions: subPart.questions.map((q, idx) => 
+            idx === 0 ? { ...q, text: updates.description ?? q.text } : q
+          ),
+        };
+      }
+      
+      return updatedSubPart;
+    });
 
     updateSection(sectionIndex, { subParts: updatedSubParts });
   };
@@ -233,7 +286,13 @@ export default function WritingEditor() {
         })),
       };
 
-      await createTest(writingTestData);
+      if (isEditing && id) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { ieltsId, ...updateData } = writingTestData;
+        await updateTest({ id, ...updateData });
+      } else {
+        await createTest(writingTestData);
+      }
       navigate("/writing");
     } catch (error) {
       console.error("Error saving writing test:", error);
@@ -271,7 +330,7 @@ export default function WritingEditor() {
         <Button
           type="primary"
           onClick={handleSave}
-          loading={isCreating}
+          loading={isCreating || isUpdating}
           size="large"
         >
           Saqlash
@@ -468,7 +527,7 @@ export default function WritingEditor() {
                             Savol/Tavsif
                           </label>
                           <TextArea
-                            value={subPart.description}
+                            value={subPart.questions?.[0]?.text || subPart.description}
                             onChange={(e) =>
                               updateSubPart(sectionIndex, subPartIndex, {
                                 description: e.target.value,
