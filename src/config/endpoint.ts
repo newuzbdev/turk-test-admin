@@ -18,6 +18,8 @@ export const testEndpoints = {
   one: (id: string) => `/api/test/${id}`,
   only: "/api/test/only",
   onlyOne: (id: string) => `/api/test/only/${id}`,
+  testAddition: (id: string) => `/api/test/testaddition/${id}`,
+  updateTestFullTree: (id: string) => `/api/test/full/${id}`,
   archive: "/api/archive",
 };
 

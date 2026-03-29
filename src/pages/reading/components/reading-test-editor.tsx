@@ -41,17 +41,97 @@ export interface ReadingPart {
 
 interface ReadingTestEditorProps {
   ieltsId: string;
+  testId?: string | null;
   backUrl: string;
+  useUpdateTestWithAddition?: any;
+  useGetTestWithAddition?: (id: string) => { data?: any; isLoading?: boolean };
 }
 
-export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEditorProps) {
+export default function ReadingTestEditor({ ieltsId, testId, backUrl, useUpdateTestWithAddition, useGetTestWithAddition }: ReadingTestEditorProps) {
   const [testTitle, setTestTitle] = useState("IELTS Reading Test - Batıl İnançlar & Durum Eşleştirme");
   const [testDescription, setTestDescription] = useState("Turkish reading comprehension test with blank filling and matching exercises");
   const [parts, setParts] = useState<ReadingPart[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [expandedPartIds, setExpandedPartIds] = useState<string[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
   const { mutate: createTest, isPending } = useCreateReadingTestWithAddition();
+  const updateMutation = useUpdateTestWithAddition?.();
+  const { mutate: updateTest } = updateMutation || { mutate: () => {} };
+  const isEditing = !!testId;
+
+  const getTestQuery = useGetTestWithAddition?.(testId || "");
+
+  // Fetch test data when editing
+  React.useEffect(() => {
+    if (isEditing && getTestQuery?.data && !isInitialized) {
+      const testData = getTestQuery.data;
+      console.log("[ReadingTestEditor] Fetched test data:", testData);
+      
+      if (testData) {
+        setTestTitle(testData.title || "IELTS Reading Test");
+        setTestDescription(testData.description || "");
+        
+        // Transform API response to ReadingPart format
+        if (testData.parts && Array.isArray(testData.parts)) {
+          const transformedParts: ReadingPart[] = testData.parts.map((part: any, partIndex: number) => ({
+            id: `part-${partIndex}`,
+            title: part.title || `Part ${partIndex + 1}`,
+            description: part.description || "",
+            sections: (part.sections || []).map((section: any, sectionIndex: number) => {
+              // Transform questions to ReadingQuestion format
+              const questions = (section.questions || []).map((q: any, qIndex: number) => {
+                // Find correct answer from answers array
+                const correctAnswerObj = q.answers?.find((a: any) => a.correct);
+                const correctAnswer = correctAnswerObj ? correctAnswerObj.variantText : "A";
+                
+                // Transform answers to options format
+                const options = (q.answers || []).map((a: any, aIndex: number) => ({
+                  letter: String.fromCharCode(65 + aIndex),
+                  text: a.answer || "",
+                }));
+                
+                return {
+                  id: `q-${partIndex}-${sectionIndex}-${qIndex}`,
+                  blankNumber: q.number || (qIndex + 1),
+                  text: q.text || "",
+                  imageUrl: q.imageUrl || "",
+                  correctAnswer,
+                  options,
+                };
+              });
+
+              // Handle shared variants for matching type
+              let sharedVariants: { letter: string; text: string }[] | undefined;
+              if (section.sharedVariants) {
+                sharedVariants = section.sharedVariants.map((v: any, vIndex: number) => ({
+                  letter: String.fromCharCode(65 + vIndex),
+                  text: v.answer || v.variantText || "",
+                }));
+              }
+
+              return {
+                id: `section-${partIndex}-${sectionIndex}`,
+                title: section.title || "",
+                content: section.content || "",
+                imageUrl: section.imageUrl || "",
+                sharedVariants,
+                questions,
+              };
+            }),
+          }));
+          
+          if (transformedParts.length > 0) {
+            setParts(transformedParts);
+            setExpandedPartIds(transformedParts.map((p) => p.id));
+          }
+        }
+        
+        setIsInitialized(true);
+        setCurrentStep(1); // Go to parts step
+      }
+    }
+  }, [isEditing, getTestQuery?.data, isInitialized]);
 
   // Build Part 2 demo (matching exercise)
   const buildDemoPart2 = (): ReadingPart => ({
@@ -490,9 +570,9 @@ export default function ReadingTestEditor({ ieltsId, backUrl }: ReadingTestEdito
     ],
   });
 
-  // Initialize with demo data
+  // Initialize with demo data (only when not editing)
   React.useEffect(() => {
-    if (parts.length === 0) {
+    if (parts.length === 0 && !isEditing) {
       const demoPart: ReadingPart = {
         id: "demo-part-1",
         title: "Part 1 - Batıl İnançlar",
@@ -840,17 +920,32 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
     };
 
     console.log("[Reading] Final payload:", payload);
-    createTest(payload as any, {
-      onSuccess: () => {
-        toast.success("Reading test muvaffaqiyatli yaratildi");
-        navigate(backUrl);
-      },
-      onError: (error: any) => {
-        console.error("API Error:", error);
-        const msg = error?.response?.data?.error || "Xatolik yuz berdi";
-        toast.error(msg);
-      },
-    });
+
+    const onSuccess = () => {
+      toast.success(isEditing ? "Reading test muvaffaqiyatli yangilandi" : "Reading test muvaffaqiyatli yaratildi");
+      navigate(backUrl);
+    };
+
+    if (isEditing && useUpdateTestWithAddition) {
+      const { ieltsId: _, ...updatePayload } = payload as any;
+      updateTest({ id: testId, ...updatePayload }, {
+        onSuccess,
+        onError: (error: any) => {
+          console.error("API Error:", error);
+          const msg = error?.response?.data?.error || "Xatolik yuz berdi";
+          toast.error(msg);
+        },
+      });
+    } else {
+      createTest(payload as any, {
+        onSuccess,
+        onError: (error: any) => {
+          console.error("API Error:", error);
+          const msg = error?.response?.data?.error || "Xatolik yuz berdi";
+          toast.error(msg);
+        },
+      });
+    }
   };
 
   const steps = [
@@ -1114,10 +1209,10 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                 type="primary"
                 size="large"
                 onClick={handleSave}
-                loading={isPending}
+                loading={isPending || (updateMutation?.isPending ?? false)}
                 icon={<SaveOutlined />}
               >
-                Testni saqlash
+                {isEditing ? "Testni yangilash" : "Testni saqlash"}
               </Button>
             </div>
           </Space>

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ApiResponse, OnlyTest, Test } from "../../../utils/types/types";
+import { testEndpoints } from "../../endpoint";
 import { listeningEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
 
@@ -23,6 +24,18 @@ export const useGetOneOnlyListeningTest = (id: string) => {
         await axiosPrivate.get<ApiResponse<OnlyTest>>(
           listeningEndpoints.onlyOne(id)
         )
+      ).data;
+    },
+    enabled: !!id,
+  });
+};
+
+export const useGetListeningTestWithAddition = (id: string) => {
+  return useQuery({
+    queryKey: [testEndpoints.testAddition(id)],
+    queryFn: async () => {
+      return (
+        await axiosPrivate.get<ApiResponse<Test>>(testEndpoints.testAddition(id))
       ).data;
     },
     enabled: !!id,

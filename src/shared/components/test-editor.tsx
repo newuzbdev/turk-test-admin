@@ -11,9 +11,12 @@ import { useFileUpload } from "@/config/queries/file/upload.queries";
 
 interface Props {
   ieltsId?: string | null;
+  testId?: string | null;
   testType?: "LISTENING" | "READING";
   backUrl: string;
   useCreateTestWithAddition: any;
+  useUpdateTestWithAddition?: any;
+  useGetTestWithAddition?: (id: string) => { data?: any; isLoading?: boolean };
 }
 // types for test editor
 export type QuestionType =
@@ -62,17 +65,100 @@ export interface TestDto {
 
 export default function TestEditor({
   ieltsId,
+  testId,
   testType,
   backUrl,
   useCreateTestWithAddition,
+  useUpdateTestWithAddition,
+  useGetTestWithAddition,
 }: Props) {
   const [testTitle, setTestTitle] = useState("");
   const [testDescription, setTestDescription] = useState("");
   const [parts, setParts] = useState<PartDto[]>([]);
   const [globalAudioUrl, setGlobalAudioUrl] = useState<string>("");
+  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
-  const { mutate } = useCreateTestWithAddition();
+  const { mutate: createMutate } = useCreateTestWithAddition();
+  const { mutate: updateMutate } = useUpdateTestWithAddition?.() || { mutate: () => {} };
   const fileUploadMutation = useFileUpload();
+  const isEditing = !!testId;
+
+  const getTestQuery = useGetTestWithAddition?.(testId || "");
+
+  // Fetch test data when editing
+  useEffect(() => {
+    if (isEditing && getTestQuery?.data && !isInitialized) {
+      const testData = getTestQuery.data;
+      console.log("[TestEditor] Fetched test data:", testData);
+      
+      if (testData) {
+        setTestTitle(testData.title || "");
+        setTestDescription(testData.description || "");
+        setGlobalAudioUrl(testData.audioUrl || "");
+        
+        // Transform API response to PartDto format
+        if (testData.parts && Array.isArray(testData.parts)) {
+          const transformedParts: PartDto[] = testData.parts.map((part: any) => ({
+            title: part.title || "",
+            description: part.description || "",
+            audioUrl: part.audioUrl || "",
+            sections: (part.sections || []).map((section: any) => {
+              // Transform answers to AnswerDto format
+              const transformAnswers = (questions: any[]) => {
+                return questions.map((q: any) => {
+                  const answers: AnswerDto[] = (q.answers || []).map((a: any) => ({
+                    text: a.answer || "",
+                    isCorrect: a.correct || false,
+                  }));
+                  
+                  // Find correct variant index for MATCHING type
+                  let correctVariantIndex: number | undefined;
+                  if (section.type === "MATCHING" && q.answers) {
+                    const correctAnswer = q.answers.find((a: any) => a.correct);
+                    if (correctAnswer) {
+                      correctVariantIndex = q.answers.indexOf(correctAnswer);
+                    }
+                  }
+                  
+                  return {
+                    text: q.text || "",
+                    content: q.content || "",
+                    imageUrl: q.imageUrl || "",
+                    answers,
+                    correctVariantIndex,
+                  };
+                });
+              };
+
+              // Handle shared variants for MATCHING type
+              let sharedVariants: AnswerDto[] | undefined;
+              if (section.type === "MATCHING" && section.sharedVariants) {
+                sharedVariants = section.sharedVariants.map((v: any) => ({
+                  text: v.answer || v.variantText || "",
+                  isCorrect: false,
+                }));
+              }
+
+              return {
+                title: section.title || "",
+                content: section.content || "",
+                imageUrl: section.imageUrl || "",
+                type: section.type || "MULTIPLE_CHOICE",
+                questions: transformAnswers(section.questions || []),
+                sharedVariants,
+              };
+            }),
+          }));
+          
+          if (transformedParts.length > 0) {
+            setParts(transformedParts);
+          }
+        }
+        
+        setIsInitialized(true);
+      }
+    }
+  }, [isEditing, getTestQuery?.data, isInitialized]);
 
   // Demo builder: Listening Bölüm 1 with S1–S8 (A/B/C options)
   const buildListeningDemoPart1 = (): PartDto => ({
@@ -459,9 +545,9 @@ export default function TestEditor({
     ],
   });
 
-  // Auto-initialize demo for Listening when parts are empty
+  // Auto-initialize demo for Listening when parts are empty and not editing
   useEffect(() => {
-    if (testType === "LISTENING" && parts.length === 0) {
+    if (testType === "LISTENING" && parts.length === 0 && !isEditing) {
       setParts([
         buildListeningDemoPart1(),
         buildListeningDemoPart2(),
@@ -473,7 +559,7 @@ export default function TestEditor({
       setTestTitle("Listening Demo – Bölüm 1");
       setTestDescription("Bu, dinleme için S1–S8 demo içeriğidir.");
     }
-  }, [testType]);
+  }, [testType, isEditing]);
 
   const addPart = () => {
     setParts([
@@ -577,27 +663,47 @@ export default function TestEditor({
       toast.error("Test sarlavhasi bo'sh bo'lmasligi kerak");
       return;
     }
-    if (!ieltsId) {
+    if (!isEditing && !ieltsId) {
       toast.error("IELTS ID topilmadi. Testni tegishli IELTS ga bog'lang.");
       return;
     }
 
     const payload = buildPayload();
-    mutate(payload, {
-      onSuccess: () => {
-        toast.success("Test muvaffaqiyatli yaratildi");
-        // clear
+    
+    // Remove ieltsId from payload when updating (test ID in URL is sufficient)
+    if (isEditing) {
+      delete (payload as any).ieltsId;
+    }
+    
+    const onSuccess = () => {
+      toast.success(isEditing ? "Test muvaffaqiyatli yangilandi" : "Test muvaffaqiyatli yaratildi");
+      if (!isEditing) {
         setTestTitle("");
         setTestDescription("");
         setParts([]);
-        navigate(backUrl);
-      },
-      onError: (err: any) => {
-        console.error("API Error:", err);
-        const msg = err?.response?.data?.error || "Xatolik yuz berdi";
-        toast.error(msg);
-      },
-    });
+      }
+      navigate(backUrl);
+    };
+
+    if (isEditing && useUpdateTestWithAddition) {
+      updateMutate({ id: testId, ...payload }, {
+        onSuccess,
+        onError: (err: any) => {
+          console.error("API Error:", err);
+          const msg = err?.response?.data?.error || "Xatolik yuz berdi";
+          toast.error(msg);
+        },
+      });
+    } else {
+      createMutate(payload, {
+        onSuccess,
+        onError: (err: any) => {
+          console.error("API Error:", err);
+          const msg = err?.response?.data?.error || "Xatolik yuz berdi";
+          toast.error(msg);
+        },
+      });
+    }
   };
 
   return (

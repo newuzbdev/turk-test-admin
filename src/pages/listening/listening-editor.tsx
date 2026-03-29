@@ -1,20 +1,21 @@
 import TestEditor from "@/shared/components/test-editor";
 import { useCreateListeningTestWithAddition } from "@/config/queries/listening/create.queries";
+import { useUpdateListeningTestWithAddition } from "@/config/queries/listening/update.queries";
+import { useGetListeningTestWithAddition } from "@/config/queries/listening/get-one.queries";
 import { useParams } from "react-router-dom";
 
-// import { useGetOneListeningTest } from "@/config/queries/listening/get-one.queries";
-
-
 export default function ListeningEditor() {
-  const { ieltsId } = useParams<{ ieltsId: string }>();
+  const { testId } = useParams<{ testId: string }>();
 
   return (
     <TestEditor
-      ieltsId={ieltsId}
+      ieltsId={testId}
+      testId={testId}
       testType="LISTENING"
       backUrl="/listening"
-      // useGetOneTest={useGetOneListeningTest}
       useCreateTestWithAddition={useCreateListeningTestWithAddition}
+      useUpdateTestWithAddition={useUpdateListeningTestWithAddition}
+      useGetTestWithAddition={useGetListeningTestWithAddition}
     />
   );
 }

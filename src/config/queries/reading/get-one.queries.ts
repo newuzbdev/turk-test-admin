@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ApiResponse, OnlyTest, Test } from "../../../utils/types/types";
 import { readingEndpoints } from "../../endpoint";
+import { testEndpoints } from "../../endpoint";
 import axiosPrivate from "../../api";
 
 export const useGetOneReadingTest = (id: string) => {
@@ -23,6 +24,18 @@ export const useGetOneOnlyReadingTest = (id: string) => {
         await axiosPrivate.get<ApiResponse<OnlyTest>>(
           readingEndpoints.onlyOne(id)
         )
+      ).data;
+    },
+    enabled: !!id,
+  });
+};
+
+export const useGetReadingTestWithAddition = (id: string) => {
+  return useQuery({
+    queryKey: [testEndpoints.testAddition(id)],
+    queryFn: async () => {
+      return (
+        await axiosPrivate.get<ApiResponse<Test>>(testEndpoints.testAddition(id))
       ).data;
     },
     enabled: !!id,
