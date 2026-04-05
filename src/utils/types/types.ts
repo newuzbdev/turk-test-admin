@@ -114,6 +114,39 @@ export interface UpdateTestCoinPrice {
   coin?: number;
 }
 
+export interface UserCoinUser {
+  id?: string;
+  username?: string;
+  telegramId?: string | number;
+  phoneNumber?: string;
+  phone?: string;
+  coin?: number;
+  coins?: number;
+  balance?: number;
+  walletBalance?: number;
+  [key: string]: unknown;
+}
+
+export interface SearchUserResponse {
+  success?: boolean;
+  data?: UserCoinUser;
+  user?: UserCoinUser;
+  id?: string;
+  username?: string;
+  telegramId?: string | number;
+  phoneNumber?: string;
+  phone?: string;
+  coin?: number;
+  coins?: number;
+  balance?: number;
+  walletBalance?: number;
+}
+
+export interface AddCoinsPayload {
+  identifier: string;
+  amount: number;
+}
+
 // Test Interfaces
 export interface Test {
   id?: string;

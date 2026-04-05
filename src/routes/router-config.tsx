@@ -9,9 +9,10 @@ import {
   ImageIcon,
   Package,
   User,
+  Coins,
 } from "lucide-react";
 
-import { IELTS, Banner, Product, TestCoinPrice, UpdateAdmin } from "./lazy-pages";
+import { IELTS, Banner, Product, TestCoinPrice, UpdateAdmin, UserCoin } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
 import ReadingEditor from "@/pages/reading/reading-editor";
 import SpeakingEditor from "@/pages/speaking/speaking-editor";
@@ -133,6 +134,14 @@ export const routerConfig: RouterConfig[] = [
     icon: <Package />,
     path: "test-coin-price",
     page: <TestCoinPrice />,
+    inMenu: true,
+  },
+  {
+    title: "UserCoin",
+    label: "User Coin",
+    icon: <Coins />,
+    path: "user-coin",
+    page: <UserCoin />,
     inMenu: true,
   },
   {

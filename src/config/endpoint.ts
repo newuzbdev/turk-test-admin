@@ -169,3 +169,8 @@ export const testCoinPriceEndpoints = {
   one: (id: string) => `/api/test-coin-price/${id}`,
 };
 
+// User coin management endpoints
+export const userCoinEndpoints = {
+  search: "/api/admin/users/search",
+  addCoins: "/api/admin/users/add-coins",
+};
