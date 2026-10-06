@@ -14,9 +14,18 @@ interface PartFormProps {
   onChange: (part: PartDto) => void;
   onRemove: () => void;
   hideAudioUpload?: boolean;
+  testType: "READING" | "LISTENING";
+  globalAudioUrl?: string;
 }
 
-const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudioUpload = false }) => {
+const PartForm: React.FC<PartFormProps> = ({
+  part,
+  onChange,
+  onRemove,
+  hideAudioUpload = false,
+  testType,
+  globalAudioUrl,
+}) => {
   const fileUploadMutation = useFileUpload();
   const [activeSections, setActiveSections] = useState<number[]>([]);
 
@@ -24,7 +33,10 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudio
     try {
       const result = await fileUploadMutation.mutateAsync(file);
       console.log("Part audio upload result:", result);
-      const audioUrl = (result as any)?.data?.url || (result as any)?.path;
+      const audioUrl =
+        (result as any)?.data?.url ||
+        (result as any)?.data?.reference ||
+        (result as any)?.path;
       if (audioUrl) {
         onChange({ ...part, audioUrl: audioUrl });
         console.log("Set part audioUrl to:", audioUrl);
@@ -45,6 +57,7 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudio
       title: "",
       type: null,
       content: "",
+      transcript: "",
       imageUrl: "",
       questions: [],
     };
@@ -139,6 +152,8 @@ const PartForm: React.FC<PartFormProps> = ({ part, onChange, onRemove, hideAudio
                 section={section}
                 onChange={(updated) => updateSection(idx, updated)}
                 onRemove={() => removeSection(idx)}
+                testType={testType}
+                audioUrl={globalAudioUrl || part.audioUrl}
               />
             </Panel>
           ))}

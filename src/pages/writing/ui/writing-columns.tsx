@@ -1,112 +1,145 @@
-import { DeleteOutlined, EditOutlined, SettingOutlined } from "@ant-design/icons";
-import { Button, Space } from "antd";
-import { Copy } from "lucide-react";
-import type { WritingTest } from "@/utils/types/types";
+import { Button, Dropdown, Tag, Tooltip } from "antd";
+import { Archive, Copy, Eye, MoreHorizontal, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { formatExamListDate } from "@/shared/components/exam-list-format";
+import { ExamTitleCell } from "@/shared/components/exam-list-ui";
+import type { WritingTest } from "@/utils/types/types";
+
 interface WritingColumnsProps {
-  onEdit: (data: WritingTest) => void;
-  onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
   onCopyId: (id: string) => void;
 }
 
+const getStatus = (record: WritingTest) =>
+  !record.isDeleted && record.formatVersion === 2
+    ? record.status || "DRAFT"
+    : "ARCHIVED";
+
 export const WritingColumns = ({
-  onEdit,
-  onDelete,
+  onArchive,
   onCopyId,
 }: WritingColumnsProps) => {
   const navigate = useNavigate();
-  
+
   return [
     {
-      key: "#",
-      title: "#",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (_: any, _rec: any, index: number) => index + 1,
-    },
-    {
-      key: "id",
-      title: "ID",
-      dataIndex: "id",
-      className: "w-20",
-      render: (id: string) => (
-        <Button
-          type="link"
-          icon={<Copy size={16} />}
-          onClick={(e) => {
-            e.stopPropagation();
-            onCopyId(id);
-          }}
-          style={{ padding: 0 }}
-        >
-          <span className="text-start truncate w-20">{id}</span>
-        </Button>
+      key: "title",
+      title: "Test",
+      dataIndex: "title",
+      render: (_: string | null, record: WritingTest) => (
+        <ExamTitleCell
+          title={record.title}
+          packageTitle={record.ielts?.title}
+        />
       ),
     },
     {
-      key: "title",
-      title: "Nomi",
-      dataIndex: "title",
-    },
-    {
-      key: "ielts",
-      title: "IELTS Test",
-      dataIndex: "ielts",
-      render: (ielts: any) => ielts?.title || "N/A",
-    },
-    {
-      key: "createdAt",
-      title: "Yaratilgan sana",
-      dataIndex: "createdAt",
-      render: (date: string) => new Date(date).toLocaleDateString("uz-UZ"),
+      key: "status",
+      title: "Durum",
+      width: 160,
+      render: (_: unknown, record: WritingTest) => {
+        const status = getStatus(record);
+        const labels = {
+          DRAFT: "Taslak",
+          PUBLISHED: "Yayında",
+          ARCHIVED: "Arşiv",
+        };
+
+        return (
+          <div className="exam-list-status">
+            <Tag
+              color={
+                status === "PUBLISHED"
+                  ? "green"
+                  : status === "ARCHIVED"
+                    ? "gold"
+                    : "default"
+              }
+            >
+              {labels[status]}
+            </Tag>
+          </div>
+        );
+      },
     },
     {
       key: "updatedAt",
-      title: "Yangilangan sana",
+      title: "Son güncelleme",
       dataIndex: "updatedAt",
-      render: (date: string) => new Date(date).toLocaleDateString("uz-UZ"),
+      width: 150,
+      render: (date: string) => (
+        <span className="exam-list-date">{formatExamListDate(date)}</span>
+      ),
     },
     {
       key: "actions",
-      title: "Amallar",
-      render: (record: WritingTest) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<SettingOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (record.id) {
-                navigate(`/writing/${record.id}/edit`);
-              }
-            }}
-            title="Open Editor"
-          />
-          
-          <Button
-            icon={<EditOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(record);
-            }}
-            title="Edit Details"
-          />
+      title: "",
+      align: "right" as const,
+      width: 76,
+      render: (_: unknown, record: WritingTest) => {
+        const id = record.id;
+        const isV2 = record.formatVersion === 2 && !record.isDeleted;
+        const archived = getStatus(record) === "ARCHIVED";
 
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (record.id) {
-                onDelete(record.id);
-              } else {
-                console.error("Record has no ID:", record);
-              }
-            }}
-            title="Delete Test"
-          />
-        </Space>
-      ),
+        return (
+          <div
+            className="exam-list-actions"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {isV2 ? (
+              <Tooltip title={archived ? "Görüntüle" : "Düzenlemeye devam et"}>
+                <Button
+                  aria-label={
+                    archived
+                      ? "Yazma testini görüntüle"
+                      : "Yazma testini düzenle"
+                  }
+                  icon={archived ? <Eye /> : <Pencil />}
+                  type="text"
+                  onClick={() => id && navigate(`/writing/${id}/edit-v2`)}
+                />
+              </Tooltip>
+            ) : null}
+
+            <Dropdown
+              trigger={["click"]}
+              menu={{
+                items: [
+                  {
+                    key: "copy",
+                    icon: <Copy size={15} />,
+                    label: "ID'yi kopyala",
+                  },
+                  ...(isV2 && !archived
+                    ? [
+                        { type: "divider" as const },
+                        {
+                          key: "archive",
+                          danger: true,
+                          icon: <Archive size={15} />,
+                          label: "Arşivle",
+                        },
+                      ]
+                    : []),
+                ],
+                onClick: ({ key, domEvent }) => {
+                  domEvent.stopPropagation();
+                  if (key === "copy" && id) onCopyId(id);
+                  if (key === "archive" && id) onArchive(id);
+                },
+              }}
+            >
+              <Button
+                aria-label="Diğer yazma testi işlemleri"
+                icon={<MoreHorizontal />}
+                type="text"
+                onClick={(event) => event.stopPropagation()}
+              />
+            </Dropdown>
+          </div>
+        );
+      },
     },
   ];
 };

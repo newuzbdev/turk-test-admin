@@ -4,6 +4,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
 import type { AnswerDto, QuestionDto, QuestionType } from "../components/test-editor";
 import AnswerForm from "./answer-form";
+import MockEvidenceEditor from "../components/mock-evidence-editor";
 
 const { Text } = Typography;
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -14,6 +15,9 @@ interface Props {
   sharedVariants?: AnswerDto[]; // Shared variants for MATCHING type
   onChange: (q: QuestionDto) => void;
   onRemove: () => void;
+  testType: "READING" | "LISTENING";
+  sourceText: string;
+  audioUrl?: string;
 }
 
 export default function QuestionForm({
@@ -22,6 +26,9 @@ export default function QuestionForm({
   sharedVariants,
   onChange,
   onRemove,
+  testType,
+  sourceText,
+  audioUrl,
 }: Props) {
   const fileUploadMutation = useFileUpload();
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -64,7 +71,10 @@ export default function QuestionForm({
       setUploadProgress(0);
       const result = await fileUploadMutation.mutateAsync(file);
       console.log("Question image upload result:", result);
-      const imageUrl = (result as any)?.data?.url || (result as any)?.path;
+      const imageUrl =
+        (result as any)?.data?.url ||
+        (result as any)?.data?.reference ||
+        (result as any)?.path;
       if (imageUrl) {
         onChange({ ...question, imageUrl: imageUrl });
         console.log("Set question imageUrl to:", imageUrl);
@@ -178,6 +188,27 @@ export default function QuestionForm({
             )}
           </>
         )}
+
+        <MockEvidenceEditor
+          testType={testType}
+          sourceText={sourceText}
+          evidence={question.evidence}
+          audioUrl={audioUrl}
+          options={
+            type === "MATCHING" && sharedVariants?.length
+              ? sharedVariants.map((variant, index) => ({
+                  key: alphabet[index] ?? String(index + 1),
+                  text: variant.text,
+                  isCorrect: question.correctVariantIndex === index,
+                }))
+              : question.answers.map((answer, index) => ({
+                  key: alphabet[index] ?? String(index + 1),
+                  text: answer.text,
+                  isCorrect: answer.isCorrect,
+                }))
+          }
+          onChange={(evidence) => onChange({ ...question, evidence })}
+        />
       </Space>
     </Card>
   );

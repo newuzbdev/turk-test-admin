@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { PointForm } from "../point-form";
@@ -70,7 +69,7 @@ describe("PointForm", () => {
   it("handles single example object", () => {
     const singleExamplePoint = {
       ...mockPoint,
-      example: { text: "Single example", order: 1 },
+      examples: { text: "Single example", order: 1 } as unknown as SpeakingPoint["examples"],
     };
 
     render(<PointForm {...mockProps} point={singleExamplePoint} />);
@@ -81,7 +80,7 @@ describe("PointForm", () => {
   it("handles no examples", () => {
     const noExamplePoint = {
       ...mockPoint,
-      example: undefined,
+      examples: undefined,
     };
 
     render(<PointForm {...mockProps} point={noExamplePoint} />);

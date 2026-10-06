@@ -1,33 +1,17 @@
-# 1. Build stage
-FROM node:18-alpine AS builder
+# Only static browser assets cross into the target-platform Nginx image.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-RUN npm run build
+ARG VITE_API_URL
+ARG VITE_STUDENT_APP_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_STUDENT_APP_URL=$VITE_STUDENT_APP_URL
+RUN test -n "$VITE_API_URL" && test -n "$VITE_STUDENT_APP_URL" && npm run build
 
-
-# 2. Nginx serve stage
-FROM nginx:alpine
-
-# Remove default config (IMPORTANT!)
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy built files
+FROM nginx:1.27-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Add SPA routing config
-RUN printf "server {\n\
-    listen 80;\n\
-    server_name _;\n\
-    root /usr/share/nginx/html;\n\
-    index index.html;\n\
-\n\
-    location / {\n\
-        try_files \$uri \$uri/ /index.html;\n\
-    }\n\
-}\n" > /etc/nginx/conf.d/default.conf
-
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

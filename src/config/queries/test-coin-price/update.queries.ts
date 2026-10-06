@@ -3,6 +3,7 @@ import axiosPrivate from "@/config/api";
 import { testCoinPriceEndpoints } from "@/config/endpoint";
 import toast from "react-hot-toast";
 import type { UpdateTestCoinPrice } from "@/utils/types/types";
+import { isAxiosError } from "axios";
 
 export const useUpdateTestCoinPrice = () => {
   const queryClient = useQueryClient();
@@ -14,10 +15,12 @@ export const useUpdateTestCoinPrice = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [testCoinPriceEndpoints.all] });
-      toast.success("Coin muvaffaqiyatli yangilandi");
+      toast.success("Coin ücreti güncellendi");
     },
-    onError: (error: any) => {
-      const msg = error?.response?.data?.error || "Coin yangilashda xatolik yuz berdi";
+    onError: (error: unknown) => {
+      const msg =
+        (isAxiosError(error) && error.response?.data?.error) ||
+        "Coin ücreti güncellenemedi";
       toast.error(msg);
     },
   });

@@ -48,23 +48,24 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
   const handleImageUpload = async (file: File) => {
     try {
       setUploading(true);
-      const result: any = await fileUploadMutation.mutateAsync(file);
+      const result = await fileUploadMutation.mutateAsync(file);
 
       // Support both relative `path` and absolute `url` / nested paths from backend
       const uploadedPath: string =
-        result?.path ||
         result?.data?.url ||
+        result?.data?.reference ||
+        result?.path ||
         result?.data?.path ||
         "";
 
       if (uploadedPath) {
         setImageUrl(uploadedPath);
-        message.success("Rasm yuklandi");
+        message.success("Görsel yuklandi");
       } else {
-        message.error("Rasm manzili aniqlanmadi");
+        message.error("Görsel manzili aniqlanmadi");
       }
-    } catch (error) {
-      message.error("Rasm yuklashda xatolik");
+    } catch {
+      message.error("Görsel yükleda xatolik");
     } finally {
       setUploading(false);
     }
@@ -72,19 +73,19 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
     return false;
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = (values: Omit<CreateBanner, "imageUrl">) => {
     if (!imageUrl) {
-      message.error("Rasm yuklash kerak");
+      message.error("Görsel yükle kerak");
       return;
     }
 
-    const bannerData = {
+    const bannerData: CreateBanner = {
       ...values,
       imageUrl,
     };
 
     if (mode === "create") {
-      createBanner(bannerData as CreateBanner, {
+      createBanner(bannerData, {
         onSuccess: () => {
           form.resetFields();
           setImageUrl("");
@@ -93,7 +94,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
       });
     } else if (mode === "edit" && banner?.id) {
       updateBanner(
-        { id: banner.id, ...bannerData } as UpdateBanner,
+        { id: banner.id, ...bannerData } satisfies UpdateBanner,
         {
           onSuccess: () => {
             onClose();
@@ -111,7 +112,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
 
   return (
     <Modal
-      title={mode === "create" ? "Yangi Banner Yaratish" : "Banner Tahrirlash"}
+      title={mode === "create" ? "Yeni duyuru" : "Duyuruyu düzenle"}
       open={open}
       onCancel={handleCancel}
       footer={null}
@@ -129,39 +130,39 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
       >
         <Form.Item
           name="name"
-          label="Nomi"
-          rules={[{ required: true, message: "Nomi kiritish kerak" }]}
+          label="Ad"
+          rules={[{ required: true, message: "Adı girin" }]}
         >
-          <Input placeholder="Masalan: Summer Sale" />
+          <Input placeholder="Örn. Yeni deneme" />
         </Form.Item>
 
         <Form.Item
           name="title"
-          label="Sarlavha"
-          rules={[{ required: true, message: "Sarlavha kiritish kerak" }]}
+          label="Başlık"
+          rules={[{ required: true, message: "Başlığı girin" }]}
         >
-          <Input placeholder="Masalan: Big Discounts" />
+          <Input placeholder="Duyuru başlığı" />
         </Form.Item>
 
         <Form.Item
           name="description"
-          label="Tavsif"
+          label="Açıklama"
         >
           <TextArea
             rows={3}
-            placeholder="Banner haqida qisqacha ma'lumot..."
+            placeholder="Kısa açıklama"
           />
         </Form.Item>
 
         <Form.Item
           name="linkUrl"
-          label="Havola URL"
+          label="Bağlantı"
         >
           <Input placeholder="https://example.com" />
         </Form.Item>
 
         <Form.Item
-          label="Rasm"
+          label="Görsel"
           required
         >
           <div>
@@ -175,14 +176,14 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
                 loading={uploading}
                 disabled={isPending}
               >
-                {uploading ? "Yuklanmoqda..." : "Rasm yuklash"}
+                {uploading ? "Yükleniyor…" : "Görsel yükle"}
               </Button>
             </Upload>
             {imageUrl && (
               <div style={{ marginTop: 8 }}>
                 <img
                   src={imageUrl.startsWith("http") ? imageUrl : FILE_BASE + imageUrl}
-                  alt="Preview"
+                  alt="Önizleme"
                   style={{
                     width: "100%",
                     maxHeight: 200,
@@ -198,7 +199,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
                   onClick={() => setImageUrl("")}
                   style={{ marginTop: 4 }}
                 >
-                  O'chirish
+                  Sil
                 </Button>
               </div>
             )}
@@ -208,7 +209,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
         <div style={{ display: "flex", gap: 16 }}>
           <Form.Item
             name="isActive"
-            label="Faol"
+            label="Aktif"
             valuePropName="checked"
             style={{ flex: 1 }}
           >
@@ -217,7 +218,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
 
           <Form.Item
             name="order"
-            label="Tartib"
+            label="Sıra"
             style={{ flex: 1 }}
           >
             <InputNumber
@@ -231,7 +232,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
         <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <Button onClick={handleCancel} disabled={isPending}>
-              Bekor qilish
+              Vazgeç
             </Button>
             <Button
               type="primary"
@@ -239,7 +240,7 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
               loading={isPending}
               disabled={!imageUrl}
             >
-              {mode === "create" ? "Yaratish" : "Yangilash"}
+              {mode === "create" ? "Oluştur" : "Güncelle"}
             </Button>
           </div>
         </Form.Item>
@@ -247,5 +248,4 @@ export default function BannerModal({ open, onClose, banner, mode }: BannerModal
     </Modal>
   );
 }
-
 

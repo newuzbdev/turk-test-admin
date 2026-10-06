@@ -3,7 +3,7 @@ import { Button, Form, Modal } from "antd";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import WritingForm from "./writing-form";
-import { useUpdateWritingTest } from "@/config/queries/writing/update.queries";
+import { useCreateWritingTestV2 } from "@/config/queries/writing/v2.queries";
 import { useWritingModalStore } from "../utils/writing-modal-store";
 
 interface WritingModalProps {
@@ -13,8 +13,9 @@ interface WritingModalProps {
 export const WritingModal = ({ hideAddButton = false }: WritingModalProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { mutateAsync: updateWritingTest } = useUpdateWritingTest();
-  const { open, onClose, data } = useWritingModalStore();
+  const { mutateAsync: createWritingTest, isPending } =
+    useCreateWritingTestV2();
+  const { open, onClose } = useWritingModalStore();
 
   const close = () => {
     form.resetFields();
@@ -22,41 +23,14 @@ export const WritingModal = ({ hideAddButton = false }: WritingModalProps) => {
   };
 
   useEffect(() => {
-    if (data) {
-      form.setFieldsValue({
-        title: data.title,
-        ieltsId: data.ieltsId,
-      });
-    }
-  }, [data, form]);
+    if (!open) form.resetFields();
+  }, [form, open]);
 
   const onFinish = async (formData: { title: string; ieltsId: string }) => {
     try {
-      if (!data) {
-        // For new test creation, just navigate to editor without API call
-        close();
-        // Generate a temporary ID for the editor
-        const tempId = `temp-${Date.now()}`;
-        navigate(`/writing/${tempId}/edit`, {
-          state: {
-            isNew: true,
-            testData: {
-              title: formData.title,
-              ieltsId: formData.ieltsId,
-            },
-          },
-        });
-      } else {
-        // Update existing writing test
-        if (data.id) {
-          await updateWritingTest({
-            id: data.id,
-            title: formData.title,
-            ieltsId: formData.ieltsId,
-          });
-        }
-        close();
-      }
+      const created = await createWritingTest(formData);
+      close();
+      navigate(`/writing/${created.id}/edit-v2`);
     } catch (error) {
       console.error("Error saving writing test:", error);
     }
@@ -70,7 +44,7 @@ export const WritingModal = ({ hideAddButton = false }: WritingModalProps) => {
           icon={<PlusOutlined />}
           onClick={() => useWritingModalStore.getState().onOpen()}
         >
-          Yangi Writing Test
+          Yeni yazma testi
         </Button>
       )}
 
@@ -80,9 +54,10 @@ export const WritingModal = ({ hideAddButton = false }: WritingModalProps) => {
         onCancel={close}
         destroyOnClose
         onOk={form.submit}
-        title={data ? "Writing testini tahrirlash" : "Yangi Writing test qo'shish"}
-        okText={data ? "Saqlash" : "Qo'shish"}
-        cancelText="Bekor qilish"
+        title="Yeni yazma testi"
+        okText="Taslağı oluştur"
+        cancelText="Vazgeç"
+        confirmLoading={isPending}
         modalRender={(node) => (
           <Form layout="vertical" size="large" onFinish={onFinish} form={form}>
             {node}

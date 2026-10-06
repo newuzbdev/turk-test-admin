@@ -32,8 +32,8 @@ export const ArchiveTable = () => {
   const handleCopyId = (id: string) => {
     navigator.clipboard.writeText(id);
     notification.success({
-      message: "ID nusxalandi",
-      description: "Test ID muvaffaqiyatli nusxalandi",
+      message: "Kimlik kopyalandı",
+      description: "Sınav kimliği panoya kopyalandı",
     });
   };
 
@@ -115,8 +115,6 @@ export const ArchiveTable = () => {
   const tableData = getTableData();
 
   // Debug information (remove in production)
-  console.log("Archive data structure:", archivedTests);
-  console.log("Processed table data:", tableData);
 
   return (
     <>
@@ -152,14 +150,6 @@ export const ArchiveTable = () => {
             setSearchParams(newParams);
           },
         }}
-        title={() => (
-          <div className="flex items-center justify-between">
-            <h2>Arxivlangan Testlar</h2>
-            <div className="text-sm text-gray-500">
-              Jami: {tableData.length} ta test
-            </div>
-          </div>
-        )}
         size="small"
         loading={isArchiveLoading}
         scroll={{ x: "max-content" }}
@@ -173,9 +163,9 @@ export const ArchiveTable = () => {
           emptyText: (
             <div className="py-8 text-center">
               <ArchiveIcon className="mx-auto mb-4 text-gray-400" size={48} />
-              <p className="text-gray-500 mb-2">Arxivda test mavjud emas</p>
+              <p className="text-gray-500 mb-2">Arşiv boş</p>
               <p className="text-sm text-gray-400">
-                O'chirilgan testlar bu yerda ko'rsatiladi
+                Arşivlenen sınavlar burada görünür.
               </p>
             </div>
           ),
@@ -183,14 +173,14 @@ export const ArchiveTable = () => {
       />
 
       <Modal
-        title="Testni qayta tiklash"
+        title="Sınavı geri yükle"
         open={restoreModalOpen}
         onOk={confirmRestore}
         onCancel={() => setRestoreModalOpen(false)}
-        okText="Qayta tiklash"
-        cancelText="Bekor qilish"
+        okText="Geri yükle"
+        cancelText="Vazgeç"
       >
-        <p>Ushbu testni qayta tiklashni xohlaysizmi?</p>
+        <p>Bu sınav geri yüklensin mi?</p>
       </Modal>
     </>
   );

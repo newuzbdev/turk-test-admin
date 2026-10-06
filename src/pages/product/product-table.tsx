@@ -19,20 +19,15 @@ export default function ProductTable() {
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
   // Handle different possible response structures
-  const products = Array.isArray(productsResponse?.data)
+  const products: Product[] = Array.isArray(productsResponse?.data)
     ? productsResponse.data
     : Array.isArray(productsResponse)
     ? productsResponse
     : [];
 
-  // Debug logging
-  console.log("Product data:", productsResponse);
-  console.log("Products array:", products);
-  console.log("Loading:", isLoading);
-  console.log("Error:", error);
 
   // Normalize potential backend id field variations
-  const normalizedProducts: Product[] = products.map((p: any) => ({
+  const normalizedProducts: Product[] = products.map((p) => ({
     ...p,
     id: p?.id ?? p?._id,
   }));
@@ -57,23 +52,23 @@ export default function ProductTable() {
 
   const handleDelete = (id: string) => {
     if (!id) {
-      message.error("Mahsulot ID topilmadi");
+      message.error("Paket bulunamadı");
       return;
     }
     deleteProduct(String(id), {
       onSuccess: () => {
-        message.success("Mahsulot o'chirildi");
+        message.success("Paket silindi");
       },
     });
   };
 
   const handleBulkDelete = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning("O'chirish uchun mahsulot tanlang");
+      message.warning("Silmek için paket seçin");
       return;
     }
     // Implement bulk delete logic here
-    message.info("Bulk delete functionality to be implemented");
+    message.info("Toplu silme henüz kullanılamıyor");
   };
 
   const rowSelection = {
@@ -90,10 +85,10 @@ export default function ProductTable() {
     return (
       <Card>
         <div style={{ textAlign: "center", padding: "50px 0" }}>
-          <h3>Xatolik yuz berdi</h3>
-          <p>Mahsulotlarni yuklashda xatolik: {error.message}</p>
+          <h3>Yükleme başarısız</h3>
+          <p>Paketler yüklenemedi: {error.message}</p>
           <Button type="primary" onClick={() => refetch()}>
-            Qayta urinish
+            Tekrar dene
           </Button>
         </div>
       </Card>
@@ -105,7 +100,7 @@ export default function ProductTable() {
       <div style={{ marginBottom: 16 }}>
         <Space wrap>
           <Search
-            placeholder="Mahsulot qidirish..."
+            placeholder="Paket ara"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 300 }}
@@ -116,14 +111,14 @@ export default function ProductTable() {
             icon={<PlusOutlined />}
             onClick={handleCreate}
           >
-            Yangi Mahsulot
+            Yeni paket
           </Button>
           <Button
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
           >
-            Yangilash
+            Güncelle
           </Button>
           {selectedRowKeys.length > 0 && (
             <Button
@@ -131,7 +126,7 @@ export default function ProductTable() {
               onClick={handleBulkDelete}
               loading={isDeleting}
             >
-              Tanlanganlarni o'chirish ({selectedRowKeys.length})
+              Seçilenleri sil ({selectedRowKeys.length})
             </Button>
           )}
         </Space>
@@ -140,7 +135,7 @@ export default function ProductTable() {
       <Table
         columns={productColumns}
         dataSource={filteredProducts}
-        rowKey={(record: any) => record.id ?? record._id}
+        rowKey={(record) => record.id ?? record._id ?? ""}
         loading={isLoading}
         rowSelection={rowSelection}
         pagination={{
@@ -148,11 +143,11 @@ export default function ProductTable() {
           showSizeChanger: true,
           showQuickJumper: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} / ${total} ta mahsulot`,
+            `${range[0]}-${range[1]} / ${total} paket`,
         }}
         scroll={{ x: 600 }}
         locale={{
-          emptyText: isLoading ? "Yuklanmoqda..." : "Mahsulotlar topilmadi"
+          emptyText: isLoading ? "Yükleniyor…" : "Paket bulunamadı"
         }}
       />
 
@@ -165,5 +160,4 @@ export default function ProductTable() {
     </Card>
   );
 }
-
 

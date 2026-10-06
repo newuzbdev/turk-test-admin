@@ -9,8 +9,8 @@ export { default as ReadingEditor } from "./reading/reading-editor";
 export { default as Speaking } from "./speaking/speaking";
 export { default as SpeakingEditor } from "./speaking/speaking-editor";
 export { default as Writing } from "./writing/writing";
-export { default as WritingEditor } from "./writing/writing-editor";
 export { default as Archive } from "./archive/archive";
+export { default as ReadingPractice } from "./reading-practice/reading-practice";
 
 // Table exports
 export { IeltsTable } from "./ielts/ielts-table";

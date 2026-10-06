@@ -99,7 +99,7 @@ export const useUpdateAdmin = () => {
     },
     onError: (error: any) => {
       const errorResponse = error?.response?.data as ErrorResponse;
-      toast.error(errorResponse?.error || "Admin yangilashda xatolik");
+      toast.error(errorResponse?.error || "Hesap güncellenemedi");
     },
   });
 };
@@ -129,7 +129,7 @@ export const useAdminLogout = (setAuthenticated?: (auth: boolean) => void) => {
         setAuthenticated(false);
       }
 
-      toast.success("Tizimdan muvaffaqiyatli chiqildi");
+      toast.success("Çıkış yapıldı");
 
       // Small delay to ensure state updates are processed
       setTimeout(() => {

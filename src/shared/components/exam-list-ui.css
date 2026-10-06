@@ -1,0 +1,123 @@
+.exam-list-table .ant-table-title {
+  padding: 18px 20px !important;
+}
+
+.exam-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.exam-list-heading {
+  min-width: 0;
+}
+
+.exam-list-heading h2 {
+  margin: 0;
+}
+
+.exam-list-heading p {
+  margin: 3px 0 0;
+  color: var(--tm-text-secondary, #5f5e5a);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.exam-list-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.exam-list-search {
+  width: 230px;
+}
+
+.exam-list-table .ant-table-thead > tr > th {
+  height: 42px;
+  padding: 10px 16px !important;
+  background: var(--tm-bg-sidebar, #f7f7f5) !important;
+}
+
+.exam-list-table .ant-table-tbody > tr > td {
+  height: 58px;
+  padding: 10px 16px !important;
+  vertical-align: middle;
+}
+
+.exam-list-test-cell {
+  display: grid;
+  min-width: 220px;
+  gap: 2px;
+}
+
+.exam-list-test-title {
+  overflow: hidden;
+  color: var(--tm-text-primary, #37352f);
+  font-size: 14px;
+  font-weight: 620;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exam-list-test-meta {
+  overflow: hidden;
+  color: var(--tm-text-tertiary, #787774);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exam-list-date {
+  color: var(--tm-text-secondary, #5f5e5a);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .exam-list-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .exam-list-toolbar,
+  .exam-list-search {
+    width: 100%;
+  }
+
+  .exam-list-toolbar .ant-btn {
+    flex: 0 0 auto;
+  }
+}
+
+.exam-list-header-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+.exam-list-header-wrap > .exam-list-header {
+  width: 100%;
+}
+.exam-list-views {
+  padding: 3px;
+  font-size: 13px;
+}
+.exam-list-views .ant-segmented-item-label {
+  min-width: 82px;
+}
+.exam-list-table .exam-list-test-cell {
+  min-width: 160px;
+}
+/* Ant's invisible sizing row must not inherit the visible row spacing. */
+.exam-list-table .ant-table-tbody .ant-table-measure-row > td {
+  height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  line-height: 0 !important;
+}

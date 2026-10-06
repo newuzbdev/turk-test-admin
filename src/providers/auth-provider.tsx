@@ -6,6 +6,10 @@ import {
   useState,
   useCallback,
 } from "react";
+import { authEndpoints } from "../config/endpoint";
+
+export const getAdminRefreshUrl = (baseUrl: string) =>
+  `${baseUrl.replace(/\/+$/, "")}${authEndpoints.refresh}`;
 
 const AuthContext = createContext<{
   isAuthenticated: boolean;
@@ -37,13 +41,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const refreshToken = localStorage.getItem("refreshToken");
         if (refreshToken) {
           // Attempt to refresh token
-          fetch(`${(import.meta.env.VITE_API_URL || "https://api.turkishmock.uz")}/api/auth/refresh`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ refreshToken }),
-          })
+          fetch(
+            getAdminRefreshUrl(
+              import.meta.env.VITE_API_URL || "https://api.turkishmock.uz"
+            ),
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ refreshToken }),
+            }
+          )
             .then((response) => response.json())
             .then((data) => {
               if (data.accessToken) {

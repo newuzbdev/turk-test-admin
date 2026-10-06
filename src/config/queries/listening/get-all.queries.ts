@@ -1,3 +1,4 @@
+import { readExamListView } from "@/shared/components/exam-list-view";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import type {
@@ -10,24 +11,26 @@ import axiosPrivate from "../../api";
 
 export const useGetAllListeningTests = () => {
   const [searchParams] = useSearchParams();
+  const view = readExamListView(searchParams.get("view"));
   const search = searchParams.get("search");
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
 
   return useQuery({
-    queryKey: [listeningEndpoints.all, "LISTENING", search, page, limit],
+    queryKey: [listeningEndpoints.only, "LISTENING", search, page, limit, view],
     queryFn: async () => {
       return (
         await axiosPrivate.get<TPaginationWrapper<Test[]>>(
-          listeningEndpoints.all,
+          listeningEndpoints.only,
           {
             params: {
               page,
               limit,
               search,
+              view,
               type: "LISTENING",
             },
-          }
+          },
         )
       ).data;
     },
@@ -53,7 +56,7 @@ export const useGetAllOnlyListeningTests = () => {
               search,
               type: "LISTENING",
             },
-          }
+          },
         )
       ).data;
     },

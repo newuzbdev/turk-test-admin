@@ -42,7 +42,7 @@ export const ListeningModal = ({
         close();
         // Generate a temporary ID for the editor
         // const tempId = `temp-${Date.now()}`;
-        navigate(`/listening/${formData.ieltsId}/edit`, {
+        navigate(`/listening/new/${formData.ieltsId}/edit-v3`, {
           state: {
             isNew: true,
             testData: {
@@ -77,7 +77,7 @@ export const ListeningModal = ({
           icon={<PlusOutlined />}
           onClick={() => useListeningModalStore.getState().onOpen()}
         >
-          Yangi Listening Test
+          Yeni dinleme testi
         </Button>
       )}
 
@@ -89,11 +89,11 @@ export const ListeningModal = ({
         onOk={form.submit}
         title={
           data
-            ? "Listening testini tahrirlash"
-            : "Yangi Listening test qo'shish"
+            ? "Dinleme testini düzenle"
+            : "Yeni dinleme testi"
         }
-        okText={data ? "Saqlash" : "Qo'shish"}
-        cancelText="Bekor qilish"
+        okText={data ? "Kaydet" : "Devam et"}
+        cancelText="Vazgeç"
         // confirmLoading={isCreating || isUpdating}
         modalRender={(node) => (
           <Form layout="vertical" size="large" onFinish={onFinish} form={form}>

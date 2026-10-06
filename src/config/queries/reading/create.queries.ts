@@ -54,10 +54,10 @@ export const useCreateReadingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.all] });
-      toast.success("Reading test muvaffaqiyatli yaratildi");
+      toast.success("Okuma testi oluşturuldu");
     },
     onError: () => {
-      toast.error("Reading test yaratishda xatolik yuz berdi");
+      toast.error("Okuma testi oluşturulamadı");
     },
   });
 };
@@ -72,11 +72,10 @@ export const useCreateReadingTestWithAddition = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.all] });
-      toast.success("Reading test muvaffaqiyatli yaratildi");
+      toast.success("Okuma testi oluşturuldu");
     },
     onError: (error: any) => {
-      console.error("API Error:", error.response?.data);
-      toast.error(error.response?.data?.error || "Reading test yaratishda xatolik yuz berdi");
+      toast.error(error.response?.data?.error || "Okuma testi oluşturulamadı");
     },
   });
 };
@@ -95,10 +94,10 @@ export const useCreateOnlyReadingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [readingEndpoints.only] });
-      toast.success("Reading test muvaffaqiyatli yaratildi");
+      toast.success("Okuma testi oluşturuldu");
     },
     onError: () => {
-      toast.error("Reading test yaratishda xatolik yuz berdi");
+      toast.error("Okuma testi oluşturulamadı");
     },
   });
 };

@@ -1,9 +1,11 @@
+import { ExamListHeader } from "@/shared/components/exam-list-ui";
+import { Alert, notification } from "antd";
 import { Table, Modal } from "antd";
 import { useIeltsModalStore } from "./utils/ielts-modal-store";
 import { IeltsModal } from "./ui/ielts-modal";
 import { useState } from "react";
 import { IeltsColumns } from "./ui/ielts-columns";
-import { useGetAllIelts } from "@/config/queries/ielts/get-all.queries";
+import { useAdminIeltsList } from "@/config/queries/ielts/get-all.queries";
 import { useDeleteIelts } from "@/config/queries/ielts/delete.queries";
 import { useSearchParams } from "react-router-dom";
 
@@ -16,7 +18,12 @@ export const IeltsTable = () => {
   const currentPage = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("limit") || "10");
 
-  const { data: ielts, isLoading: isIeltsLoading } = useGetAllIelts();
+  const {
+    data: ielts,
+    isLoading: isIeltsLoading,
+    isError,
+    refetch,
+  } = useAdminIeltsList();
   const { mutate: deleteIeltsMutation } = useDeleteIelts();
 
   const handleDelete = (ieltsId: string) => {
@@ -31,20 +38,38 @@ export const IeltsTable = () => {
   };
 
   const handleCopyId = (id: string) => {
-    navigator.clipboard.writeText(id);
+    navigator.clipboard
+      .writeText(id)
+      .then(() => notification.success({ message: "ID kopyalandı" }));
   };
 
   const tableData = ielts?.ieltsData || [];
 
   return (
     <>
+      {isError && (
+        <Alert
+          type="error"
+          showIcon
+          message="Testler yüklenemedi"
+          action={<button onClick={() => refetch()}>Yeniden dene</button>}
+        />
+      )}
       <Table
+        className="exam-list-table"
+        locale={{
+          emptyText: searchParams.get("search")
+            ? "Aramana uygun deneme yok."
+            : "Bu listede deneme yok.",
+        }}
         pagination={{
           total: ielts?.total || 0,
           pageSize: pageSize,
           current: currentPage,
-          showSizeChanger: true,
-          pageSizeOptions: [5, 10, 20, 50, 100],
+          showSizeChanger: (ielts?.total || 0) > 10,
+          hideOnSinglePage: true,
+          showTotal: (total) => `${total} deneme`,
+          pageSizeOptions: [10, 20, 50],
           onChange: (page, size) => {
             const newParams = new URLSearchParams(searchParams);
             newParams.set("page", page.toString());
@@ -53,32 +78,55 @@ export const IeltsTable = () => {
           },
         }}
         title={() => (
-          <div className="flex items-center justify-between">
-            <h2>IELTS Testlar</h2>
-            <IeltsModal />
-          </div>
+          <ExamListHeader
+            title="Tam denemeler"
+            action={
+              <IeltsModal
+                onCreated={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.set("view", "DRAFT");
+                  next.set("page", "1");
+                  next.delete("search");
+                  setSearchParams(next);
+                }}
+              />
+            }
+            searchValue={searchParams.get("search") || ""}
+            onSearch={(value) => {
+              const next = new URLSearchParams(searchParams);
+              if (value) next.set("search", value);
+              else next.delete("search");
+              next.set("page", "1");
+              setSearchParams(next);
+            }}
+          />
         )}
         size="small"
         loading={isIeltsLoading}
-        scroll={{ x: "max-content" }}
+        scroll={{ x: 560 }}
         dataSource={tableData}
         rowKey={(rec) => rec.id || ""}
         columns={IeltsColumns({
           onEdit: onOpen,
           onDelete: handleDelete,
           onCopyId: handleCopyId,
+          onAccessChanged:()=>void refetch(),
         })}
       />
 
       <Modal
-        title="Ishonchingiz komilmi?"
+        title="Denemeyi arşivle"
         open={deleteModalOpen}
         onOk={confirmDelete}
         onCancel={() => setDeleteModalOpen(false)}
-        okText="Ha"
-        cancelText="Yo'q"
+        okText="Arşivle"
+        cancelText="Vazgeç"
+        okButtonProps={{ danger: true }}
       >
-        <p>Ushbu IELTS testini o'chirishni xoxlaysizmi?</p>
+        <p>
+          Bu deneme yayındaki listeden kaldırılıp arşive taşınacak. Mevcut
+          sonuçlar korunur.
+        </p>
       </Modal>
     </>
   );

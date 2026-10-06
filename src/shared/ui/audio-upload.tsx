@@ -16,8 +16,10 @@ export default function AudioUpload({ part, onChange, onRemove }: Props) {
   const handleAudioUpload = async (file: File) => {
     try {
       const result = await fileUploadMutation.mutateAsync(file);
-      if (result?.path) {
-        onChange({ ...part, audioUrl: result.path });
+      const audioUrl =
+        result.data?.url || result.data?.reference || result.path;
+      if (audioUrl) {
+        onChange({ ...part, audioUrl });
       }
     } catch (error) {
       console.error("Audio upload error:", error);

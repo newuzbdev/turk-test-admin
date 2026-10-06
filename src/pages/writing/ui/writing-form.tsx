@@ -13,19 +13,19 @@ const WritingForm = () => {
     <>
       <Form.Item
         name="title"
-        label="Test nomi"
-        rules={[{ required: true, message: "Test nomini kiriting" }]}
+        label="Test adı"
+        rules={[{ required: true, message: "Test adını girin" }]}
       >
-        <Input placeholder="Test nomini kiriting" size="middle" />
+        <Input placeholder="Örneğin: Yazma Deneme 1" size="middle" />
       </Form.Item>
 
       <Form.Item
         name="ieltsId"
-        label="IELTS Test"
-        rules={[{ required: true, message: "IELTS testini tanlang" }]}
+        label="Sınav paketi"
+        rules={[{ required: true, message: "Sınav paketini seçin" }]}
       >
         <Select
-          placeholder="IELTS testini tanlang"
+          placeholder="Sınav paketini seçin"
           size="middle"
           loading={isIeltsLoading}
           options={ieltsOptions}

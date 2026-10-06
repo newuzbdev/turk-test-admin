@@ -13,19 +13,22 @@ const ListeningForm = () => {
     <>
       <Form.Item
         name="title"
-        label="Test nomi"
-        rules={[{ required: true, message: "Test nomini kiriting" }]}
+        label="Test adı"
+        rules={[{ required: true, message: "Test adını girin" }]}
       >
-        <Input placeholder="Test nomini kiriting" size="middle" />
+        <Input
+          placeholder="Örn. Millî sertifika dinleme denemesi 1"
+          size="middle"
+        />
       </Form.Item>
 
       <Form.Item
         name="ieltsId"
-        label="IELTS Test"
-        rules={[{ required: true, message: "IELTS testini tanlang" }]}
+        label="Mock test grubu"
+        rules={[{ required: true, message: "Mock test grubunu seçin" }]}
       >
         <Select
-          placeholder="IELTS testini tanlang"
+          placeholder="Mock test grubunu seçin"
           size="middle"
           loading={isIeltsLoading}
           options={ieltsOptions}

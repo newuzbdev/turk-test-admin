@@ -31,6 +31,9 @@ persistQueryClient({
   queryClient,
   persister: localStoragePersister,
   maxAge: 1000 * 60 * 60 * 24,
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query) => query.state.status === 'success' && query.queryKey[0] !== 'system-services' && query.queryKey[0] !== 'admin' && query.meta?.persist !== false,
+  },
 });
 
 export const QueryProvider = ({ children }: PropsWithChildren) => {

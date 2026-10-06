@@ -4,16 +4,34 @@ import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 
 interface FileUploadResponse {
-  path: string;
+  path?: string;
   success: boolean;
   message: string;
   data: {
     filename: string;
     mimetype: string;
     size: number;
-    url: string;
+    url?: string;
+    reference?: string;
+    path?: string;
   };
 }
+
+export const createFileAccessUrl = async (reference: string) => {
+  const response = await axiosPrivate.post<{ url?: string | null }>(
+    fileEndpoints.accessUrl,
+    { reference },
+  );
+  return String(response.data.url || "").trim();
+};
+
+export const createFileDownloadUrl = async (reference: string) => {
+  const response = await axiosPrivate.post<{ url?: string | null }>(
+    fileEndpoints.downloadUrl,
+    { reference },
+  );
+  return String(response.data.url || "").trim();
+};
 
 export const useFileUpload = () => {
   return useMutation<FileUploadResponse, Error, File>({
@@ -26,17 +44,16 @@ export const useFileUpload = () => {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
 
       return res.data;
     },
-    onSuccess: (data) => {
-      toast.success("Fayl muvaffaqiyatli yuklandi");
-      console.log("Uploaded URL:", data.data.url);
+    onSuccess: () => {
+      toast.success("Dosya yüklendi");
     },
     onError: () => {
-      toast.error("Fayl yuklashda xatolik yuz berdi");
+      toast.error("Dosya yüklenemedi");
     },
   });
 };

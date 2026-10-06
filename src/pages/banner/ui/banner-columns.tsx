@@ -12,7 +12,7 @@ interface BannerColumnsProps {
 
 export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): TableColumnsType<Banner> => [
   {
-    title: "Rasm",
+    title: "Görsel",
     dataIndex: "imageUrl",
     key: "imageUrl",
     width: 100,
@@ -30,19 +30,19 @@ export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): T
     },
   },
   {
-    title: "Nomi",
+    title: "Ad",
     dataIndex: "name",
     key: "name",
     ellipsis: true,
   },
   {
-    title: "Sarlavha",
+    title: "Başlık",
     dataIndex: "title",
     key: "title",
     ellipsis: true,
   },
   {
-    title: "Tavsif",
+    title: "Açıklama",
     dataIndex: "description",
     key: "description",
     ellipsis: true,
@@ -56,25 +56,25 @@ export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): T
     render: (linkUrl: string) => linkUrl || "-",
   },
   {
-    title: "Tartib",
+    title: "Sıra",
     dataIndex: "order",
     key: "order",
     width: 80,
     sorter: (a, b) => (a.order || 0) - (b.order || 0),
   },
   {
-    title: "Holat",
+    title: "Durum",
     dataIndex: "isActive",
     key: "isActive",
     width: 100,
     render: (isActive: boolean) => (
       <Tag color={isActive ? "green" : "red"}>
-        {isActive ? "Faol" : "Nofaol"}
+        {isActive ? "Aktif" : "Pasif"}
       </Tag>
     ),
   },
   {
-    title: "Amallar",
+    title: "İşlemler",
     key: "actions",
     width: 150,
     render: (_, record: Banner) => (
@@ -83,28 +83,28 @@ export const createBannerColumns = ({ onEdit, onDelete }: BannerColumnsProps): T
           type="text"
           icon={<EyeOutlined />}
           size="small"
-          title="Ko'rish"
+          title="Görüntüle"
         />
         <Button
           type="text"
           icon={<EditOutlined />}
           size="small"
-          title="Tahrirlash"
+          title="Düzenle"
           onClick={() => onEdit(record)}
         />
         <Popconfirm
-          title="Bannerni o'chirishni tasdiqlaysizmi?"
-          okText="Ha, o'chir"
-          cancelText="Bekor qilish"
+          title="Duyuru silinsin mi?"
+          okText="Evet, sil"
+          cancelText="Vazgeç"
           okButtonProps={{ danger: true }}
-          onConfirm={() => onDelete((record as any).id ?? (record as any)._id)}
+          onConfirm={() => onDelete(record.id ?? record._id ?? "")}
         >
           <Button
             type="text"
             danger
             icon={<DeleteOutlined />}
             size="small"
-            title="O'chirish"
+            title="Sil"
           />
         </Popconfirm>
       </Space>

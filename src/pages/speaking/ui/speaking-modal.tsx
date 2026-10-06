@@ -1,9 +1,11 @@
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Form, Modal } from "antd";
-import { useEffect } from "react";
+import { Button, Form, message, Modal } from "antd";
+import { Plus } from "lucide-react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { useCreateSpeakingV2 } from "@/config/queries/speaking/v2.queries";
+
 import SpeakingForm from "./speaking-form";
-import { useUpdateSpeakingTest } from "@/config/queries/speaking/update.queries";
 import { useSpeakingModalStore } from "../utils/speaking-modal-store";
 
 interface SpeakingModalProps {
@@ -13,55 +15,29 @@ interface SpeakingModalProps {
 export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { open, data, onClose } = useSpeakingModalStore();
-  const { mutateAsync: updateSpeakingTest } = useUpdateSpeakingTest();
-
-  useEffect(() => {
-    if (data) {
-      console.log("Speaking modal data:", data); // Debug log
-      form.setFieldsValue({
-        title: data.title,
-        ieltsId: data.ieltsId,
-      });
-    } else {
-      form.resetFields();
-    }
-  }, [data, form]);
+  const { open, onClose } = useSpeakingModalStore();
+  const createSpeakingV2 = useCreateSpeakingV2();
+  const createInFlightRef = useRef(false);
 
   const close = () => {
     onClose();
     form.resetFields();
   };
 
-  const onFinish = async (formData: { title: string; ieltsId: string }) => {
+  const handleCreate = async (values: { title: string; ieltsId: string }) => {
+    if (createInFlightRef.current) return;
+    createInFlightRef.current = true;
     try {
-      if (!data) {
-        // For new test creation, just navigate to editor without API call
-        close();
-        // Generate a temporary ID for the editor
-        const tempId = `temp-${Date.now()}`;
-        navigate(`/speaking/${tempId}/edit`, {
-          state: {
-            isNew: true,
-            testData: {
-              title: formData.title,
-              ieltsId: formData.ieltsId,
-            },
-          },
-        });
-      } else {
-        // Update existing speaking test
-        if (data.id) {
-          await updateSpeakingTest({
-            id: data.id,
-            title: formData.title,
-            ieltsId: formData.ieltsId,
-          });
-        }
-        close();
-      }
-    } catch (error) {
-      console.error("Error saving speaking test:", error);
+      const created = await createSpeakingV2.mutateAsync(values);
+      form.resetFields();
+      onClose();
+      navigate(`/speaking/${created.id}/edit`);
+    } catch {
+      message.error(
+        "Konuşma taslağı oluşturulamadı. Bilgileriniz ekranda korunuyor.",
+      );
+    } finally {
+      createInFlightRef.current = false;
     }
   };
 
@@ -70,10 +46,10 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
       {!hideAddButton && (
         <Button
           type="primary"
-          icon={<PlusOutlined />}
+          icon={<Plus />}
           onClick={() => useSpeakingModalStore.getState().onOpen()}
         >
-          Yangi Speaking Test
+          Yeni konuşma testi
         </Button>
       )}
 
@@ -81,15 +57,15 @@ export const SpeakingModal = ({ hideAddButton }: SpeakingModalProps) => {
         open={open}
         width={600}
         onCancel={close}
-        destroyOnClose
+        destroyOnHidden
         onOk={form.submit}
-        title={
-          data ? "Speaking testini tahrirlash" : "Yangi Speaking test qo'shish"
-        }
-        okText={data ? "Saqlash" : "Qo'shish"}
-        cancelText="Bekor qilish"
+        title="Yeni konuşma testi"
+        okText="Devam et"
+        cancelText="Vazgeç"
+        confirmLoading={createSpeakingV2.isPending}
+        okButtonProps={{ disabled: createSpeakingV2.isPending }}
         modalRender={(node) => (
-          <Form layout="vertical" size="large" onFinish={onFinish} form={form}>
+          <Form layout="vertical" size="large" onFinish={handleCreate} form={form}>
             {node}
           </Form>
         )}

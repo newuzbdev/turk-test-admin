@@ -23,6 +23,7 @@ export interface PaginatedResponse<T> {
 }
 
 export interface TPaginationWrapper<T> {
+  total?: number;
   writingTest: boolean;
   speakingTest: boolean;
   readingTest: boolean;
@@ -37,9 +38,12 @@ export interface TPaginationWrapper<T> {
   };
 }
 // IELTS Interface
+export type MockPackageCategory = "CEFR_MOCK" | "LISTENING" | "READING" | "WRITING" | "SPEAKING";
+
 export interface IELTS {
   id?: string;
   title: string;
+  category?: MockPackageCategory;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -47,6 +51,7 @@ export interface IELTS {
 // Banner Interface
 export interface Banner {
   id?: string;
+  _id?: string;
   name: string;
   title: string;
   description?: string;
@@ -82,6 +87,7 @@ export interface UpdateBanner {
 // Product Interface
 export interface Product {
   id?: string;
+  _id?: string;
   name: string;
   price: number;
   createdAt?: string;
@@ -149,10 +155,16 @@ export interface AddCoinsPayload {
 
 // Test Interfaces
 export interface Test {
+  isDeleted?: boolean;
   id?: string;
   title: string;
   type: string;
   ieltsId: string;
+  ielts?: { title?: string | null } | null;
+  status?: "DRAFT" | "PUBLISHED";
+  publishedAt?: string | null;
+  contentRevision?: number;
+  publicationReadiness?: MockPublicationReadiness;
   createdAt?: string;
   updatedAt?: string;
   parts?: Part[];
@@ -162,8 +174,47 @@ export interface OnlyTest {
   id?: string;
   title: string;
   type: string;
+  status?: "DRAFT" | "PUBLISHED";
+  publishedAt?: string | null;
+  contentRevision?: number;
+  publicationReadiness?: MockPublicationReadiness;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export type MockPublicationIssueCode =
+  | "TEST_QUESTIONS_REQUIRED"
+  | "CORRECT_ANSWER_REQUIRED"
+  | "PASSAGE_REQUIRED"
+  | "TRANSCRIPT_REQUIRED"
+  | "EVIDENCE_REQUIRED"
+  | "EXPLANATION_REQUIRED"
+  | "SOURCE_RANGE_INVALID"
+  | "AUDIO_REQUIRED"
+  | "AUDIO_DURATION_REQUIRED"
+  | "AUDIO_RANGE_INVALID"
+  | "OFFICIAL_READING_PART_STRUCTURE"
+  | "OFFICIAL_READING_QUESTION_COUNT"
+  | "OFFICIAL_READING_QUESTION_NUMBER"
+  | "OFFICIAL_READING_QUESTION_TYPE"
+  | "OFFICIAL_READING_OPTION_STRUCTURE"
+  | "OFFICIAL_READING_SOURCE_STRUCTURE"
+  | "OFFICIAL_LISTENING_PART_STRUCTURE"
+  | "OFFICIAL_LISTENING_QUESTION_COUNT"
+  | "OFFICIAL_LISTENING_QUESTION_NUMBER"
+  | "OFFICIAL_LISTENING_QUESTION_TYPE"
+  | "OFFICIAL_LISTENING_OPTION_STRUCTURE"
+  | "OFFICIAL_LISTENING_SOURCE_STRUCTURE";
+
+export interface MockPublicationIssue {
+  code: MockPublicationIssueCode;
+  questionNumber: number | null;
+}
+
+export interface MockPublicationReadiness {
+  ready: boolean;
+  questionCount: number;
+  issues: MockPublicationIssue[];
 }
 
 // Parts Interface
@@ -284,9 +335,17 @@ export interface SpeakingSubPart {
   speakingSectionId: string;
   order: number;
   images?: string[];
+  visualContext?: SpeakingVisualContext;
   createdAt?: string;
   updatedAt?: string;
   questions?: SpeakingQuestion[];
+}
+
+export interface SpeakingVisualContext {
+  verified: boolean;
+  imageDescriptions: string[];
+  comparisonPoints: string[];
+  forbiddenAssumptions: string[];
 }
 
 export interface SpeakingQuestion {
@@ -339,6 +398,7 @@ export interface CreateSpeakingSubPartDTO {
   label: string;
   description: string;
   images: string[];
+  visualContext?: SpeakingVisualContext;
   questions: CreateSpeakingQuestion[];
 }
 
@@ -356,13 +416,22 @@ export interface CreateSpeakingPointDTO {
 // Writing Test Interfaces
 export interface WritingTest {
   id?: string;
-  title: string;
+  title: string | null;
   instruction?: string;
   type?: string;
   isDeleted?: boolean;
   ieltsId: string;
   createdAt?: string;
   updatedAt?: string;
+  formatVersion?: number;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  publishedAt?: string | null;
+  durationMinutes?: number;
+  sourceEmail?: Record<string, unknown> | null;
+  ielts?: {
+    id: string;
+    title: string;
+  };
   sections?: WritingSection[];
 }
 
@@ -375,6 +444,7 @@ export interface WritingSection {
   writingTestId: string;
   createdAt?: string;
   updatedAt?: string;
+  partCode?: "PART_1" | "PART_2" | null;
   subParts?: WritingSubPart[];
   questions?: WritingQuestion[]; // Add support for direct questions
 }
@@ -388,6 +458,15 @@ export interface WritingSubPart {
   writingSectionId: string;
   createdAt?: string;
   updatedAt?: string;
+  label?: string;
+  taskCode?: "TASK_1_1" | "TASK_1_2" | "TASK_2" | null;
+  promptJson?: Record<string, unknown> | null;
+  register?: string | null;
+  genre?: string | null;
+  targetLevel?: string | null;
+  wordMin?: number | null;
+  wordMax?: number | null;
+  maxRawScore?: number | null;
   questions?: WritingQuestion[]; // Add support for questions in subParts too
 }
 
@@ -451,3 +530,147 @@ export type CreateWritingQuestion = Omit<
   WritingQuestion,
   "id" | "createdAt" | "updatedAt"
 >;
+
+export interface ReadingPracticeParagraph {
+  label: string;
+  title?: string;
+  text: string;
+  imageUrl?: string;
+  imagePositionX?: number;
+  imagePositionY?: number;
+}
+
+export interface ReadingPracticeGlossaryEntry {
+  id?: string;
+  order: number;
+  term: string;
+  definition: string;
+  simpleDefinition?: string;
+  baseForm?: string;
+  baseMeaning?: string;
+  contextMeaning?: string;
+  contextSnippet?: string;
+  occurrenceIndex?: number;
+  translation?: string;
+  example?: string;
+  paragraphLabel?: string;
+}
+
+export interface ReadingPracticeQuestion {
+  id?: string;
+  order: number;
+  prompt: string;
+  answerKey: unknown;
+  options?: unknown;
+  acceptedAnswers?: unknown;
+  explanation?: string;
+  evidenceParagraphs?: unknown;
+  meta?: unknown;
+}
+
+export interface ReadingPracticeGuideGenerationItem {
+  key: string;
+  guideSnippet: string;
+  keywords: string[];
+}
+
+export interface ReadingPracticeGuideGenerationResponse {
+  items: ReadingPracticeGuideGenerationItem[];
+  model?: string;
+}
+
+export interface ReadingPracticeGlossaryGenerationRequest {
+  title?: string;
+  level?: string;
+  paragraphs: ReadingPracticeParagraph[];
+  existingEntries?: ReadingPracticeGlossaryEntry[];
+  additionalTerms?: Array<{ term: string; paragraphLabel?: string }>;
+}
+
+export interface ReadingPracticeGlossaryGenerationResponse {
+  entries: ReadingPracticeGlossaryEntry[];
+  model?: string;
+  requestedCount?: number;
+  generatedCount?: number;
+  missingCount?: number;
+}
+
+export interface ReadingPracticeQuestionGroup {
+  id?: string;
+  order: number;
+  title: string;
+  type: string;
+  instructions?: string;
+  questions: ReadingPracticeQuestion[];
+}
+
+export interface ReadingPracticePassage {
+  id?: string;
+  title: string;
+  passageTitle?: string;
+  description?: string;
+  coverImageUrl?: string;
+  topic?: string;
+  level?: string;
+  price?: number;
+  coinCost?: number;
+  estimatedMinutes: number;
+  practiceType: "COMPREHENSIVE" | "SECTION";
+  sectionNumber?: number;
+  isPublished: boolean;
+  isFreeAccess?: boolean;
+  paragraphs: ReadingPracticeParagraph[];
+  glossaryEntries: ReadingPracticeGlossaryEntry[];
+  questionGroups: ReadingPracticeQuestionGroup[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ReadingPracticeListItem {
+  id: string;
+  title: string;
+  passageTitle?: string;
+  description?: string;
+  topic?: string;
+  level?: string;
+  price?: number;
+  coinCost?: number;
+  estimatedMinutes: number;
+  practiceType: "COMPREHENSIVE" | "SECTION";
+  sectionNumber?: number;
+  isPublished: boolean;
+  isFreeAccess?: boolean;
+  paragraphs: ReadingPracticeParagraph[];
+  glossaryCount: number;
+  questionGroupCount: number;
+  questionCount: number;
+  attemptCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ReadingPracticeListQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  level?: string;
+  isPublished?: boolean;
+  practiceType?: "COMPREHENSIVE" | "SECTION";
+  sectionNumber?: number;
+}
+
+export interface ReadingPracticeListResponse {
+  total: number;
+  page: number;
+  limit: number;
+  data: ReadingPracticeListItem[];
+}
+
+export type CreateReadingPractice = Omit<
+  ReadingPracticePassage,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export interface UpdateReadingPractice extends Partial<CreateReadingPractice> {
+  id: string;
+}

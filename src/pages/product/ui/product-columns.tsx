@@ -10,14 +10,14 @@ interface ProductColumnsProps {
 
 export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps): TableColumnsType<Product> => [
   {
-    title: "Nomi",
+    title: "Ad",
     dataIndex: "name",
     key: "name",
     ellipsis: true,
     sorter: (a, b) => a.name.localeCompare(b.name),
   },
   {
-    title: "Narx",
+    title: "Fiyat",
     dataIndex: "price",
     key: "price",
     width: 120,
@@ -29,14 +29,14 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
     ),
   },
   {
-    title: "Yaratilgan",
+    title: "Oluşturulma",
     dataIndex: "createdAt",
     key: "createdAt",
     width: 120,
     render: (date: string) => date ? new Date(date).toLocaleDateString() : "-",
   },
   {
-    title: "Amallar",
+    title: "İşlemler",
     key: "actions",
     width: 150,
     render: (_, record: Product) => (
@@ -45,33 +45,32 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
           type="text"
           icon={<EyeOutlined />}
           size="small"
-          title="Ko'rish"
+          title="Görüntüle"
         />
         <Button
           type="text"
           icon={<EditOutlined />}
           size="small"
-          title="Tahrirlash"
+          title="Düzenle"
           onClick={() => onEdit(record)}
         />
         <Popconfirm
-          title="Mahsulotni o'chirishni tasdiqlaysizmi?"
-          okText="Ha, o'chir"
-          cancelText="Bekor qilish"
+          title="Paket silinsin mi?"
+          okText="Evet, sil"
+          cancelText="Vazgeç"
           okButtonProps={{ danger: true }}
-          onConfirm={() => onDelete((record as any).id ?? (record as any)._id)}
+          onConfirm={() => onDelete(record.id ?? record._id ?? "")}
         >
           <Button
             type="text"
             danger
             icon={<DeleteOutlined />}
             size="small"
-            title="O'chirish"
+            title="Sil"
           />
         </Popconfirm>
       </Space>
     ),
   },
 ];
-
 

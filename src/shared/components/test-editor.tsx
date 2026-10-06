@@ -1,4 +1,4 @@
-import { Button, Card, Divider, Input, Space, Upload, Typography, message } from "antd";
+import { Button, Card, Divider, Input, InputNumber, Space, Upload, Typography, message } from "antd";
 
 import PartForm from "../ui/part-form";
 import { PlusOutlined } from "@ant-design/icons";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { UploadOutlined } from "@ant-design/icons";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
+import type { MockEvidenceDraft } from "./mock-evidence-editor.helpers";
 
 interface Props {
   ieltsId?: string | null;
@@ -27,21 +28,27 @@ export type QuestionType =
   | "FILL_BLANK";
 
 export interface AnswerDto {
+  id?: string;
   text: string; // user-entered answer text
   isCorrect: boolean;
 }
 
 export interface QuestionDto {
+  id?: string;
+  number?: number;
   text: string;
   content?: string;
   imageUrl?: string;
   answers: AnswerDto[];
+  evidence?: MockEvidenceDraft;
   correctVariantIndex?: number; // Index of correct variant from sharedVariants (for MATCHING type)
 }
 
 export interface SectionDto {
+  id?: string;
   title: string;
   content?: string;
+  transcript?: string;
   imageUrl?: string;
   type: QuestionType | null;
   questions: QuestionDto[];
@@ -49,6 +56,8 @@ export interface SectionDto {
 }
 
 export interface PartDto {
+  id?: string;
+  number?: number;
   title: string;
   description?: string;
   audioUrl?: string;
@@ -59,6 +68,7 @@ export interface TestDto {
   title: string;
   description?: string;
   type?: "LISTENING" | "READING";
+  audioDurationSeconds?: number;
   ieltsId?: string;
   parts: PartDto[];
 }
@@ -76,6 +86,8 @@ export default function TestEditor({
   const [testDescription, setTestDescription] = useState("");
   const [parts, setParts] = useState<PartDto[]>([]);
   const [globalAudioUrl, setGlobalAudioUrl] = useState<string>("");
+  const [globalAudioDurationSeconds, setGlobalAudioDurationSeconds] =
+    useState<number | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
   const { mutate: createMutate } = useCreateTestWithAddition();
@@ -88,17 +100,24 @@ export default function TestEditor({
   // Fetch test data when editing
   useEffect(() => {
     if (isEditing && getTestQuery?.data && !isInitialized) {
-      const testData = getTestQuery.data;
-      console.log("[TestEditor] Fetched test data:", testData);
-      
+      const testData = (getTestQuery.data as any)?.data ?? getTestQuery.data;
+
       if (testData) {
         setTestTitle(testData.title || "");
         setTestDescription(testData.description || "");
         setGlobalAudioUrl(testData.audioUrl || "");
+        const savedAudioDuration = Number(testData.audioDurationSeconds);
+        setGlobalAudioDurationSeconds(
+          Number.isFinite(savedAudioDuration) && savedAudioDuration > 0
+            ? Math.ceil(savedAudioDuration)
+            : null,
+        );
         
         // Transform API response to PartDto format
         if (testData.parts && Array.isArray(testData.parts)) {
           const transformedParts: PartDto[] = testData.parts.map((part: any) => ({
+            id: part.id,
+            number: part.number,
             title: part.title || "",
             description: part.description || "",
             audioUrl: part.audioUrl || "",
@@ -107,6 +126,7 @@ export default function TestEditor({
               const transformAnswers = (questions: any[]) => {
                 return questions.map((q: any) => {
                   const answers: AnswerDto[] = (q.answers || []).map((a: any) => ({
+                    id: a.id,
                     text: a.answer || "",
                     isCorrect: a.correct || false,
                   }));
@@ -121,10 +141,13 @@ export default function TestEditor({
                   }
                   
                   return {
+                    id: q.id,
+                    number: q.number,
                     text: q.text || "",
                     content: q.content || "",
                     imageUrl: q.imageUrl || "",
                     answers,
+                    evidence: q.evidence || undefined,
                     correctVariantIndex,
                   };
                 });
@@ -140,8 +163,10 @@ export default function TestEditor({
               }
 
               return {
+                id: section.id,
                 title: section.title || "",
                 content: section.content || "",
+                transcript: section.transcript || "",
                 imageUrl: section.imageUrl || "",
                 type: section.type || "MULTIPLE_CHOICE",
                 questions: transformAnswers(section.questions || []),
@@ -583,12 +608,40 @@ export default function TestEditor({
     setParts(parts.filter((_, i) => i !== index));
   };
 
+  const readAudioDurationSeconds = (file: File): Promise<number> =>
+    new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      const audio = document.createElement("audio");
+
+      const cleanup = () => {
+        URL.revokeObjectURL(objectUrl);
+        audio.removeAttribute("src");
+      };
+
+      audio.preload = "metadata";
+      audio.onloadedmetadata = () => {
+        const duration = Math.ceil(Number(audio.duration));
+        cleanup();
+        if (Number.isFinite(duration) && duration > 0) {
+          resolve(duration);
+          return;
+        }
+        reject(new Error("Audio duration could not be read."));
+      };
+      audio.onerror = () => {
+        cleanup();
+        reject(new Error("Audio metadata could not be loaded."));
+      };
+      audio.src = objectUrl;
+    });
+
   // Build payload according to API doc with global question numbering (1..35)
   const buildPayload = (): any => {
     let globalQuestionNumber = 1;
 
     const builtParts = parts.map((p, pIndex) => {
       return {
+        id: p.id,
         number: pIndex + 1,
         title: p.title,
         description: p.description ?? "",
@@ -604,6 +657,7 @@ export default function TestEditor({
               if (s.type === "MATCHING" && s.sharedVariants && s.sharedVariants.length > 0) {
                 // Use shared variants and mark the correct one based on correctVariantIndex
                 answers = s.sharedVariants.map((variant, vIndex) => ({
+                  id: q.answers[vIndex]?.id,
                   variantText: String.fromCharCode(65 + vIndex),
                   answer: String(variant.text ?? ""),
                   correct: q.correctVariantIndex === vIndex,
@@ -611,6 +665,7 @@ export default function TestEditor({
               } else {
                 // Use question's own answers (for other types or MATCHING without shared variants)
                 answers = q.answers.map((a, aIndex) => ({
+                  id: a.id,
                   variantText: String.fromCharCode(65 + aIndex),
                   answer: String(a.text ?? ""),
                   correct: Boolean(a.isCorrect),
@@ -618,19 +673,23 @@ export default function TestEditor({
               }
               
               return {
+                id: q.id,
                 number: currentNumber,
                 type: s.type ?? "TEXT_INPUT",
                 text: q.text ?? "",
                 content: q.text ?? "",
                 imageUrl: q.imageUrl ?? "",
                 answers,
+                evidence: q.evidence || undefined,
               };
             })
             .filter(Boolean) as any[];
 
           return {
+            id: s.id,
             title: s.title,
             content: s.content ?? s.title ?? "",
+            transcript: s.transcript ?? "",
             imageUrl: s.imageUrl ?? "",
             questions,
           };
@@ -653,6 +712,10 @@ export default function TestEditor({
       description: testDescription,
       type: testType,
       audioUrl: globalAudioUrl || undefined,
+      audioDurationSeconds:
+        testType === "LISTENING" && globalAudioDurationSeconds
+          ? Math.ceil(globalAudioDurationSeconds)
+          : undefined,
       ieltsId: ieltsId ?? undefined,
       parts: builtParts,
     } as any;
@@ -667,7 +730,6 @@ export default function TestEditor({
       toast.error("IELTS ID topilmadi. Testni tegishli IELTS ga bog'lang.");
       return;
     }
-
     const payload = buildPayload();
     
     // Remove ieltsId from payload when updating (test ID in URL is sufficient)
@@ -680,6 +742,8 @@ export default function TestEditor({
       if (!isEditing) {
         setTestTitle("");
         setTestDescription("");
+        setGlobalAudioUrl("");
+        setGlobalAudioDurationSeconds(null);
         setParts([]);
       }
       navigate(backUrl);
@@ -730,16 +794,19 @@ export default function TestEditor({
                 accept="audio/*"
                 beforeUpload={async (file) => {
                   try {
+                    const durationSeconds = await readAudioDurationSeconds(file);
                     const result = await fileUploadMutation.mutateAsync(file);
-                    console.log("Audio upload result:", result);
-                    const audioUrl = (result as any)?.data?.url || (result as any)?.path;
+                    const audioUrl =
+                      (result as any)?.data?.url ||
+                      (result as any)?.data?.reference ||
+                      (result as any)?.path;
                     if (audioUrl) {
                       setGlobalAudioUrl(audioUrl);
-                      console.log("Set globalAudioUrl to:", audioUrl);
+                      setGlobalAudioDurationSeconds(durationSeconds);
                       message.success("Audio yuklandi");
                     }
-                  } catch (e) {
-                    console.error("Audio upload error:", e);
+                  } catch {
+                    console.error("Audio upload error");
                     message.error("Audio yuklashda xatolik");
                   }
                   return false;
@@ -755,16 +822,33 @@ export default function TestEditor({
                     controls 
                     src={globalAudioUrl} 
                     style={{ width: "100%" }}
-                    onError={(e) => {
-                      console.error("Audio load error:", e);
-                      console.log("Failed to load audio URL:", globalAudioUrl);
+                    onError={() => {
+                      console.error("Audio load error");
                     }}
                   />
-                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-                    Audio URL: {globalAudioUrl}
-                  </div>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    Audio yuklangan
+                  </Typography.Text>
                 </div>
               )}
+              <InputNumber
+                min={1}
+                precision={0}
+                value={globalAudioDurationSeconds}
+                onChange={(value) => {
+                  const duration = Number(value);
+                  setGlobalAudioDurationSeconds(
+                    Number.isFinite(duration) && duration > 0
+                      ? Math.ceil(duration)
+                      : null,
+                  );
+                }}
+                placeholder="Audio davomiyligi (soniya)"
+                style={{ width: 260 }}
+              />
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                Listening timer uchun audio davomiyligi majburiy.
+              </Typography.Text>
               <Divider style={{ margin: "8px 0" }} />
             </>
           )}
@@ -790,6 +874,8 @@ export default function TestEditor({
               onChange={(updated) => updatePart(idx, updated)}
               onRemove={() => removePart(idx)}
               hideAudioUpload={testType === "LISTENING"}
+              testType={testType || "READING"}
+              globalAudioUrl={globalAudioUrl}
             />
           ))}
 
@@ -799,7 +885,7 @@ export default function TestEditor({
         </Space>
       </Card>
       <Button type="primary" size="large" onClick={handleSave} block>
-        Save Test
+        Taslak Kaydet
       </Button>
     </div>
   );

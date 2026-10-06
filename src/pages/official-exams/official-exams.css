@@ -1,0 +1,83 @@
+.official-exams-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: auto;
+}
+.official-exams-page > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  gap: 20px;
+}
+.official-exams-page h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.official-exams-page header p,
+.official-exam-note {
+  color: #707070;
+  font-size: 13px;
+}
+.official-exam-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+}
+.official-exam-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.official-exam-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.official-exam-form input:not([type="checkbox"]) {
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  padding: 9px 11px;
+  min-width: 0;
+  width: 100%;
+  font: inherit;
+}
+.official-exam-form .official-exam-publish {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+}
+.official-exam-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.official-exam-actions button {
+  border: 1px solid #ddd;
+  padding: 8px 18px;
+  border-radius: 6px;
+}
+.official-exam-actions button[type="submit"] {
+  background: #b8333d;
+  color: white;
+  border-color: #b8333d;
+}
+.official-exam-error {
+  color: #b42318;
+  font-size: 13px;
+}
+.official-exam-form input:focus-visible {
+  outline: 2px solid #b8333d;
+  outline-offset: 2px;
+}
+@media (max-width: 500px) {
+  .official-exam-fields {
+    grid-template-columns: 1fr;
+  }
+  .official-exams-page {
+    padding: 16px;
+  }
+}

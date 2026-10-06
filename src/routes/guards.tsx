@@ -31,7 +31,13 @@ export const PublicRoute = () => {
 
   if (isAuthenticated) {
     // Redirect to the intended destination or default route
-    const from = location.state?.from?.pathname || "/test";
+    const destination = location.state?.from;
+    // Preserve the selected test view and page after the initial auth check.
+    const from = {
+      pathname: destination?.pathname || "/test",
+      search: destination?.search || "",
+      hash: destination?.hash || "",
+    };
     return <Navigate to={from} replace />;
   }
 

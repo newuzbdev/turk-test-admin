@@ -1,13 +1,13 @@
 import {
+  EyeInvisibleOutlined,
+  EyeOutlined,
   LockOutlined,
   UserOutlined,
-  EyeOutlined,
-  EyeInvisibleOutlined,
 } from "@ant-design/icons";
-import { Button, Form, Input,  } from "antd";
-import { useAdminLogin } from "../../config/queries/login-querys";
+import { Button, Form, Input } from "antd";
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAdminLogin } from "../../config/queries/login-querys";
 import { useAuth } from "../../providers/auth-provider";
 
 export default function Login() {
@@ -24,35 +24,42 @@ export default function Login() {
     loginMutation.mutate(values, {
       onSuccess: () => {
         setAuthenticated(true);
-        // Redirect to the intended destination or default route
         const from = location.state?.from?.pathname || "/test";
         navigate(from, { replace: true });
       },
       onError: () => {
-        setError("Login yoki parol noto'g'ri");
+        setError("Kullanıcı adı veya parola yanlış");
       },
     });
   };
 
   return (
-    <main className="flex items-center justify-center w-[100vw] h-screen overflow-hidden">
-      <div className="flex flex-col w-full max-w-2xl px-4 mx-auto sm:px-6">
-        <div className="flex items-center justify-center space-x-2">
-          <img
-            src="./turk-test.png"
-            alt="logo"
-            className="object-contain h-[200px] w-[150px]"
-          />
-          {/* <div className="text-2xl font-bold leading-none text-slate-900 whitespace-nowrap">
-            TURKCE TEST
-          </div> */}
+    <main className="admin-login">
+      <section className="admin-login-intro">
+        <img
+          className="admin-login-brand"
+          src="/logo11.svg"
+          alt="TURKISHMOCK"
+        />
+        <div className="admin-login-message">
+          <p className="admin-login-eyebrow">Yönetim alanı</p>
+          <h1>İçeriği tek bir yerden yönetin.</h1>
+          <p>
+            Sınavları, soruları ve platform içeriklerini mevcut veri akışını
+            bozmadan düzenleyin.
+          </p>
         </div>
-        {/* <div className="relative  z-[1]">
-          <h1 className="text-2xl font-medium tracking-tight text-center text-slate-900">
-            Kirish
-          </h1>
-        </div> */}
-        <div className="mx-2 z-[2] mt-10 flex-auto px-10 py-5 shadow-2xl shadow-slate-900/10 sm:mx-0 sm:flex-none sm:rounded-5xl sm:p-24 rounded-3xl w-full">
+        <span className="admin-login-note">
+          TurkishMock yerel geliştirme ortamı
+        </span>
+      </section>
+
+      <section className="admin-login-panel">
+        <div className="admin-login-form">
+          <div className="admin-login-form-header">
+            <h2>Oturum açın</h2>
+            <p>Yönetim paneline erişmek için bilgilerinizi girin.</p>
+          </div>
           <Form
             form={form}
             onFinish={handleFinish}
@@ -62,41 +69,48 @@ export default function Login() {
           >
             <Form.Item
               name="name"
-              label="Username"
+              label="Kullanıcı adı"
               rules={[
-                { required: true, message: "Username kiritilishi shart" },
+                { required: true, message: "Kullanıcı adı gereklidir" },
               ]}
             >
               <Input
                 prefix={<UserOutlined />}
-                placeholder="Username kiriting"
-                className="h-10"
+                placeholder="Kullanıcı adınızı girin"
               />
             </Form.Item>
 
             <Form.Item
               name="password"
-              label="Parol"
+              label="Parola"
               rules={[
-                { required: true, message: "Parol kiritilishi shart" },
+                { required: true, message: "Parola gereklidir" },
                 {
                   min: 4,
-                  message: "Parol kamida 4 ta belgidan iborat bo'lishi kerak",
+                  message: "Parola en az 4 karakter olmalıdır",
                 },
               ]}
             >
               <Input
                 prefix={<LockOutlined />}
                 type={showPassword ? "text" : "password"}
-                placeholder="Parolni kiriting"
-                className="h-10"
+                placeholder="Parolanızı girin"
                 suffix={
-                  <div
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    style={{ cursor: "pointer" }}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((previous) => !previous)}
+                    className="admin-icon-button"
+                    aria-label={
+                      showPassword ? "Parolayı gizle" : "Parolayı göster"
+                    }
+                    style={{ width: 28, height: 28 }}
                   >
-                    {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                  </div>
+                    {showPassword ? (
+                      <EyeInvisibleOutlined />
+                    ) : (
+                      <EyeOutlined />
+                    )}
+                  </button>
                 }
               />
             </Form.Item>
@@ -106,15 +120,15 @@ export default function Login() {
                 type="primary"
                 htmlType="submit"
                 block
-                className="h-10"
-                style={{ backgroundColor: "#1677ff" }}
+                className="admin-login-submit"
+                loading={loginMutation.isPending}
               >
-                Kirish
+                Oturum aç
               </Button>
             </Form.Item>
           </Form>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

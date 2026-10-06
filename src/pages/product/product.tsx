@@ -5,9 +5,9 @@ const { Title } = Typography;
 
 export default function Product() {
   return (
-    <div style={{ padding: 24 }}>
+    <div className="admin-page">
       <Title level={2} style={{ marginBottom: 24 }}>
-        Mahsulot Boshqaruvi
+        Paketler
       </Title>
       <ProductTable />
     </div>

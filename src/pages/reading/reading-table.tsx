@@ -1,17 +1,27 @@
-import { Table, Modal, notification } from "antd";
-import { useReadingModalStore } from "./utils/reading-modal-store";
-import { ReadingModal } from "./ui/reading-modal";
+import ContentAccessControls from "@/components/access/ContentAccessControls";
+import { ConfigProvider, Modal, notification, Table } from "antd";
+import trTR from "antd/locale/tr_TR";
 import { useState } from "react";
-import { ReadingColumns } from "./ui/reading-columns";
-import { useGetAllReadingTests } from "@/config/queries/reading/get-all.queries";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import { useDeleteReadingTest } from "@/config/queries/reading/delete.queries";
-import { useSearchParams } from "react-router-dom";
+import { useGetAllReadingTests } from "@/config/queries/reading/get-all.queries";
+import {
+  useMoveMockTestToDraft,
+  usePublishMockTest,
+} from "@/config/queries/test/publication.queries";
+import { ExamListHeader } from "@/shared/components/exam-list-ui";
+
+import { ReadingColumns } from "./ui/reading-columns";
+import { ReadingModal } from "./ui/reading-modal";
+import { useReadingModalStore } from "./utils/reading-modal-store";
 
 export const ReadingTable = () => {
+  const navigate = useNavigate();
   const { onOpen } = useReadingModalStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string>("");
+  const [deleteId, setDeleteId] = useState("");
 
   const currentPage = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("limit") || "10");
@@ -19,73 +29,101 @@ export const ReadingTable = () => {
   const { data: readingTests, isLoading: isReadingLoading } =
     useGetAllReadingTests();
   const { mutate: deleteReadingMutation } = useDeleteReadingTest();
+  const { mutate: publishMockTest } = usePublishMockTest();
+  const { mutate: moveMockTestToDraft } = useMoveMockTestToDraft();
 
-  const handleDelete = (testId: string) => {
-    setDeleteId(testId);
-    setDeleteModalOpen(true);
-  };
+  const tableData = readingTests?.data || [];
+  const total = readingTests?.meta?.total ?? readingTests?.total ?? 0;
 
-  const confirmDelete = () => {
-    deleteReadingMutation(deleteId);
-    setDeleteModalOpen(false);
-    setDeleteId("");
+  const handleSearch = (value: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (value) nextParams.set("search", value);
+    else nextParams.delete("search");
+    nextParams.set("page", "1");
+    setSearchParams(nextParams);
   };
 
   const handleCopyId = (id: string) => {
     navigator.clipboard.writeText(id);
     notification.success({
-      message: "ID nusxalandi",
+      message: "ID kopyalandı",
       placement: "bottomRight",
     });
   };
 
-  const tableData = readingTests?.data || [];
-
   return (
-    <>
+    <ConfigProvider locale={trTR}>
       <Table
+        className="exam-list-table"
+        columns={[...ReadingColumns({
+          onEdit: onOpen,
+          onDelete: (testId) => {
+            setDeleteId(testId);
+            setDeleteModalOpen(true);
+          },
+          onCopyId: handleCopyId,
+          onPublish: publishMockTest,
+          onMoveToDraft: moveMockTestToDraft,
+        }),{title:"Erişim",render:(_,row)=><ContentAccessControls target={{scope:"MOCK_READING",targetId:row.id}} row={row}/>}]}
+        dataSource={tableData}
+        loading={isReadingLoading}
         pagination={{
-          total: readingTests?.meta?.total || (readingTests as any)?.total || 0,
-          pageSize: pageSize,
+          total,
+          pageSize,
           current: currentPage,
-          showSizeChanger: true,
-          pageSizeOptions: [5, 10, 20, 50, 100],
+          hideOnSinglePage: total <= pageSize,
+          showSizeChanger: total > 10,
+          pageSizeOptions: [10, 20, 50],
+          showTotal: (count) => `${count} test`,
           onChange: (page, size) => {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.set("page", page.toString());
-            newParams.set("limit", size?.toString() || "10");
-            setSearchParams(newParams);
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.set("page", page.toString());
+            nextParams.set("limit", size?.toString() || "10");
+            setSearchParams(nextParams);
           },
         }}
-        title={() => (
-          <div className="flex items-center justify-between">
-            <h2>Reading Testlar</h2>
-            <ReadingModal />
-          </div>
-        )}
+        rowKey={(record) => record.id || ""}
+        scroll={{ x: 600 }}
         size="small"
-        loading={isReadingLoading}
-        scroll={{ x: "max-content" }}
-        dataSource={tableData}
-        rowKey={(rec) => rec.id || ""}
-        columns={ReadingColumns({
-          onEdit: onOpen,
-          onDelete: handleDelete,
-          onCopyId: handleCopyId,
+        title={() => (
+          <ExamListHeader
+            title="Okuma testleri"
+            action={<ReadingModal />}
+            searchValue={searchParams.get("search") || ""}
+            onSearch={handleSearch}
+          />
+        )}
+        onRow={(record) => ({
+          className:
+            record.isDeleted || searchParams.get("view") === "ARCHIVED"
+              ? ""
+              : "exam-list-clickable-row",
+          onClick: () => {
+            if (
+              record.id &&
+              !record.isDeleted &&
+              searchParams.get("view") !== "ARCHIVED"
+            )
+              navigate(`/reading/${record.id}/edit-v3`);
+          },
         })}
       />
 
       <Modal
-        title="Reading testini o'chirish"
+        title="Okuma testini arşivle"
         open={deleteModalOpen}
-        onOk={confirmDelete}
+        onOk={() => {
+          deleteReadingMutation(deleteId);
+          setDeleteModalOpen(false);
+          setDeleteId("");
+        }}
         onCancel={() => setDeleteModalOpen(false)}
-        okText="O'chirish"
-        cancelText="Bekor qilish"
+        okText="Arşivle"
+        cancelText="Vazgeç"
         okButtonProps={{ danger: true }}
       >
-        <p>Haqiqatan ham bu reading testini o'chirmoqchimisiz?</p>
+        <p>Bu okuma testini arşivlemek istediğinizden emin misiniz?</p>
       </Modal>
-    </>
+    </ConfigProvider>
   );
 };

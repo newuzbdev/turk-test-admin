@@ -81,14 +81,14 @@ export default function UserCoinPage() {
   };
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="admin-page">
       <Space direction="vertical" size={24} style={{ width: "100%" }}>
         <div>
           <Title level={2} style={{ marginBottom: 8 }}>
-            User Coin Qo'shish
+            Öğrenci coin bakiyesi
           </Title>
           <Text type="secondary">
-            Username, Telegram ID yoki telefon raqam orqali user topib coin qo'shing.
+            Eski coin sistemindeki öğrenci bakiyesini görüntüleyip coin ekleyebilirsiniz.
           </Text>
         </div>
 
@@ -102,9 +102,9 @@ export default function UserCoinPage() {
               <Col xs={24} md={16}>
                 <Form.Item
                   name="identifier"
-                  label="Identifier"
+                  label="Kullanıcı adı, Telegram ID veya telefon"
                   rules={[
-                    { required: true, message: "Username, telegramId yoki phoneNumber kiriting" },
+                    { required: true, message: "Kullanıcı adı, Telegram ID veya telefon girin" },
                   ]}
                 >
                   <Input placeholder="john_doe | 123456789 | +998901234567" allowClear />
@@ -113,7 +113,7 @@ export default function UserCoinPage() {
               <Col xs={24} md={8}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" loading={isSearching} block>
-                    User qidirish
+                    Öğrenci bul
                   </Button>
                 </Form.Item>
               </Col>
@@ -122,25 +122,25 @@ export default function UserCoinPage() {
         </Card>
 
         <Spin spinning={isSearching}>
-          <Card title="Topilgan user">
+          <Card title="Öğrenci">
             {user ? (
               <Descriptions column={1} bordered size="middle">
                 <Descriptions.Item label="ID">{user.id || "-"}</Descriptions.Item>
-                <Descriptions.Item label="Username">{user.username || "-"}</Descriptions.Item>
+                <Descriptions.Item label="Kullanıcı adı">{user.username || "-"}</Descriptions.Item>
                 <Descriptions.Item label="Telegram ID">{user.telegramId || "-"}</Descriptions.Item>
                 <Descriptions.Item label="Telefon">{user.phoneNumber || user.phone || "-"}</Descriptions.Item>
                 <Descriptions.Item label="Coin">{String(user.coin ?? user.coins ?? 0)}</Descriptions.Item>
-                <Descriptions.Item label="Balans">
+                <Descriptions.Item label="Bakiye">
                   {String(user.balance ?? user.walletBalance ?? "-")}
                 </Descriptions.Item>
               </Descriptions>
             ) : (
-              <Text type="secondary">User qidirilmagan.</Text>
+              <Text type="secondary">Henüz öğrenci seçilmedi.</Text>
             )}
           </Card>
         </Spin>
 
-        <Card title="Coin qo'shish">
+        <Card title="Coin ekle">
           <Form<AddCoinsFormValues>
             form={coinForm}
             layout="vertical"
@@ -151,10 +151,10 @@ export default function UserCoinPage() {
               <Col xs={24} md={16}>
                 <Form.Item
                   name="amount"
-                  label="Coin miqdori"
+                  label="Coin sayısı"
                   rules={[
-                    { required: true, message: "Coin miqdorini kiriting" },
-                    { type: "number", min: 1, message: "Coin 1 dan katta bo'lishi kerak" },
+                    { required: true, message: "Coin sayısını girin" },
+                    { type: "number", min: 1, message: "En az 1 coin girin" },
                   ]}
                 >
                   <InputNumber min={1} style={{ width: "100%" }} placeholder="5" />
@@ -163,7 +163,7 @@ export default function UserCoinPage() {
               <Col xs={24} md={8}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" loading={isAddingCoins} block>
-                    Coin qo'shish
+                    Coin ekle
                   </Button>
                 </Form.Item>
               </Col>

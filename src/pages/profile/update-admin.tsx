@@ -29,18 +29,18 @@ export default function UpdateAdminPage() {
 
   if (!id) {
     return (
-      <div style={{ padding: 24 }}>
+      <div className="admin-page">
         <Card style={{ maxWidth: 480 }}>
-          <p>Admin ID topilmadi. Tizimga qayta kiring.</p>
+          <p>Oturum bulunamadı. Yeniden giriş yapın.</p>
         </Card>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="admin-page">
       <Title level={2} style={{ marginBottom: 24 }}>
-        Parolni yangilash
+        Hesap ayarları
       </Title>
       <Card style={{ maxWidth: 480 }}>
         <Form
@@ -50,21 +50,21 @@ export default function UpdateAdminPage() {
           size="large"
           autoComplete="off"
         >
-          <Form.Item name="name" label="Username">
+          <Form.Item name="name" label="Kullanıcı adı">
             <Input
               prefix={<UserOutlined />}
-              placeholder="Yangi username"
+              placeholder="Yeni kullanıcı adı"
             />
           </Form.Item>
           <Form.Item
             name="oldPassword"
-            label="Eski parol"
+            label="Mevcut parola"
             rules={[
               {
-                message: "Parolni o‘zgartirish uchun eski parol kerak",
+                message: "Parolayı değiştirmek için mevcut parola gerekli",
                 validator: (_, value) => {
                   const newP = form.getFieldValue("newPassword");
-                  if (newP && !value) return Promise.reject(new Error("Eski parol kiritilishi shart"));
+                  if (newP && !value) return Promise.reject(new Error("Mevcut parolanızı girin"));
                   return Promise.resolve();
                 },
               },
@@ -73,7 +73,7 @@ export default function UpdateAdminPage() {
             <Input
               prefix={<LockOutlined />}
               type={showOldPassword ? "text" : "password"}
-              placeholder="Eski parol"
+              placeholder="Mevcut parola"
               suffix={
                 <span
                   onClick={() => setShowOldPassword((p) => !p)}
@@ -86,18 +86,18 @@ export default function UpdateAdminPage() {
           </Form.Item>
           <Form.Item
             name="newPassword"
-            label="Yangi parol"
+            label="Yeni parola"
             rules={[
               {
                 min: 4,
-                message: "Parol kamida 4 ta belgidan iborat bo‘lishi kerak",
+                message: "Parola en az 4 karakter olmalı",
               },
             ]}
           >
             <Input
               prefix={<LockOutlined />}
               type={showNewPassword ? "text" : "password"}
-              placeholder="Yangi parol"
+              placeholder="Yeni parola"
               suffix={
                 <span
                   onClick={() => setShowNewPassword((p) => !p)}
@@ -115,7 +115,7 @@ export default function UpdateAdminPage() {
               loading={updateMutation.isPending}
               block
             >
-              Yangilash
+              Güncelle
             </Button>
           </Form.Item>
         </Form>

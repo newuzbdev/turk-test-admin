@@ -31,13 +31,13 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
     }
   }, [open, mode, product, form]);
 
-  const handleSubmit = async (values: any) => {
-    const productData = {
+  const handleSubmit = (values: CreateProduct) => {
+    const productData: CreateProduct = {
       ...values,
     };
 
     if (mode === "create") {
-      createProduct(productData as CreateProduct, {
+      createProduct(productData, {
         onSuccess: () => {
           form.resetFields();
           onClose();
@@ -45,7 +45,7 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
       });
     } else if (mode === "edit" && product?.id) {
       updateProduct(
-        { id: product.id, ...productData } as UpdateProduct,
+        { id: product.id, ...productData } satisfies UpdateProduct,
         {
           onSuccess: () => {
             onClose();
@@ -62,7 +62,7 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
 
   return (
     <Modal
-      title={mode === "create" ? "Yangi Mahsulot Yaratish" : "Mahsulot Tahrirlash"}
+      title={mode === "create" ? "Yeni paket" : "Paketi düzenle"}
       open={open}
       onCancel={handleCancel}
       footer={null}
@@ -76,30 +76,30 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
       >
         <Form.Item
           name="name"
-          label="Mahsulot nomi"
+          label="Paket adı"
           rules={[
-            { required: true, message: "Mahsulot nomi kiritish kerak" },
-            { min: 2, message: "Nom kamida 2 ta belgi bo'lishi kerak" },
-            { max: 100, message: "Nom 100 ta belgidan ko'p bo'lmasligi kerak" }
+            { required: true, message: "Paket adını girin" },
+            { min: 2, message: "Ad en az 2 karakter olmalı" },
+            { max: 100, message: "Ad en fazla 100 karakter olabilir" }
           ]}
         >
           <Input 
-            placeholder="Masalan: iPhone 15 Pro" 
+            placeholder="Örn. Aylık üyelik"
             size="large"
           />
         </Form.Item>
 
         <Form.Item
           name="price"
-          label="Narx (so'm)"
+          label="Fiyat (so'm)"
           rules={[
-            { required: true, message: "Narx kiritish kerak" },
-            { type: "number", min: 1, message: "Narx 1 dan katta bo'lishi kerak" },
-            { type: "number", max: 999999999, message: "Narx juda katta" }
+            { required: true, message: "Fiyatı girin" },
+            { type: "number", min: 1, message: "Fiyat en az 1 olmalı" },
+            { type: "number", max: 999999999, message: "Fiyat izin verilen üst sınırı aşıyor" }
           ]}
         >
           <InputNumber
-            placeholder="Masalan: 15000000"
+            placeholder="Örn. 59000"
             style={{ width: "100%" }}
             size="large"
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -112,7 +112,7 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
         <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <Button onClick={handleCancel} disabled={isPending} size="large">
-              Bekor qilish
+              Vazgeç
             </Button>
             <Button
               type="primary"
@@ -120,7 +120,7 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
               loading={isPending}
               size="large"
             >
-              {mode === "create" ? "Yaratish" : "Yangilash"}
+              {mode === "create" ? "Oluştur" : "Güncelle"}
             </Button>
           </div>
         </Form.Item>
@@ -128,5 +128,4 @@ export default function ProductModal({ open, onClose, product, mode }: ProductMo
     </Modal>
   );
 }
-
 

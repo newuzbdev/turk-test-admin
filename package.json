@@ -17,6 +17,16 @@
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@tanstack/react-query-persist-client": "^5.81.5",
+    "@tiptap/extension-highlight": "^3.27.1",
+    "@tiptap/extension-link": "^3.27.1",
+    "@tiptap/extension-table": "^3.27.1",
+    "@tiptap/extension-table-cell": "^3.27.1",
+    "@tiptap/extension-table-header": "^3.27.1",
+    "@tiptap/extension-table-row": "^3.27.1",
+    "@tiptap/extension-underline": "^3.27.1",
+    "@tiptap/pm": "^3.27.1",
+    "@tiptap/react": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
     "antd": "^5.26.2",
     "axios": "^1.10.0",
     "lucide-react": "^0.525.0",
@@ -32,6 +42,7 @@
     "@eslint/js": "^9.29.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.4",
     "@types/node": "^24.0.13",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
@@ -45,5 +56,8 @@
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
     "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "rollup": "4.59.0"
   }
 }

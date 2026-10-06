@@ -1,160 +1,148 @@
-import {
-  DeleteOutlined,
-  EditOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
-import { Button, Space } from "antd";
-import { Copy } from "lucide-react";
-import type { SpeakingTest } from "@/utils/types/types";
-import { useNavigate } from "react-router-dom";
+import { Button, Dropdown, Tag } from "antd";
+import type { MenuProps, TableColumnsType } from "antd";
+import { MoreHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
 
-interface SpeakingColumnsProps {
-  onEdit: (data: SpeakingTest) => void;
+import { formatExamListDate } from "@/shared/components/exam-list-format";
+import { ExamTitleCell } from "@/shared/components/exam-list-ui";
+import type { SpeakingListRow } from "@/pages/speaking-v2/types";
+
+type SpeakingColumnActions = {
+  revisionPending: boolean;
+  onOpen: (id: string) => void;
+  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onCopyId: (id: string) => void;
-}
+  onRevise: (id: string) => void;
+  onArchive: (id: string) => void;
+};
 
-export const SpeakingColumns = ({
-  onEdit,
-  onDelete,
-  onCopyId,
-}: SpeakingColumnsProps) => {
-  const navigate = useNavigate();
+const lifecycleLabel = {
+  DRAFT: "Taslak",
+  PUBLISHED: "Yayında",
+  ARCHIVED: "Arşivde",
+} as const;
 
-  return [
+function actionItems(
+  row: SpeakingListRow,
+  actions: SpeakingColumnActions,
+): MenuProps["items"] {
+  if (row.isDeleted) return [];
+  if (row.formatVersion === 1) {
+    return [
+      {
+        key: "view",
+        label: "Salt okunur görüntüle",
+        onClick: () => actions.onOpen(row.id),
+      },
+    ];
+  }
+  if (row.status === "DRAFT") {
+    return [
+      {
+        key: "edit",
+        label: "Taslağı düzenle",
+        onClick: () => actions.onEdit(row.id),
+      },
+      { type: "divider" },
+      {
+        key: "delete",
+        label: "Taslağı sil",
+        danger: true,
+        onClick: () => actions.onDelete(row.id),
+      },
+    ];
+  }
+  const shared: MenuProps["items"] = [
+    { key: "view", label: "Görüntüle", onClick: () => actions.onOpen(row.id) },
     {
-      key: "title",
-      title: "Test nomi",
-      dataIndex: "title",
-      render: (title: string) => (
-        <span className="font-medium">{title}</span>
-      ),
-    },
-    {
-      key: "ielts",
-      title: "IELTS",
-      dataIndex: "ielts",
-      render: (ielts: any) => (
-        <span className="text-blue-600 font-medium">
-          {ielts?.title || "N/A"}
-        </span>
-      ),
-    },
-    {
-      key: "sectionsCount",
-      title: "Sectionlar soni",
-      render: (record: SpeakingTest) => (
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-          {record.sections?.length || 0}
-        </span>
-      ),
-    },
-    {
-      key: "createdAt",
-      title: "Yaratilgan sana",
-      dataIndex: "createdAt",
-      render: (date: string) => (
-        <span>
-          {new Date(date).toLocaleDateString("uz-UZ")}
-        </span>
-      ),
-    },
-    {
-      key: "actions",
-      title: "Amallar",
-      render: (record: SpeakingTest) => (
-        <Space>
-          <Button
-            type="primary"
-            size="large"
-            icon={<SettingOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (record.id) {
-                navigate(`/speaking/${record.id}/edit`);
-              }
-            }}
-            title="Open Editor"
-            className="shadow-md hover:shadow-lg transition-shadow"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-
-          <Button
-            size="large"
-            icon={<EditOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(record);
-            }}
-            title="Edit"
-            className="shadow-md hover:shadow-lg transition-shadow"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-
-          <Button
-            size="large"
-            icon={<Copy size={16} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (record.id) {
-                onCopyId(record.id);
-              }
-            }}
-            title="Copy ID"
-            className="shadow-md hover:shadow-lg transition-shadow"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-
-          <Button
-            danger
-            size="large"
-            icon={<DeleteOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log("=== DELETE BUTTON CLICKED ===");
-              console.log("Delete button clicked for record:", record);
-
-              if (record.id) {
-                console.log("Calling onDelete with ID:", record.id);
-                onDelete(record.id);
-              } else {
-                console.error("No ID found in record:", record);
-              }
-            }}
-            title="Delete"
-            className="shadow-md hover:shadow-lg transition-shadow"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          />
-        </Space>
-      ),
+      key: "revise",
+      label: "Yeni sürüm oluştur",
+      disabled: actions.revisionPending,
+      onClick: () => actions.onRevise(row.id),
     },
   ];
-};
+
+  return row.status === "PUBLISHED"
+    ? [
+        ...shared,
+        { type: "divider" },
+        {
+          key: "archive",
+          label: "Arşivle",
+          onClick: () => actions.onArchive(row.id),
+        },
+      ]
+    : shared;
+}
+
+export const SpeakingColumns = (
+  actions: SpeakingColumnActions,
+): TableColumnsType<SpeakingListRow> => [
+  {
+    key: "title",
+    title: "Sınav",
+    dataIndex: "title",
+    render: (_title, record) =>
+      record.isDeleted ? (
+        <ExamTitleCell title={record.title} packageTitle={record.ielts.title} />
+      ) : (
+        <Link
+          to={`/speaking/${record.id}/edit`}
+          style={{ color: "inherit", display: "block", textDecoration: "none" }}
+        >
+          <ExamTitleCell
+            title={record.title}
+            packageTitle={record.ielts.title}
+          />
+        </Link>
+      ),
+  },
+  {
+    key: "status",
+    title: "Durum",
+    width: 120,
+    render: (_value, record) => (
+      <Tag
+        color={
+          !record.isDeleted && record.status === "PUBLISHED"
+            ? "green"
+            : "default"
+        }
+      >
+        {record.isDeleted ? "Arşivde" : lifecycleLabel[record.status]}
+      </Tag>
+    ),
+  },
+  {
+    key: "updatedAt",
+    title: "Güncellendi",
+    dataIndex: "updatedAt",
+    width: 140,
+    render: (date) => (
+      <span className="exam-list-date">{formatExamListDate(date)}</span>
+    ),
+  },
+  {
+    key: "actions",
+    title: "",
+    align: "right" as const,
+    width: 88,
+    render: (_value, record) =>
+      record.isDeleted ? null : (
+        <Dropdown
+          trigger={["click"]}
+          menu={{
+            items: actionItems(record, actions),
+            onClick: ({ domEvent }) => domEvent.stopPropagation(),
+          }}
+        >
+          <Button
+            type="text"
+            icon={<MoreHorizontal />}
+            aria-label={`${record.title} işlemleri`}
+            onClick={(event) => event.stopPropagation()}
+          />
+        </Dropdown>
+      ),
+  },
+];

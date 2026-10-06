@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
-import { Card, Table, Button, InputNumber, Modal, Form, Typography } from "antd";
-import { useGetAllTestCoinPrices, useUpdateTestCoinPrice } from "@/config/queries/test-coin-price";
+import { Table, Button, InputNumber, Modal, Form, Typography } from "antd";
+import type { TableColumnsType } from "antd";
+import {
+  useGetAllTestCoinPrices,
+  useUpdateTestCoinPrice,
+} from "@/config/queries/test-coin-price";
 import type { TestCoinPrice } from "@/utils/types/types";
 
 const { Title } = Typography;
@@ -13,19 +17,43 @@ export default function TestCoinPricePage() {
   const [form] = Form.useForm();
 
   const items: TestCoinPrice[] = useMemo(() => {
-    const raw = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+    const raw = Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data)
+        ? data
+        : [];
     return raw;
   }, [data]);
 
-
-  const columns = [
-    { title: "Test Turi", dataIndex: "testType", key: "testType" },
-    { title: "Coin", dataIndex: "coin", key: "coin", render: (v: number) => v?.toLocaleString() },
-    { title: "Amal", key: "action", width: 160, render: (_: any, record: TestCoinPrice) => (
-      <Button type="primary" onClick={() => onEdit(record)}>
-        Coin yangilash
-      </Button>
-    )},
+  const columns: TableColumnsType<TestCoinPrice> = [
+    {
+      title: "Test türü",
+      dataIndex: "testType",
+      key: "testType",
+      render: (value: string) =>
+        ({
+          READING: "Okuma",
+          LISTENING: "Dinleme",
+          WRITING: "Yazma",
+          SPEAKING: "Konuşma",
+          OVERALL: "Tam deneme",
+          IELTS: "Tam deneme",
+        })[value] || value,
+    },
+    {
+      title: "Coin ücreti",
+      dataIndex: "coin",
+      key: "coin",
+      render: (v: number) => v?.toLocaleString(),
+    },
+    {
+      title: "İşlem",
+      key: "action",
+      width: 160,
+      render: (_: unknown, record: TestCoinPrice) => (
+        <Button onClick={() => onEdit(record)}>Düzenle</Button>
+      ),
+    },
   ];
 
   const onEdit = (item: TestCoinPrice) => {
@@ -35,42 +63,58 @@ export default function TestCoinPricePage() {
 
   const onSubmit = (values: { coin: number }) => {
     if (!editItem?.id) return;
-    updatePrice({ id: editItem.id, coin: values.coin }, { onSuccess: () => {
-      setEditItem(null);
-      form.resetFields();
-      refetch();
-    }});
+    updatePrice(
+      { id: editItem.id, coin: values.coin },
+      {
+        onSuccess: () => {
+          setEditItem(null);
+          form.resetFields();
+          refetch();
+        },
+      },
+    );
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={2} style={{ marginBottom: 24 }}>Test Coin Price</Title>
-      <Card>
-        <Table
-          rowKey="id"
-          columns={columns as any}
-          dataSource={items}
-          loading={isLoading}
-          pagination={false}
-        />
-      </Card>
+    <div className="admin-page">
+      <Title level={2} style={{ marginBottom: 24 }}>
+        Test coin ücretleri
+      </Title>
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={items}
+        loading={isLoading}
+        pagination={false}
+      />
 
       <Modal
         open={!!editItem}
-        onCancel={() => { setEditItem(null); form.resetFields(); }}
+        onCancel={() => {
+          setEditItem(null);
+          form.resetFields();
+        }}
         onOk={() => form.submit()}
         confirmLoading={isPending}
-        title={editItem ? `${editItem.testType} coin yangilash` : "Coin yangilash"}
-        okText="Yangilash"
-        cancelText="Bekor qilish"
+        title="Coin ücretini düzenle"
+        okText="Güncelle"
+        cancelText="Vazgeç"
       >
         <Form form={form} layout="vertical" onFinish={onSubmit}>
-          <Form.Item name="coin" label="Coin" rules={[{ required: true, message: "Coin kiriting" }]}>
+          <Form.Item
+            name="coin"
+            label="Coin"
+            rules={[{ required: true, message: "Coin sayısını girin" }]}
+          >
             <InputNumber
               min={0}
               style={{ width: "100%" }}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => (Number(value!.replace(/\$\s?|(,*)/g, '')) || 0) as 0}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) =>
+                (Number(value!.replace(/\$\s?|(,*)/g, "")) || 0) as 0
+              }
             />
           </Form.Item>
         </Form>
@@ -78,5 +122,3 @@ export default function TestCoinPricePage() {
     </div>
   );
 }
-
-

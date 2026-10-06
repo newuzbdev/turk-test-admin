@@ -1,17 +1,24 @@
-import { Form, Input } from 'antd'
+import { Form, Input, Select } from "antd";
+import { mockPackageCategories } from "../mock-package-category";
 
-const IeltsForm = () => {
-	return (
-		<Form.Item
-			name='title'
-			label='Test nomi'
-			rules={[{ required: true, message: 'Test nomini kiriting' }]}>
-			<Input
-				placeholder='Test nomini kiriting'
-				size='middle'
-			/>
-		</Form.Item>
-	)
-}
+const IeltsForm = () => (
+  <>
+    <Form.Item
+      name="title"
+      label="Paket adı"
+      rules={[{ required: true, message: "Paket adını girin" }]}
+    >
+      <Input placeholder="Örneğin: Deneme Sınavı 1" size="middle" />
+    </Form.Item>
+    <Form.Item
+      name="category"
+      label="Öğrenci uygulamasındaki sekme"
+      initialValue="CEFR_MOCK"
+      rules={[{ required: true, message: "Sekme seçin" }]}
+    >
+      <Select options={mockPackageCategories} />
+    </Form.Item>
+  </>
+);
 
-export default IeltsForm
+export default IeltsForm;

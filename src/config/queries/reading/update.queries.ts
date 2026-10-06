@@ -25,10 +25,10 @@ export const useUpdateReadingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [testEndpoints.all] });
-      toast.success("Reading test muvaffaqiyatli yangilandi");
+      toast.success("Okuma testi güncellendi");
     },
     onError: () => {
-      toast.error("Reading test yangilashda xatolik yuz berdi");
+      toast.error("Okuma testi güncellenemedi");
     },
   });
 };
@@ -56,8 +56,7 @@ export const useUpdateReadingTestWithAddition = () => {
       });
     },
     onError: (error: any) => {
-      console.error("API Error:", error.response?.data);
-      toast.error(error.response?.data?.error || "Reading test yangilashda xatolik yuz berdi");
+      toast.error(error.response?.data?.error || "Okuma testi güncellenemedi");
     },
   });
 };

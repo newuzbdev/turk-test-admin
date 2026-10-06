@@ -48,10 +48,13 @@ export const useUpdateSpeakingTestWithAddition = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.all] });
       queryClient.invalidateQueries({ queryKey: [speakingTestEndpoints.only] });
+      toast.success("Konuşma taslağı kaydedildi");
     },
     onError: (error: any) => {
       console.error("API Error:", error.response?.data);
-      toast.error(error.response?.data?.error || "Speaking test yangilashda xatolik yuz berdi");
+      toast.error(
+        error.response?.data?.error || "Konuşma testi kaydedilemedi",
+      );
     },
   });
 };

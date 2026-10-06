@@ -1,21 +1,26 @@
 import React, { useState,  } from "react";
-import { Button, Card, Input, Space, Typography, Divider, Steps, } from "antd";
-import { PlusOutlined, DeleteOutlined, SaveOutlined } from "@ant-design/icons";
+import { Button, Card, Input, Space, Typography, Divider, Steps, Tabs, Tag } from "antd";
+import { ArrowLeftOutlined, PlusOutlined, DeleteOutlined, SaveOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useCreateReadingTestWithAddition } from "@/config/queries/reading/create.queries";
 import ReadingSectionEditor from "./reading-section-editor";
 import toast from "react-hot-toast";
+import { getStoredCorrectVariant } from "@/shared/components/mock-answer-key-validation";
+import type { MockEvidenceDraft } from "@/shared/components/mock-evidence-editor.helpers";
 
 const { Title, Text } = Typography;
 const { Step } = Steps;
 
 export interface ReadingQuestion {
   id: string;
+  apiId?: string;
   blankNumber: number; // S1, S2, S3, etc.
   text?: string; // Optional custom question text entered by the user
   imageUrl?: string; // For Part 2: question image
   correctAnswer: string; // The correct option (A, B, C, etc.)
+  evidence?: MockEvidenceDraft;
   options: {
+    id?: string;
     letter: string;
     text: string;
   }[];
@@ -23,17 +28,19 @@ export interface ReadingQuestion {
 
 export interface ReadingSection {
   id: string;
+  apiId?: string;
   title: string;
   content: string;
   imageUrl?: string;
   // When provided, these variants are shared by all questions in this section
   // and each question only selects the correctAnswer letter from this list
-  sharedVariants?: { letter: string; text: string }[];
+  sharedVariants?: { id?: string; letter: string; text: string }[];
   questions: ReadingQuestion[];
 }
 
 export interface ReadingPart {
   id: string;
+  apiId?: string;
   title: string;
   description?: string;
   sections: ReadingSection[];
@@ -45,13 +52,22 @@ interface ReadingTestEditorProps {
   backUrl: string;
   useUpdateTestWithAddition?: any;
   useGetTestWithAddition?: (id: string) => { data?: any; isLoading?: boolean };
+  layout?: "legacy" | "v2";
 }
 
-export default function ReadingTestEditor({ ieltsId, testId, backUrl, useUpdateTestWithAddition, useGetTestWithAddition }: ReadingTestEditorProps) {
+export default function ReadingTestEditor({
+  ieltsId,
+  testId,
+  backUrl,
+  useUpdateTestWithAddition,
+  useGetTestWithAddition,
+  layout = "legacy",
+}: ReadingTestEditorProps) {
   const [testTitle, setTestTitle] = useState("IELTS Reading Test - Batıl İnançlar & Durum Eşleştirme");
   const [testDescription, setTestDescription] = useState("Turkish reading comprehension test with blank filling and matching exercises");
   const [parts, setParts] = useState<ReadingPart[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const [activeV2Tab, setActiveV2Tab] = useState("general");
   const [expandedPartIds, setExpandedPartIds] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
@@ -75,43 +91,50 @@ export default function ReadingTestEditor({ ieltsId, testId, backUrl, useUpdateT
         // Transform API response to ReadingPart format
         if (testData.parts && Array.isArray(testData.parts)) {
           const transformedParts: ReadingPart[] = testData.parts.map((part: any, partIndex: number) => ({
-            id: `part-${partIndex}`,
+            id: part.id || `part-${partIndex}`,
+            apiId: part.id,
             title: part.title || `Part ${partIndex + 1}`,
             description: part.description || "",
             sections: (part.sections || []).map((section: any, sectionIndex: number) => {
               // Transform questions to ReadingQuestion format
               const questions = (section.questions || []).map((q: any, qIndex: number) => {
                 // Find correct answer from answers array
-                const correctAnswerObj = q.answers?.find((a: any) => a.correct);
-                const correctAnswer = correctAnswerObj ? correctAnswerObj.variantText : "A";
+                const correctAnswer = getStoredCorrectVariant(q.answers);
                 
                 // Transform answers to options format
                 const options = (q.answers || []).map((a: any, aIndex: number) => ({
-                  letter: String.fromCharCode(65 + aIndex),
+                  id: a.id,
+                  letter:
+                    (typeof a.variantText === "string" && a.variantText.trim()) ||
+                    String.fromCharCode(65 + aIndex),
                   text: a.answer || "",
                 }));
                 
                 return {
-                  id: `q-${partIndex}-${sectionIndex}-${qIndex}`,
+                  id: q.id || `q-${partIndex}-${sectionIndex}-${qIndex}`,
+                  apiId: q.id,
                   blankNumber: q.number || (qIndex + 1),
                   text: q.text || "",
                   imageUrl: q.imageUrl || "",
                   correctAnswer,
+                  evidence: q.evidence || undefined,
                   options,
                 };
               });
 
               // Handle shared variants for matching type
-              let sharedVariants: { letter: string; text: string }[] | undefined;
+              let sharedVariants: { id?: string; letter: string; text: string }[] | undefined;
               if (section.sharedVariants) {
                 sharedVariants = section.sharedVariants.map((v: any, vIndex: number) => ({
+                  id: v.id,
                   letter: String.fromCharCode(65 + vIndex),
                   text: v.answer || v.variantText || "",
                 }));
               }
 
               return {
-                id: `section-${partIndex}-${sectionIndex}`,
+                id: section.id || `section-${partIndex}-${sectionIndex}`,
+                apiId: section.id,
                 title: section.title || "",
                 content: section.content || "",
                 imageUrl: section.imageUrl || "",
@@ -735,33 +758,6 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       return;
     }
 
-    if (parts.length === 0) {
-      toast.error("Kamida bitta part qo'shish kerak");
-      return;
-    }
-
-    // Validate that all parts have sections
-    const hasEmptyParts = parts.some(part => part.sections.length === 0);
-    if (hasEmptyParts) {
-      toast.error("Barcha partlarda kamida bitta section bo'lishi kerak");
-      return;
-    }
-
-    // Validate that all questions have non-empty answers
-    for (const part of parts) {
-      for (const section of part.sections) {
-        const useShared = Array.isArray(section.sharedVariants) && section.sharedVariants.length > 0;
-        for (const question of section.questions) {
-          const options = useShared ? section.sharedVariants! : question.options;
-          const validOptions = options.filter((opt: any) => opt.text && opt.text.trim());
-          if (validOptions.length === 0) {
-            toast.error(`Part ${parts.indexOf(part) + 1}, Section "${section.title}", S${question.blankNumber}: kamida bitta to'ldirilgan variant bo'lishi kerak`);
-            return;
-          }
-        }
-      }
-    }
-
     // Build payload according to API structure with global question numbering (1-35)
     let globalQuestionNumber = 1;
     const payload = {
@@ -791,11 +787,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           ];
 
           return {
+            id: part.apiId,
             number: partIndex + 1,
             title: part.title,
             audioUrl: "",
             sections: [
               {
+                id: singleSection?.apiId,
                 title: singleSection?.title || "Bölüm 4",
                 content: passageContent,
                 imageUrl: singleSection?.imageUrl || "",
@@ -803,6 +801,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
                   const currentNumber = globalQuestionNumber++;
                   return {
+                    id: question.apiId,
                     number: currentNumber,
                     type: "MULTIPLE_CHOICE",
                     text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
@@ -811,10 +810,12 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                     answers: question.options
                       .filter((option: any) => option.text && option.text.trim())
                       .map((option: any) => ({
+                        id: option.id,
                         variantText: option.letter,
                         answer: option.text,
                         correct: option.letter === question.correctAnswer,
                       })),
+                    evidence: question.evidence || undefined,
                   };
                 }).filter((q) => q !== null), // Remove null entries
               },
@@ -841,11 +842,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           ];
 
           return {
+            id: part.apiId,
             number: partIndex + 1,
             title: part.title,
             audioUrl: "",
             sections: [
               {
+                id: contentSection?.apiId,
                 title: contentSection?.title || "Bölüm 5",
                 content: contentSection?.content || "",
                 imageUrl: contentSection?.imageUrl || "",
@@ -853,6 +856,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   if (globalQuestionNumber > 35) return null; // Skip if we exceed 35 questions
                   const currentNumber = globalQuestionNumber++;
                   return {
+                    id: question.apiId,
                     number: currentNumber,
                     type: "MULTIPLE_CHOICE",
                     text: (question.text && question.text.trim()) || `S${question.blankNumber} uchun to'g'ri javobni tanlang` ,
@@ -861,10 +865,12 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                     answers: question.options
                       .filter((option: any) => option.text && option.text.trim())
                       .map((option: any) => ({
+                        id: option.id,
                         variantText: option.letter,
                         answer: option.text,
                         correct: option.letter === question.correctAnswer,
                       })),
+                    evidence: question.evidence || undefined,
                   };
                 }).filter((q) => q !== null), // Remove null entries
               },
@@ -873,6 +879,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
         }
 
         return {
+          id: part.apiId,
           number: partIndex + 1,
           title: part.title,
           audioUrl: "", // Reading tests don't need audio
@@ -880,6 +887,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
           sections: part.sections
             .filter((section) => (isPartTwo ? section.questions.length > 0 : true))
             .map((section, ) => ({
+              id: section.apiId,
               title: section.title,
               content: section.content,
               imageUrl: section.imageUrl || "",
@@ -892,6 +900,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   ? section.sharedVariants!
                       .filter((option) => option.text && option.text.trim())
                       .map((option) => ({
+                        id: option.id,
                         variantText: option.letter,
                         answer: option.text,
                         correct: option.letter === question.correctAnswer,
@@ -899,11 +908,13 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   : question.options
                       .filter((option) => option.text && option.text.trim())
                       .map((option, ) => ({
+                        id: option.id,
                         variantText: option.letter,
                         answer: option.text,
                         correct: option.letter === question.correctAnswer,
                       }));
                 return {
+                  id: question.apiId,
                   number: currentNumber,
                   type: "MULTIPLE_CHOICE",
                   // For Part 2, send image as question
@@ -912,6 +923,7 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
                   // Always include question imageUrl if present, even outside Part 2
                   imageUrl: (isPartTwo ? question.imageUrl : (question.imageUrl || "")) || "",
                   answers,
+                  evidence: question.evidence || undefined,
                 };
               }).filter(Boolean), // Remove null entries
             })),
@@ -962,6 +974,325 @@ toplumların kimliklerinin bir parçası hâline gelmiştir.`,
       description: "Testni tekshirish va saqlash",
     },
   ];
+
+  if (layout === "v2") {
+    const partTabs = Array.from({ length: 5 }, (_, index) => ({
+      key: `part-${index}`,
+      label: `Bölüm ${index + 1}`,
+      disabled: !parts[index],
+    }));
+    const activePartIndex = activeV2Tab.startsWith("part-")
+      ? Number(activeV2Tab.replace("part-", ""))
+      : -1;
+    const activePart = activePartIndex >= 0 ? parts[activePartIndex] : undefined;
+    const totalSections = parts.reduce(
+      (total, part) => total + part.sections.length,
+      0,
+    );
+    const totalQuestions = parts.reduce(
+      (total, part) =>
+        total +
+        part.sections.reduce(
+          (sectionTotal, section) => sectionTotal + section.questions.length,
+          0,
+        ),
+      0,
+    );
+    const isSaving =
+      isPending || (updateMutation?.isPending ?? false);
+
+    return (
+      <div
+        style={{
+          maxWidth: 1360,
+          margin: "0 auto",
+          padding: "24px clamp(16px, 3vw, 32px) 40px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 16,
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <Button
+              aria-label="Okuma testlerine dön"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate(backUrl)}
+            />
+            <div>
+              <Title level={3} style={{ margin: 0, fontSize: 24 }}>
+                Okuma Testi
+              </Title>
+              <Text type="secondary">
+                Bölümleri sırayla düzenleyin, ardından testi kontrol edin.
+              </Text>
+            </div>
+          </div>
+          <Tag style={{ margin: 0 }}>
+            {isEditing ? "Test düzenleniyor" : "Yeni test"}
+          </Tag>
+        </div>
+
+        <div
+          style={{
+            borderBottom: "1px solid #e5e7eb",
+            marginBottom: 20,
+            overflowX: "auto",
+          }}
+        >
+          <Tabs
+            activeKey={activeV2Tab}
+            onChange={setActiveV2Tab}
+            tabBarGutter={8}
+            items={[
+              { key: "general", label: "Genel Bilgiler" },
+              ...partTabs,
+              { key: "review", label: "Kontrol" },
+            ]}
+          />
+        </div>
+
+        {activeV2Tab === "general" && (
+          <Card
+            title="Genel Bilgiler"
+            styles={{ body: { padding: 24 } }}
+            style={{ borderRadius: 8 }}
+          >
+            <Space direction="vertical" size={20} style={{ width: "100%" }}>
+              <div>
+                <Text strong style={{ display: "block", marginBottom: 8 }}>
+                  Test adı
+                </Text>
+                <Input
+                  placeholder="Örneğin: CEFR Okuma Denemesi 1"
+                  value={testTitle}
+                  onChange={(event) => setTestTitle(event.target.value)}
+                  size="large"
+                />
+              </div>
+              <div>
+                <Text strong style={{ display: "block", marginBottom: 8 }}>
+                  Kısa açıklama
+                </Text>
+                <Input.TextArea
+                  placeholder="Öğrencinin göreceği kısa test açıklaması"
+                  value={testDescription}
+                  onChange={(event) => setTestDescription(event.target.value)}
+                  autoSize={{ minRows: 3, maxRows: 5 }}
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  type="primary"
+                  onClick={() => setActiveV2Tab("part-0")}
+                  disabled={!testTitle.trim() || !parts[0]}
+                >
+                  Bölüm 1'e Geç
+                </Button>
+              </div>
+            </Space>
+          </Card>
+        )}
+
+        {activePart && (
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                gap: 16,
+                marginBottom: 16,
+              }}
+            >
+              <div>
+                <Text type="secondary" style={{ display: "block" }}>
+                  Bölüm {activePartIndex + 1}
+                </Text>
+                <Title level={4} style={{ margin: "2px 0 0" }}>
+                  Bölüm içeriği ve sorular
+                </Title>
+              </div>
+              <Text type="secondary">
+                {activePart.sections.length} içerik alanı
+              </Text>
+            </div>
+
+            <Card styles={{ body: { padding: 24 } }} style={{ borderRadius: 8 }}>
+              <Space direction="vertical" size={20} style={{ width: "100%" }}>
+                <div>
+                  <Text strong style={{ display: "block", marginBottom: 8 }}>
+                    Bölüm başlığı
+                  </Text>
+                  <Input
+                    placeholder={`Bölüm ${activePartIndex + 1} başlığı`}
+                    value={activePart.title}
+                    onChange={(event) =>
+                      updatePart(activePart.id, {
+                        ...activePart,
+                        title: event.target.value,
+                      })
+                    }
+                    size="large"
+                  />
+                </div>
+                <div>
+                  <Text strong style={{ display: "block", marginBottom: 8 }}>
+                    Bölüm açıklaması
+                  </Text>
+                  <Input.TextArea
+                    placeholder="Bu bölüm için kısa yönerge"
+                    value={activePart.description || ""}
+                    onChange={(event) =>
+                      updatePart(activePart.id, {
+                        ...activePart,
+                        description: event.target.value,
+                      })
+                    }
+                    autoSize={{ minRows: 2, maxRows: 4 }}
+                  />
+                </div>
+
+                <Divider style={{ margin: "4px 0" }} />
+
+                {activePart.sections.map((section, sectionIndex) => (
+                  <ReadingSectionEditor
+                    key={section.id}
+                    section={section}
+                    sectionNumber={sectionIndex + 1}
+                    isPartTwo={activePartIndex === 1}
+                    locale="tr"
+                    allowRemove={false}
+                    showDemoBadge={false}
+                    onChange={(updated) =>
+                      updateSection(activePart.id, section.id, updated)
+                    }
+                    onRemove={() => removeSection(activePart.id, section.id)}
+                  />
+                ))}
+
+                <Divider style={{ margin: "4px 0" }} />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Button
+                    onClick={() =>
+                      setActiveV2Tab(
+                        activePartIndex === 0
+                          ? "general"
+                          : `part-${activePartIndex - 1}`,
+                      )
+                    }
+                  >
+                    Önceki
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() =>
+                      setActiveV2Tab(
+                        activePartIndex >= Math.min(parts.length, 5) - 1
+                          ? "review"
+                          : `part-${activePartIndex + 1}`,
+                      )
+                    }
+                  >
+                    {activePartIndex >= Math.min(parts.length, 5) - 1
+                      ? "Kontrole Geç"
+                      : "Sonraki Bölüm"}
+                  </Button>
+                </div>
+              </Space>
+            </Card>
+          </div>
+        )}
+
+        {activeV2Tab === "review" && (
+          <Card
+            title="Kaydetmeden Önce Kontrol"
+            styles={{ body: { padding: 24 } }}
+            style={{ borderRadius: 8 }}
+          >
+            <Space direction="vertical" size={20} style={{ width: "100%" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {[
+                  ["Test adı", testTitle || "Eksik"],
+                  ["Bölüm", `${parts.length}`],
+                  ["İçerik alanı", `${totalSections}`],
+                  ["Soru", `${totalQuestions}`],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    style={{
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 6,
+                      padding: 16,
+                    }}
+                  >
+                    <Text type="secondary" style={{ display: "block" }}>
+                      {label}
+                    </Text>
+                    <Text strong style={{ fontSize: 18 }}>
+                      {value}
+                    </Text>
+                  </div>
+                ))}
+              </div>
+              <Text type="secondary">
+                Doğru cevap ve kanıt bilgileri eksik olan testler yayına
+                alınamaz. Kaydettiğiniz test taslak olarak korunur.
+              </Text>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Button
+                  onClick={() =>
+                    setActiveV2Tab(
+                      parts.length > 0
+                        ? `part-${Math.min(parts.length, 5) - 1}`
+                        : "general",
+                    )
+                  }
+                >
+                  Önceki
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  loading={isSaving}
+                  onClick={handleSave}
+                  disabled={!testTitle.trim() || parts.length === 0}
+                >
+                  {isEditing ? "Değişiklikleri Kaydet" : "Testi Kaydet"}
+                </Button>
+              </div>
+            </Space>
+          </Card>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>

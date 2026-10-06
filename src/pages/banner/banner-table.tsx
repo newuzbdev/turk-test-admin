@@ -21,20 +21,15 @@ export default function BannerTable() {
   const { mutate: deleteBanner, isPending: isDeleting } = useDeleteBanner();
 
   // Handle different possible response structures
-  const banners = Array.isArray(bannersResponse?.data)
+  const banners: Banner[] = Array.isArray(bannersResponse?.data)
     ? bannersResponse.data
     : Array.isArray(bannersResponse)
     ? bannersResponse
     : [];
 
-  // Debug logging
-  console.log("Banner data:", bannersResponse);
-  console.log("Banners array:", banners);
-  console.log("Loading:", isLoading);
-  console.log("Error:", error);
 
   // Normalize potential backend id field variations
-  const normalizedBanners: Banner[] = banners.map((b: any) => ({
+  const normalizedBanners: Banner[] = banners.map((b) => ({
     ...b,
     id: b?.id ?? b?._id,
   }));
@@ -63,23 +58,23 @@ export default function BannerTable() {
 
   const handleDelete = (id: string) => {
     if (!id) {
-      message.error("Banner ID topilmadi");
+      message.error("Duyuru bulunamadı");
       return;
     }
     deleteBanner(String(id), {
       onSuccess: () => {
-        message.success("Banner o'chirildi");
+        message.success("Duyuru silindi");
       },
     });
   };
 
   const handleBulkDelete = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning("O'chirish uchun banner tanlang");
+      message.warning("Silmek için duyuru seçin");
       return;
     }
     // Implement bulk delete logic here
-    message.info("Bulk delete functionality to be implemented");
+    message.info("Toplu silme henüz kullanılamıyor");
   };
 
   const rowSelection = {
@@ -96,10 +91,10 @@ export default function BannerTable() {
     return (
       <Card>
         <div style={{ textAlign: "center", padding: "50px 0" }}>
-          <h3>Xatolik yuz berdi</h3>
-          <p>Bannerlarni yuklashda xatolik: {error.message}</p>
+          <h3>Yükleme başarısız</h3>
+          <p>Duyurular yüklenemedi: {error.message}</p>
           <Button type="primary" onClick={() => refetch()}>
-            Qayta urinish
+            Tekrar dene
           </Button>
         </div>
       </Card>
@@ -111,7 +106,7 @@ export default function BannerTable() {
       <div style={{ marginBottom: 16 }}>
         <Space wrap>
           <Search
-            placeholder="Banner qidirish..."
+            placeholder="Duyuru ara"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 300 }}
@@ -122,23 +117,23 @@ export default function BannerTable() {
             onChange={setStatusFilter}
             style={{ width: 120 }}
           >
-            <Option value="all">Barchasi</Option>
-            <Option value="active">Faol</Option>
-            <Option value="inactive">Nofaol</Option>
+            <Option value="all">Tümü</Option>
+            <Option value="active">Aktif</Option>
+            <Option value="inactive">Pasif</Option>
           </Select>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleCreate}
           >
-            Yangi Banner
+            Yeni duyuru
           </Button>
           <Button
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
           >
-            Yangilash
+            Güncelle
           </Button>
           {selectedRowKeys.length > 0 && (
             <Button
@@ -146,7 +141,7 @@ export default function BannerTable() {
               onClick={handleBulkDelete}
               loading={isDeleting}
             >
-              Tanlanganlarni o'chirish ({selectedRowKeys.length})
+              Seçilenleri sil ({selectedRowKeys.length})
             </Button>
           )}
         </Space>
@@ -155,7 +150,7 @@ export default function BannerTable() {
       <Table
         columns={bannerColumns}
         dataSource={filteredBanners}
-        rowKey={(record: any) => record.id ?? record._id}
+        rowKey={(record) => record.id ?? record._id ?? ""}
         loading={isLoading}
         rowSelection={rowSelection}
         pagination={{
@@ -163,11 +158,11 @@ export default function BannerTable() {
           showSizeChanger: true,
           showQuickJumper: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} / ${total} ta banner`,
+            `${range[0]}-${range[1]} / ${total} duyuru`,
         }}
         scroll={{ x: 800 }}
         locale={{
-          emptyText: isLoading ? "Yuklanmoqda..." : "Bannerlar topilmadi"
+          emptyText: isLoading ? "Yükleniyor…" : "Duyuru bulunamadı"
         }}
       />
 

@@ -9,9 +9,13 @@ import { useIeltsModalStore } from "../utils/ielts-modal-store";
 
 interface IeltsModalProps {
   hideAddButton?: boolean;
+  onCreated?: () => void;
 }
 
-export const IeltsModal = ({ hideAddButton = false }: IeltsModalProps) => {
+export const IeltsModal = ({
+  hideAddButton = false,
+  onCreated,
+}: IeltsModalProps) => {
   const [form] = Form.useForm();
   const { mutateAsync: createIelts, isPending: isCreating } = useCreateIelts();
   const { mutateAsync: updateIelts, isPending: isUpdating } = useUpdateIelts();
@@ -32,6 +36,7 @@ export const IeltsModal = ({ hideAddButton = false }: IeltsModalProps) => {
     try {
       if (!data) {
         await createIelts(formData);
+        onCreated?.();
       } else {
         if (data.id) {
           await updateIelts({
@@ -54,7 +59,7 @@ export const IeltsModal = ({ hideAddButton = false }: IeltsModalProps) => {
           icon={<PlusOutlined />}
           onClick={() => useIeltsModalStore.getState().onOpen()}
         >
-          Yangi IELTS Test
+          Yeni deneme
         </Button>
       )}
 
@@ -64,9 +69,9 @@ export const IeltsModal = ({ hideAddButton = false }: IeltsModalProps) => {
         onCancel={close}
         destroyOnClose
         onOk={form.submit}
-        title={data ? "IELTS testini tahrirlash" : "Yangi IELTS test qo'shish"}
-        okText={data ? "Saqlash" : "Qo'shish"}
-        cancelText="Bekor qilish"
+        title={data ? "Denemeyi düzenle" : "Yeni deneme"}
+        okText={data ? "Kaydet" : "Oluştur"}
+        cancelText="Vazgeç"
         confirmLoading={isCreating || isUpdating}
         modalRender={(node) => (
           <Form layout="vertical" size="large" onFinish={onFinish} form={form}>

@@ -8,6 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist/
+
+# Runtime/build settings are supplied privately; keep only empty templates.
+.env
+.env.*
+!.env.example
+!.env.*.example
 
 *.local
 

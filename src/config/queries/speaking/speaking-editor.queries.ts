@@ -30,6 +30,12 @@ interface CreateSpeakingTestData {
       label: string;
       description: string;
       images: string[];
+      visualContext?: {
+        verified: boolean;
+        imageDescriptions: string[];
+        comparisonPoints: string[];
+        forbiddenAssumptions: string[];
+      };
       questions: {
         order: number;
         question: string;
@@ -92,10 +98,10 @@ export const useCreateSpeakingTest = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["speaking"] });
-      toast.success("Speaking test muvaffaqiyatli yaratildi");
+      toast.success("Konuşma testi oluşturuldu");
     },
     onError: (error: any) => {
-      toast.error("Speaking test yaratishda xatolik yuz berdi");
+      toast.error("Konuşma testi oluşturulamadı");
       console.error("Create speaking test error:", error);
     },
   });
@@ -198,6 +204,12 @@ export const useSpeakingEditor = () => {
       speakingSectionId: testData.sections[sectionIndex].id || "",
       order: (testData.sections[sectionIndex].subParts?.length || 0) + 1,
       images: [], // <-- qo'shildi
+      visualContext: {
+        verified: false,
+        imageDescriptions: [],
+        comparisonPoints: [],
+        forbiddenAssumptions: [],
+      },
       questions: [],
     };
 
@@ -497,7 +509,13 @@ export const useSpeakingEditor = () => {
   };
 
   const getUploadedPath = (res: any) => {
-    const path = res?.data?.path || res?.data?.url || res?.path || res?.url || "";
+    const path =
+      res?.data?.url ||
+      res?.data?.reference ||
+      res?.data?.path ||
+      res?.path ||
+      res?.url ||
+      "";
     const fullUrl = constructFullImageUrl(path);
     console.log("Image upload - original path:", path, "full URL:", fullUrl);
     return fullUrl;
@@ -511,6 +529,12 @@ export const useSpeakingEditor = () => {
       subParts: section.subParts?.map(subPart => ({
         ...subPart,
         images: subPart.images?.map(constructFullImageUrl) || [],
+        visualContext: {
+          verified: subPart.visualContext?.verified === true,
+          imageDescriptions: subPart.visualContext?.imageDescriptions || [],
+          comparisonPoints: subPart.visualContext?.comparisonPoints || [],
+          forbiddenAssumptions: subPart.visualContext?.forbiddenAssumptions || [],
+        },
         questions: subPart.questions?.map(q => ({
           ...q,
           question: (q as { questionText?: string }).questionText || q.question,
@@ -565,6 +589,16 @@ export const useSpeakingEditor = () => {
       updatedSubParts[subPartIndex] = {
         ...subPart,
         images: [...currentImages, imagePath],
+        visualContext: {
+          verified: false,
+          imageDescriptions: [
+            ...(subPart.visualContext?.imageDescriptions || []),
+            "",
+          ],
+          comparisonPoints: subPart.visualContext?.comparisonPoints || [],
+          forbiddenAssumptions:
+            subPart.visualContext?.forbiddenAssumptions || [],
+        },
       };
 
       updateSection(testData, setTestData, sectionIndex, {
@@ -608,6 +642,15 @@ export const useSpeakingEditor = () => {
     updatedSubParts[subPartIndex] = {
       ...subPart,
       images: updatedImages,
+      visualContext: {
+        verified: false,
+        imageDescriptions: (
+          subPart.visualContext?.imageDescriptions || []
+        ).filter((_, index) => index !== imageIndex),
+        comparisonPoints: subPart.visualContext?.comparisonPoints || [],
+        forbiddenAssumptions:
+          subPart.visualContext?.forbiddenAssumptions || [],
+      },
     };
     updateSection(testData, setTestData, sectionIndex, {
       subParts: updatedSubParts,

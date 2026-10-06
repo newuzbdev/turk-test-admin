@@ -12,9 +12,17 @@ interface SectionFormProps {
   section: SectionDto;
   onChange: (section: SectionDto) => void;
   onRemove: () => void;
+  testType: "READING" | "LISTENING";
+  audioUrl?: string;
 }
 
-const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }) => {
+const SectionForm: React.FC<SectionFormProps> = ({
+  section,
+  onChange,
+  onRemove,
+  testType,
+  audioUrl,
+}) => {
   const fileUploadMutation = useFileUpload();
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -23,7 +31,10 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
       setUploadProgress(0);
       const result = await fileUploadMutation.mutateAsync(file);
       console.log("Image upload result:", result);
-      const imageUrl = (result as any)?.data?.url || (result as any)?.path;
+      const imageUrl =
+        (result as any)?.data?.url ||
+        (result as any)?.data?.reference ||
+        (result as any)?.path;
       if (imageUrl) {
         onChange({ ...section, imageUrl: imageUrl });
         console.log("Set section imageUrl to:", imageUrl);
@@ -124,6 +135,19 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
           autoSize={{ minRows: 4, maxRows: 12 }}
           style={{ borderRadius: 8, padding: 10, resize: "vertical" }}
         />
+
+        {testType === "LISTENING" && (
+          <>
+            <Text strong>Transcript</Text>
+            <Input.TextArea
+              rows={6}
+              placeholder="Bu bölümün tam transcriptini girin."
+              value={section.transcript || ""}
+              onChange={(e) => updateField("transcript", e.target.value)}
+              autoSize={{ minRows: 6, maxRows: 16 }}
+            />
+          </>
+        )}
 
         <Divider />
 
@@ -274,6 +298,13 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange, onRemove }
               sharedVariants={section.type === "MATCHING" ? section.sharedVariants : undefined}
               onChange={(updated) => updateQuestion(idx, updated)}
               onRemove={() => removeQuestion(idx)}
+              testType={testType}
+              sourceText={
+                testType === "LISTENING"
+                  ? section.transcript || ""
+                  : section.content || ""
+              }
+              audioUrl={audioUrl}
             />
           </Card>
         ))}

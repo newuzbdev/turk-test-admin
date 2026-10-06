@@ -22,14 +22,14 @@ export const ArchiveColumns = ({
       fixed: "left" as const,
     },
     {
-      title: "Test nomi",
+      title: "Sınav adı",
       dataIndex: "title",
       key: "title",
       width: 200,
       ellipsis: true,
     },
     {
-      title: "Turi",
+      title: "Tür",
       dataIndex: "type",
       key: "type",
       width: 120,
@@ -39,45 +39,45 @@ export const ArchiveColumns = ({
       },
     },
     {
-      title: "Yaratilgan sana",
+      title: "Oluşturulma tarihi",
       dataIndex: "createdAt",
       key: "createdAt",
       width: 150,
       render: (date: string) => {
-        return date ? new Date(date).toLocaleDateString("uz-UZ") : "-";
+        return date ? new Date(date).toLocaleDateString("tr-TR") : "-";
       },
     },
     {
-      title: "O'chirilgan sana",
+      title: "Arşivlenme tarihi",
       dataIndex: "updatedAt",
       key: "updatedAt",
       width: 150,
       render: (date: string) => {
-        return date ? new Date(date).toLocaleDateString("uz-UZ") : "-";
+        return date ? new Date(date).toLocaleDateString("tr-TR") : "-";
       },
     },
     {
-      title: "Amallar",
+      title: "İşlemler",
       key: "actions",
       width: 200,
       fixed: "right" as const,
-      render: (_: any, record: Test) => (
+      render: (_: unknown, record: Test) => (
         <Space size="middle" className="w-full justify-end">
           <Button
             type="primary"
             size="middle"
             icon={<RotateCcw size={16} />}
             onClick={() => onRestore(record.id!)}
-            title="Qayta tiklash"
+            title="Geri yükle"
             className="min-w-[100px]"
           >
-            Qayta tiklash
+            Geri yükle
           </Button>
           <Button
             size="middle"
             icon={<Copy size={16} />}
             onClick={() => onCopyId(record.id!)}
-            title="ID nusxalash"
+            title="Kimliği kopyala"
             className="min-w-[40px]"
           />
           {onDelete && (
@@ -86,7 +86,7 @@ export const ArchiveColumns = ({
               size="middle"
               icon={<Trash2 size={16} />}
               onClick={() => onDelete(record.id!)}
-              title="Butunlay o'chirish"
+              title="Kalıcı olarak sil"
               className="min-w-[40px]"
             />
           )}

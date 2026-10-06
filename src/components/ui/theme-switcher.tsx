@@ -1,9 +1,23 @@
-import { useContext } from 'react';
-import { Sun, Moon } from 'lucide-react';
-import { Button } from 'antd';
-import { ThemeContext } from '../../providers/theme-provider';
+import { useContext } from "react";
+import { Sun, Moon } from "lucide-react";
+import { ThemeContext } from "../../providers/theme-provider";
 
 export default function ThemeSwitcher() {
-    const { theme, toggleMode } = useContext(ThemeContext);
-    return <Button style={{ outline: 'none', paddingTop: 4 }} icon={theme == 'dark' ? <Sun /> : <Moon />} onClick={() => toggleMode()}></Button>;
+  const { theme, toggleMode } = useContext(ThemeContext);
+
+  return (
+    <button
+      type="button"
+      className="admin-icon-button"
+      onClick={() => toggleMode()}
+      aria-label={theme === "dark" ? "Açık temaya geç" : "Koyu temaya geç"}
+      title={theme === "dark" ? "Açık tema" : "Koyu tema"}
+    >
+      {theme === "dark" ? (
+        <Sun size={18} strokeWidth={2.2} />
+      ) : (
+        <Moon size={18} strokeWidth={2.2} />
+      )}
+    </button>
+  );
 }

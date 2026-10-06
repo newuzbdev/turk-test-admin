@@ -38,7 +38,7 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
         close();
         // Generate a temporary ID for the editor
         // const tempId = `temp-${Date.now()}`;
-        navigate(`/reading/${formData.ieltsId}/edit`, {
+        navigate(`/reading/new/${formData.ieltsId}/edit-v3`, {
           state: {
             isNew: true,
             testData: {
@@ -73,7 +73,7 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
           icon={<PlusOutlined />}
           onClick={() => useReadingModalStore.getState().onOpen()}
         >
-          Yangi Reading Test (Demo bilan boshlash)
+          Yeni okuma testi
         </Button>
       )}
 
@@ -84,10 +84,10 @@ export const ReadingModal = ({ hideAddButton = false }: ReadingModalProps) => {
         destroyOnClose
         onOk={form.submit}
         title={
-          data ? "Reading testini tahrirlash" : "Yangi Reading test qo'shish (Demo bilan boshlash)"
+          data ? "Okuma testini düzenle" : "Yeni okuma testi"
         }
-        okText={data ? "Saqlash" : "Qo'shish"}
-        cancelText="Bekor qilish"
+        okText={data ? "Kaydet" : "Devam et"}
+        cancelText="Vazgeç"
         modalRender={(node) => (
           <Form layout="vertical" size="large" onFinish={onFinish} form={form}>
             {node}

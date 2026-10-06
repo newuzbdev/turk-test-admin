@@ -35,6 +35,15 @@ interface SpeakingTestData {
   sections: SpeakingSection[];
 }
 
+const getCreatedTestId = (value: unknown) => {
+  if (!value || typeof value !== "object") return "";
+  const response = value as {
+    id?: string;
+    data?: { id?: string };
+  };
+  return String(response.id || response.data?.id || "");
+};
+
 export default function SpeakingEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -54,6 +63,11 @@ export default function SpeakingEditor() {
 
   const isNewTest = id?.startsWith("temp-") || location.state?.isNew;
   const isEditing = !isNewTest && !!id;
+  const persistedIdRef = useRef(isEditing ? id || "" : "");
+
+  useEffect(() => {
+    if (isEditing && id) persistedIdRef.current = id;
+  }, [id, isEditing]);
 
   // Queries - only use one query to avoid duplicate requests
   const { data: fetchedTest, isLoading } = useGetSpeakingTestWithAddition(
@@ -117,7 +131,6 @@ export default function SpeakingEditor() {
 
   const handleSave = async () => {
     try {
-      console.log(" test data", testData);
       const formValues = await form.validateFields();
       const speakingTestData = {
         title: formValues.title,
@@ -139,6 +152,7 @@ export default function SpeakingEditor() {
               label: subPart.label,
               description: subPart.description,
               images: subPart.images || [],
+              visualContext: subPart.visualContext,
               questions:
                 subPart.questions?.map((question) => ({
                   order: question.order,
@@ -154,19 +168,26 @@ export default function SpeakingEditor() {
         })),
       };
 
-      if (isEditing && id) {
+      const persistedId = persistedIdRef.current;
+
+      if (persistedId) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { ieltsId, ...updateData } = speakingTestData;
-        await updateSpeakingTest({ id, ...updateData });
+        await updateSpeakingTest({ id: persistedId, ...updateData });
       } else {
-        await createSpeakingTest(speakingTestData);
+        const response = await createSpeakingTest(speakingTestData);
+        const createdId = getCreatedTestId(response);
+        if (!createdId) {
+          throw new Error("Oluşturulan konuşma testi kimliği alınamadı.");
+        }
+        persistedIdRef.current = createdId;
+        navigate(`/speaking/${createdId}/edit`, { replace: true });
       }
-      navigate("/speaking");
     } catch (error) {
       console.error("Error saving speaking test:", error);
       notification.error({
-        message: "Xatolik yuz berdi",
-        description: "Speaking testni saqlashda xatolik yuz berdi",
+        message: "Test kaydedilemedi",
+        description: "Bilgileri kontrol edip yeniden deneyin.",
       });
     }
   };
@@ -315,7 +336,7 @@ export default function SpeakingEditor() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Konuşma testi yükleniyor...</div>;
   }
 
   return (
@@ -326,11 +347,13 @@ export default function SpeakingEditor() {
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate("/speaking")}
           >
-            Orqaga
+            Konuşma testlerine dön
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {isNewTest ? "Yangi Speaking Test" : "Speaking Test Tahrirlash"}
+              {isNewTest
+                ? "Yeni konuşma testi"
+                : "Konuşma testini düzenle"}
             </h1>
           </div>
         </div>
@@ -340,25 +363,25 @@ export default function SpeakingEditor() {
           loading={isCreating || isUpdating}
           size="large"
         >
-          Saqlash
+          Taslağı kaydet
         </Button>
       </div>
 
       <Row gutter={24}>
         <Col span={24}>
-          <Card title="Test Ma'lumotlari" className="mb-6">
+          <Card title="Test bilgileri" className="mb-6">
             <Form form={form} layout="vertical">
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
                     name="title"
-                    label="Test nomi"
+                    label="Test adı"
                     rules={[
-                      { required: true, message: "Test nomini kiriting" },
+                      { required: true, message: "Test adını girin" },
                     ]}
                   >
                     <Input
-                      placeholder="Test nomini kiriting"
+                      placeholder="Test adını girin"
                       onChange={(e) =>
                         setTestData((prev) => ({
                           ...prev,
@@ -392,7 +415,7 @@ export default function SpeakingEditor() {
           </Card>
 
           <Card
-            title="Sectionlar"
+            title="Bölümler"
             extra={
               <Button
                 type="primary"
@@ -402,7 +425,7 @@ export default function SpeakingEditor() {
                   setForceRender(prev => prev + 1);
                 }}
               >
-                Section qo'shish
+                Bölüm ekle
               </Button>
             }
           >
@@ -457,7 +480,7 @@ export default function SpeakingEditor() {
 
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-medium">Sub-Parts</h4>
+                        <h4 className="font-medium">Alt bölümler</h4>
                         <Button
                           type="dashed"
                           icon={<PlusOutlined />}
@@ -466,7 +489,7 @@ export default function SpeakingEditor() {
                           }
                           size="small"
                         >
-                          Sub-Part qo'shish
+                          Alt bölüm ekle
                         </Button>
                       </div>
 
@@ -530,7 +553,7 @@ export default function SpeakingEditor() {
 
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-medium">Section Questions</h4>
+                        <h4 className="font-medium">Bölüm soruları</h4>
                         <Button
                           type="dashed"
                           icon={<PlusOutlined />}
@@ -539,7 +562,7 @@ export default function SpeakingEditor() {
                           }
                           size="small"
                         >
-                          Question qo'shish
+                          Soru ekle
                         </Button>
                       </div>
 
@@ -602,7 +625,7 @@ export default function SpeakingEditor() {
                       <div className="border-t pt-4">
                         <div className="flex justify-between items-center mb-3">
                           <h4 className="font-medium">
-                            Advantages & Disadvantages
+                            Avantajlar ve dezavantajlar
                           </h4>
                           <div className="space-x-2">
                             <Button
@@ -618,7 +641,7 @@ export default function SpeakingEditor() {
                               }
                               size="small"
                             >
-                              Advantage qo'shish
+                              Avantaj ekle
                             </Button>
                             <Button
                               type="dashed"
@@ -633,7 +656,7 @@ export default function SpeakingEditor() {
                               }
                               size="small"
                             >
-                              Disadvantage qo'shish
+                              Dezavantaj ekle
                             </Button>
                           </div>
                         </div>
@@ -705,18 +728,18 @@ export default function SpeakingEditor() {
       {/* Delete Confirmation Modal */}
       <Modal
         open={deleteModalOpen}
-        title="Sectionni o'chirish"
+        title="Bölümü sil"
         onOk={performDelete}
         onCancel={() => {
           console.log("=== MODAL CANCELLED ===");
           setDeleteModalOpen(false);
           setSectionToDeleteId(null);
         }}
-        okText="Ha"
-        cancelText="Yo'q"
+        okText="Sil"
+        cancelText="Vazgeç"
         okButtonProps={{ danger: true }}
       >
-        <p>Haqiqatan ham bu sectionni o'chirmoqchimisiz?</p>
+        <p>Bu bölümü silmek istediğinizden emin misiniz?</p>
       </Modal>
     </div>
   );

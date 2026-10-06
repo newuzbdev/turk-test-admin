@@ -3,6 +3,7 @@ import { Button, Card, Input, Space, Typography, Divider, Select, message, Alert
 import { DeleteOutlined, PlusOutlined, EditOutlined, UploadOutlined } from "@ant-design/icons";
 import type { ReadingSection, ReadingQuestion } from "./reading-test-editor";
 import { useFileUpload } from "@/config/queries/file/upload.queries";
+import MockEvidenceEditor from "@/shared/components/mock-evidence-editor";
 
 const {  Text } = Typography;
 const { TextArea } = Input;
@@ -11,6 +12,9 @@ interface ReadingSectionEditorProps {
   section: ReadingSection;
   sectionNumber: number;
   isPartTwo?: boolean;
+  locale?: "legacy" | "tr";
+  allowRemove?: boolean;
+  showDemoBadge?: boolean;
   onChange: (section: ReadingSection) => void;
   onRemove: () => void;
 }
@@ -18,9 +22,13 @@ interface ReadingSectionEditorProps {
 export default function ReadingSectionEditor({
   section,
   isPartTwo = false,
+  locale = "legacy",
+  allowRemove = true,
+  showDemoBadge = true,
   onChange,
   onRemove,
 }: ReadingSectionEditorProps) {
+  const isTurkish = locale === "tr";
   const [isEditing, setIsEditing] = useState(false);
   const [tempContent, setTempContent] = useState(section.content);
   const fileUploadMutation = useFileUpload();
@@ -102,7 +110,7 @@ export default function ReadingSectionEditor({
     const nextLetter = String.fromCharCode(lastLetter.charCodeAt(0) + 1);
     
     if (nextLetter > "Z") {
-      message.warning("Maksimal 26 ta variant qo'shish mumkin");
+      message.warning(isTurkish ? "En fazla 26 seçenek eklenebilir" : "Maksimal 26 ta variant qo'shish mumkin");
       return;
     }
 
@@ -118,7 +126,7 @@ export default function ReadingSectionEditor({
     if (!question) return;
 
     if (question.options.length <= 2) {
-      message.warning("Kamida 2 ta variant bo'lishi kerak");
+      message.warning(isTurkish ? "En az 2 seçenek olmalıdır" : "Kamida 2 ta variant bo'lishi kerak");
       return;
     }
 
@@ -148,17 +156,18 @@ export default function ReadingSectionEditor({
     try {
       setUploadingQuestionIndex(questionIndex);
       const result = await fileUploadMutation.mutateAsync(file);
-      const uploadedUrl = (result as any)?.data?.url;
+      const uploadedUrl =
+        (result as any)?.data?.url || (result as any)?.data?.reference;
       console.log('[Reading] Uploaded question image result:', result, 'resolvedUrl:', uploadedUrl);
       if (uploadedUrl) {
         // Replace by index to avoid any id-mismatch issues
         const nextQuestions = [...section.questions];
         nextQuestions[questionIndex] = { ...question, imageUrl: uploadedUrl, text: "" };
         onChange({ ...section, questions: nextQuestions });
-        message.success("Savol rasmi yuklandi");
+        message.success(isTurkish ? "Soru görseli yüklendi" : "Savol rasmi yuklandi");
       }
     } catch (e) {
-      message.error("Rasm yuklashda xatolik");
+      message.error(isTurkish ? "Görsel yüklenemedi" : "Rasm yuklashda xatolik");
     } finally {
       setUploadingQuestionIndex(null);
     }
@@ -169,14 +178,15 @@ export default function ReadingSectionEditor({
     try {
       setIsSectionUploading(true);
       const result = await fileUploadMutation.mutateAsync(file);
-      const uploadedUrl = (result as any)?.data?.url;
+      const uploadedUrl =
+        (result as any)?.data?.url || (result as any)?.data?.reference;
       console.log('[Reading] Uploaded section image result:', result, 'resolvedUrl:', uploadedUrl);
       if (uploadedUrl) {
         updateField("imageUrl", uploadedUrl);
-        message.success("Section rasmi yuklandi");
+        message.success(isTurkish ? "İçerik görseli yüklendi" : "Section rasmi yuklandi");
       }
     } catch (e) {
-      message.error("Rasm yuklashda xatolik");
+      message.error(isTurkish ? "Görsel yüklenemedi" : "Rasm yuklashda xatolik");
     } finally {
       setIsSectionUploading(false);
     }
@@ -187,7 +197,7 @@ export default function ReadingSectionEditor({
   const handleContentSave = () => {
     updateField("content", tempContent);
     setIsEditing(false);
-    message.success("Content saqlandi");
+    message.success(isTurkish ? "Metin kaydedildi" : "Content saqlandi");
   };
 
   const handleContentCancel = () => {
@@ -206,13 +216,13 @@ export default function ReadingSectionEditor({
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <Input
-            placeholder="Section sarlavhasi"
+            placeholder={isTurkish ? "İçerik başlığı" : "Section sarlavhasi"}
             value={section.title}
             onChange={(e) => updateField("title", e.target.value)}
             size="large"
             style={{ flex: 1, fontSize: 16, fontWeight: "bold" }}
           />
-          {section.id.startsWith("demo-") && (
+          {showDemoBadge && section.id.startsWith("demo-") && (
             <span style={{ 
               backgroundColor: "#1890ff", 
               color: "white", 
@@ -224,14 +234,16 @@ export default function ReadingSectionEditor({
               DEMO
             </span>
           )}
-          <Button
-            danger
-            onClick={onRemove}
-            icon={<DeleteOutlined />}
-            size="small"
-          >
-            O'chirish
-          </Button>
+          {allowRemove && (
+            <Button
+              danger
+              onClick={onRemove}
+              icon={<DeleteOutlined />}
+              size="small"
+            >
+              {isTurkish ? "Sil" : "O'chirish"}
+            </Button>
+          )}
         </div>
       }
     >
@@ -240,7 +252,9 @@ export default function ReadingSectionEditor({
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Text strong style={{ fontSize: 16 }}>
-              📄 Matn (S1, S2, S3... bo'sh joylar bilan)
+              {isTurkish
+                ? "Metin ve boşluklar"
+                : "📄 Matn (S1, S2, S3... bo'sh joylar bilan)"}
             </Text>
             {!isEditing && (
               <Button
@@ -249,7 +263,7 @@ export default function ReadingSectionEditor({
                 onClick={() => setIsEditing(true)}
                 size="small"
               >
-                Tahrirlash
+                {isTurkish ? "Düzenle" : "Tahrirlash"}
               </Button>
             )}
           </div>
@@ -260,15 +274,19 @@ export default function ReadingSectionEditor({
                 value={tempContent}
                 onChange={(e) => setTempContent(e.target.value)}
                 rows={8}
-                placeholder="Matnni kiriting. Bo'sh joylar uchun (S1), (S2), (S3) formatini ishlating..."
+                placeholder={
+                  isTurkish
+                    ? "Metni girin. Boşluklar için (S1), (S2), (S3) biçimini kullanın."
+                    : "Matnni kiriting. Bo'sh joylar uchun (S1), (S2), (S3) formatini ishlating..."
+                }
                 style={{ marginBottom: 16 }}
               />
               <Space>
                 <Button type="primary" onClick={handleContentSave}>
-                  Saqlash
+                  {isTurkish ? "Kaydet" : "Saqlash"}
                 </Button>
                 <Button onClick={handleContentCancel}>
-                  Bekor qilish
+                  {isTurkish ? "Vazgeç" : "Bekor qilish"}
                 </Button>
               </Space>
             </div>
@@ -284,13 +302,18 @@ export default function ReadingSectionEditor({
                 fontSize: 16,
               }}
             >
-              {section.content || "Matn kiritilmagan"}
+              {section.content ||
+                (isTurkish ? "Henüz metin girilmedi" : "Matn kiritilmagan")}
             </div>
           )}
 
           {blanks.length > 0 && (
             <Alert
-              message={`${blanks.length} ta bo'sh joy topildi: S${blanks.join(", S")}`}
+              message={
+                isTurkish
+                  ? `${blanks.length} boşluk bulundu: S${blanks.join(", S")}`
+                  : `${blanks.length} ta bo'sh joy topildi: S${blanks.join(", S")}`
+              }
               type="info"
               style={{ marginTop: 8 }}
             />
@@ -301,14 +324,22 @@ export default function ReadingSectionEditor({
 
         {/* Section image (optional) */}
         <div>
-          <Text strong style={{ marginBottom: 8, display: "block" }}>Section rasmi (ixtiyoriy)</Text>
+          <Text strong style={{ marginBottom: 8, display: "block" }}>
+            {isTurkish ? "İçerik görseli (isteğe bağlı)" : "Section rasmi (ixtiyoriy)"}
+          </Text>
           <Upload
             showUploadList={false}
             accept="image/*"
             beforeUpload={(file) => { void handleSectionImageUpload(file); return false; }}
           >
             <Button icon={<UploadOutlined />} loading={fileUploadMutation.isPending}>
-              {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm yuklash"}
+              {fileUploadMutation.isPending
+                ? isTurkish
+                  ? "Yükleniyor..."
+                  : "Yuklanmoqda..."
+                : isTurkish
+                  ? "Görsel yükle"
+                  : "Rasm yuklash"}
             </Button>
           </Upload>
           {section.imageUrl && (
@@ -327,10 +358,12 @@ export default function ReadingSectionEditor({
         {/* Shared Variants (optional) */}
         <div>
           <Text strong style={{ fontSize: 16, marginBottom: 8, display: "block" }}>
-            🔗 Umumiy variantlar (ixtiyoriy)
+            {isTurkish ? "Ortak seçenekler (isteğe bağlı)" : "🔗 Umumiy variantlar (ixtiyoriy)"}
           </Text>
           <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
-            Agar bu bo'limdagi barcha savollar bir xil variantlardan foydalansa, ularni shu yerda bir marta kiriting. Keyin har bir savol uchun to'g'ri variantni tanlaysiz.
+            {isTurkish
+              ? "Bu içerikteki sorular aynı seçenekleri kullanıyorsa seçenekleri bir kez girin. Ardından her soru için doğru cevabı seçin."
+              : "Agar bu bo'limdagi barcha savollar bir xil variantlardan foydalansa, ularni shu yerda bir marta kiriting. Keyin har bir savol uchun to'g'ri variantni tanlaysiz."}
           </Text>
           <Space direction="vertical" size="small" style={{ width: "100%" }}>
             {(section.sharedVariants || []).map((variant, idx) => (
@@ -343,7 +376,7 @@ export default function ReadingSectionEditor({
                     next[idx] = { letter: variant.letter || String.fromCharCode(65 + idx), text: e.target.value };
                     updateField("sharedVariants", next);
                   }}
-                  placeholder="Variant matni"
+                  placeholder={isTurkish ? "Seçenek metni" : "Variant matni"}
                   style={{ flex: 1 }}
                 />
                 <Button
@@ -376,7 +409,7 @@ export default function ReadingSectionEditor({
               icon={<PlusOutlined />}
               style={{ marginTop: 8 }}
             >
-              Variant qo'shish
+              {isTurkish ? "Seçenek ekle" : "Variant qo'shish"}
             </Button>
           </Space>
         </div>
@@ -386,13 +419,19 @@ export default function ReadingSectionEditor({
         {/* Questions */}
         <div>
           <Text strong style={{ fontSize: 16, marginBottom: 16, display: "block" }}>
-            ❓ Savollar ({section.questions.length})
+            {isTurkish
+              ? `Sorular (${section.questions.length})`
+              : `❓ Savollar (${section.questions.length})`}
           </Text>
 
           {section.questions.length === 0 ? (
             <Alert
-              message="Hali savollar yaratilmagan"
-              description="Matnda (S1), (S2) kabi bo'sh joylar qo'shing va ular uchun savollar avtomatik yaratiladi"
+              message={isTurkish ? "Henüz soru oluşturulmadı" : "Hali savollar yaratilmagan"}
+              description={
+                isTurkish
+                  ? "Metne (S1), (S2) gibi boşluklar eklediğinizde sorular otomatik oluşturulur."
+                  : "Matnda (S1), (S2) kabi bo'sh joylar qo'shing va ular uchun savollar avtomatik yaratiladi"
+              }
               type="warning"
             />
           ) : (
@@ -401,14 +440,18 @@ export default function ReadingSectionEditor({
                 <Card
                   key={question.id}
                   size="small"
-                  title={`S${question.blankNumber} uchun savol`}
+                  title={
+                    isTurkish
+                      ? `S${question.blankNumber} sorusu`
+                      : `S${question.blankNumber} uchun savol`
+                  }
                   extra={
                     <Button
                       danger
                       size="small"
                       onClick={() => removeQuestion(question.id)}
                     >
-                      O'chirish
+                      {isTurkish ? "Sil" : "O'chirish"}
                     </Button>
                   }
                   style={{ backgroundColor: "transparent", border: "1px dashed var(--ant-border-color, #d9d9d9)" }}
@@ -418,7 +461,7 @@ export default function ReadingSectionEditor({
                     {isPartTwo ? (
                       <div>
                         <Text strong style={{ marginBottom: 8, display: "block" }}>
-                          Savol rasmi (Part 2)
+                          {isTurkish ? "Soru görseli (Bölüm 2)" : "Savol rasmi (Part 2)"}
                         </Text>
                         <Upload
                           showUploadList={false}
@@ -426,7 +469,13 @@ export default function ReadingSectionEditor({
                           beforeUpload={(file) => { void handleQuestionImageUpload(section.questions.findIndex(q => q.id === question.id), question, file); return false; }}
                         >
                           <Button icon={<UploadOutlined />} loading={uploadingQuestionIndex === section.questions.findIndex(q => q.id === question.id)}>
-                            {fileUploadMutation.isPending ? "Yuklanmoqda..." : "Rasm yuklash"}
+                            {fileUploadMutation.isPending
+                              ? isTurkish
+                                ? "Yükleniyor..."
+                                : "Yuklanmoqda..."
+                              : isTurkish
+                                ? "Görsel yükle"
+                                : "Rasm yuklash"}
                           </Button>
                         </Upload>
                         {question.imageUrl && (
@@ -445,11 +494,15 @@ export default function ReadingSectionEditor({
                     ) : (
                       <div>
                         <Text strong style={{ marginBottom: 8, display: "block" }}>
-                          Savol matni
+                          {isTurkish ? "Soru metni" : "Savol matni"}
                         </Text>
                         <Input.TextArea
                           rows={3}
-                          placeholder="Savol matnini kiriting (ixtiyoriy)"
+                          placeholder={
+                            isTurkish
+                              ? "Soru metnini girin (isteğe bağlı)"
+                              : "Savol matnini kiriting (ixtiyoriy)"
+                          }
                           value={question.text || ""}
                           onChange={(e) => updateQuestion(question.id, { ...question, text: e.target.value })}
                         />
@@ -458,10 +511,10 @@ export default function ReadingSectionEditor({
 
                     <div>
                       <Text strong style={{ marginBottom: 8, display: "block" }}>
-                        To'g'ri javob:
+                        {isTurkish ? "Doğru cevap" : "To'g'ri javob:"}
                       </Text>
                       <Select
-                        placeholder="To'g'ri javobni tanlang"
+                        placeholder={isTurkish ? "Doğru cevabı seçin" : "To'g'ri javobni tanlang"}
                         value={question.correctAnswer || undefined}
                         onChange={(value) => updateQuestion(question.id, { ...question, correctAnswer: value })}
                         style={{ width: 320 }}
@@ -481,10 +534,14 @@ export default function ReadingSectionEditor({
 
                     <div>
                       <Text strong style={{ marginBottom: 8, display: "block" }}>
-                        Variantlar:
+                        {isTurkish ? "Seçenekler" : "Variantlar:"}
                       </Text>
                       {section.sharedVariants && section.sharedVariants.length > 0 ? (
-                        <Text type="secondary">Variantlar bu bo'lim uchun umumiy. Yuqoridagi ro'yxatdan tahrir qiling.</Text>
+                        <Text type="secondary">
+                          {isTurkish
+                            ? "Seçenekler bu içerikteki tüm sorular için ortaktır. Yukarıdaki listeden düzenleyin."
+                            : "Variantlar bu bo'lim uchun umumiy. Yuqoridagi ro'yxatdan tahrir qiling."}
+                        </Text>
                       ) : (
                         <Space direction="vertical" size="small" style={{ width: "100%" }}>
                           {question.options.map((option, optionIndex) => (
@@ -495,7 +552,11 @@ export default function ReadingSectionEditor({
                               <Input
                                 value={option.text}
                                 onChange={(e) => updateOption(question.id, optionIndex, e.target.value)}
-                                placeholder={`${option.letter} variantini kiriting`}
+                                placeholder={
+                                  isTurkish
+                                    ? `${option.letter} seçeneğini girin`
+                                    : `${option.letter} variantini kiriting`
+                                }
                                 style={{ flex: 1 }}
                               />
                               {question.options.length > 2 && (
@@ -517,12 +578,30 @@ export default function ReadingSectionEditor({
                               icon={<PlusOutlined />}
                               style={{ marginTop: 8 }}
                             >
-                              Variant qo'shish
+                              {isTurkish ? "Seçenek ekle" : "Variant qo'shish"}
                             </Button>
                           )}
                         </Space>
                       )}
                     </div>
+
+                    <MockEvidenceEditor
+                      testType="READING"
+                      sourceText={section.content || ""}
+                      evidence={question.evidence}
+                      options={(
+                        section.sharedVariants && section.sharedVariants.length > 0
+                          ? section.sharedVariants
+                          : question.options
+                      ).map((option) => ({
+                        key: option.letter,
+                        text: option.text,
+                        isCorrect: option.letter === question.correctAnswer,
+                      }))}
+                      onChange={(evidence) =>
+                        updateQuestion(question.id, { ...question, evidence })
+                      }
+                    />
                   </Space>
                 </Card>
               ))}

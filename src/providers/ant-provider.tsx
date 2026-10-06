@@ -1,24 +1,26 @@
 import { useContext, type PropsWithChildren } from "react";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { ConfigProvider, theme } from "antd";
-import locale from "antd/locale/uz_UZ";
-import { ThemeContext } from "./theme-provider";
+import locale from "antd/locale/tr_TR";
 import { Toaster } from "react-hot-toast";
+import { ThemeContext } from "./theme-provider";
 
 export const AntProvider = ({ children }: PropsWithChildren) => {
   const { theme: mode } = useContext(ThemeContext);
-  const isDark = mode === "light";
+  const isDark = mode === "dark";
 
-  const primaryColor = isDark ? "#6366F1" : "#4F46E5"; // Indigo shade
-  const successColor = isDark ? "#10B981" : "#059669"; // Emerald shade
-  const warningColor = isDark ? "#F59E0B" : "#D97706"; // Amber shade
-  const errorColor = isDark ? "#EF4444" : "#DC2626"; // Red shade
-  const infoColor = isDark ? "#3B82F6" : "#2563EB"; // Blue shade
-
-  // Background colors - Softer, warmer colors for dark mode
-  const bgBase = isDark ? "#1a1b23" : "#FFFFFF"; // Softer dark gray
-  const bgSecondary = isDark ? "#242530" : "#F9FAFB"; // Slightly lighter secondary
-  const bgTertiary = isDark ? "#2d2e3a" : "#F3F4F6"; // Warmer tertiary
+  const primaryColor = "#dc2626";
+  const primaryHoverColor = "#b91c1c";
+  const bgBase = isDark ? "#191919" : "#ffffff";
+  const bgSecondary = isDark ? "#202020" : "#fbfbfa";
+  const bgTertiary = isDark ? "#292929" : "#f1f1ef";
+  const textPrimary = isDark ? "#f2f2f0" : "#37352f";
+  const textSecondary = isDark
+    ? "rgba(242, 242, 240, 0.68)"
+    : "rgba(55, 53, 47, 0.68)";
+  const borderColor = isDark
+    ? "rgba(255, 255, 255, 0.13)"
+    : "rgba(55, 53, 47, 0.14)";
 
   return (
     <ConfigProvider
@@ -27,139 +29,146 @@ export const AntProvider = ({ children }: PropsWithChildren) => {
         algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
           colorPrimary: primaryColor,
-          colorSuccess: successColor,
-          colorWarning: warningColor,
-          colorError: errorColor,
-          colorInfo: infoColor,
+          colorPrimaryHover: primaryHoverColor,
+          colorSuccess: "#238636",
+          colorWarning: "#c47f00",
+          colorError: "#dc2626",
+          colorInfo: "#737373",
           colorBgBase: bgBase,
+          colorBgLayout: bgSecondary,
+          colorBgContainer: isDark ? "#202020" : "#ffffff",
+          colorBgElevated: isDark ? "#252525" : "#ffffff",
+          colorText: textPrimary,
+          colorTextSecondary: textSecondary,
+          colorBorder: borderColor,
+          colorBorderSecondary: borderColor,
           borderRadius: 6,
-
-          // Font settings
           fontFamily:
             "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-
-          // Control the overall component spacing
           marginXS: 8,
           marginSM: 12,
           marginMD: 16,
           marginLG: 24,
           marginXL: 32,
-
-          // Control sizes
           controlHeight: 38,
+          controlOutline: "rgba(55, 53, 47, 0.12)",
+          boxShadowSecondary: "0 8px 30px rgba(15, 15, 15, 0.08)",
         },
         components: {
-          // Layout components
           Layout: {
-            headerBg: isDark ? bgSecondary : "#FFFFFF",
-            siderBg: isDark ? bgSecondary : "#FFFFFF",
-            bodyBg: isDark ? bgBase : "#F9FAFB",
-            colorText: isDark ? "#E5E7EB" : "#374151",
-            colorTextSecondary: isDark ? "#D1D5DB" : "#4B5563",
+            headerBg: isDark ? bgSecondary : "#ffffff",
+            siderBg: isDark ? bgSecondary : "#f7f7f5",
+            bodyBg: bgSecondary,
+            colorText: textPrimary,
+            colorTextSecondary: textSecondary,
           },
-
-          // Table component
           Table: {
-            headerBg: isDark ? bgSecondary : "#F9FAFB",
-            headerColor: isDark ? "#E5E7EB" : "#374151",
-            rowHoverBg: isDark ? bgTertiary : "#F3F4F6",
-            rowExpandedBg: isDark ? bgTertiary : "#F3F4F6",
-            borderColor: isDark ? bgTertiary : "#E5E7EB",
+            headerBg: isDark ? bgTertiary : "#fbfbfa",
+            headerColor: textSecondary,
+            rowHoverBg: isDark
+              ? bgTertiary
+              : "rgba(55, 53, 47, 0.045)",
+            rowExpandedBg: bgTertiary,
+            borderColor,
+            headerBorderRadius: 0,
+            cellPaddingBlock: 13,
+            cellPaddingInline: 16,
           },
-
-          // Menu component
           Menu: {
-            darkItemSelectedBg: primaryColor,
+            itemBg: "transparent",
+            subMenuItemBg: "transparent",
+            itemColor: textSecondary,
+            itemSelectedColor: textPrimary,
+            itemSelectedBg: isDark
+              ? "rgba(255, 255, 255, 0.09)"
+              : "rgba(55, 53, 47, 0.09)",
+            itemHoverColor: textPrimary,
+            itemHoverBg: isDark
+              ? "rgba(255, 255, 255, 0.06)"
+              : "rgba(55, 53, 47, 0.06)",
+            itemBorderRadius: 5,
+            itemHeight: 40,
+            darkItemSelectedBg: "rgba(255, 255, 255, 0.09)",
             darkItemHoverBg: bgTertiary,
             darkSubMenuItemBg: bgSecondary,
-            itemSelectedBg: `${primaryColor}15`, // Light opacity version of primary color
-            itemHoverBg: isDark ? bgTertiary : "#F3F4F6",
-            colorText: isDark ? "#E5E7EB" : "#374151",
-            colorTextSecondary: isDark ? "#D1D5DB" : "#4B5563",
           },
-
-          // Button component
           Button: {
-            defaultBg: isDark ? bgTertiary : "#F9FAFB",
-            defaultColor: isDark ? "#E5E7EB" : "#374151",
-            defaultBorderColor: isDark ? "#4B5563" : "#D1D5DB",
-            primaryShadow: `0 4px 6px -1px ${primaryColor}20`,
-            defaultShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+            defaultBg: isDark ? bgTertiary : "#ffffff",
+            defaultColor: textPrimary,
+            defaultBorderColor: borderColor,
+            primaryShadow: "none",
+            defaultShadow: "none",
             borderRadius: 6,
-            colorPrimaryHover: isDark ? "#818CF8" : "#6366F1", // Lighter indigo for hover
+            colorPrimaryHover: primaryHoverColor,
+            fontWeight: 600,
           },
-
-          // Input and Form components
           Input: {
-            activeBg: isDark ? bgSecondary : "#FFFFFF",
-            activeBorderColor: primaryColor,
-            hoverBorderColor: isDark ? "#4B5563" : "#D1D5DB",
-            addonBg: isDark ? bgTertiary : "#F3F4F6",
+            activeBg: isDark ? bgSecondary : "#ffffff",
+            activeBorderColor: textPrimary,
+            hoverBorderColor: isDark
+              ? "rgba(255, 255, 255, 0.24)"
+              : "rgba(55, 53, 47, 0.28)",
+            addonBg: bgTertiary,
+            paddingBlock: 8,
+            paddingInline: 11,
           },
-
           Form: {
-            labelColor: isDark ? "#D1D5DB" : "#374151",
-            itemMarginBottom: 20,
+            labelColor: textPrimary,
+            itemMarginBottom: 18,
+            verticalLabelPadding: "0 0 6px",
           },
-
-          // Card component
           Card: {
-            colorBgContainer: isDark ? bgSecondary : "#FFFFFF",
-            boxShadow: isDark
-              ? "0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px -1px rgba(0, 0, 0, 0.2)"
-              : "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+            colorBgContainer: isDark ? bgSecondary : "#ffffff",
+            boxShadow: "none",
+            headerBg: "transparent",
           },
-
-          // Dropdown component
           Dropdown: {
-            controlItemBgActive: isDark ? bgTertiary : "#F3F4F6",
-            controlItemBgActiveHover: isDark
-              ? primaryColor
-              : `${primaryColor}20`,
+            controlItemBgActive: bgTertiary,
+            controlItemBgActiveHover: bgTertiary,
           },
-
-          // Select component
           Select: {
-            optionSelectedBg: isDark ? primaryColor : `${primaryColor}20`,
-            optionActiveBg: isDark ? bgTertiary : "#F3F4F6",
+            optionSelectedBg: isDark
+              ? "rgba(255, 255, 255, 0.09)"
+              : "rgba(55, 53, 47, 0.09)",
+            optionActiveBg: bgTertiary,
+            optionSelectedColor: textPrimary,
           },
-
-          // Modal component
           Modal: {
-            contentBg: isDark ? bgSecondary : "#FFFFFF",
-            headerBg: isDark ? bgSecondary : "#FFFFFF",
-            footerBg: isDark ? bgSecondary : "#FFFFFF",
-            // maskBg: 'rgba(0, 0, 0, 0.5)'
-            titleColor: isDark ? "#FFFFFF" : "#000000",
-            colorText: isDark ? "#D1D5DB" : "#374151",
+            contentBg: isDark ? bgSecondary : "#ffffff",
+            headerBg: isDark ? bgSecondary : "#ffffff",
+            footerBg: isDark ? bgSecondary : "#ffffff",
+            titleColor: textPrimary,
+            colorText: textPrimary,
+            borderRadiusLG: 8,
           },
-
-          // Tabs component
           Tabs: {
             inkBarColor: primaryColor,
             itemHoverColor: primaryColor,
             itemSelectedColor: primaryColor,
-            cardBg: isDark ? bgSecondary : "#FFFFFF",
+            cardBg: isDark ? bgSecondary : "#ffffff",
             cardGutter: 8,
           },
-
-          // Segmented component
           Segmented: {
-            itemSelectedBg: isDark ? primaryColor : `${primaryColor}20`,
-            itemHoverBg: isDark ? bgTertiary : "#F3F4F6",
-            // bgColor: isDark ? bgSecondary : '#F3F4F6'
+            itemSelectedBg: isDark ? "#383838" : "#ffffff",
+            itemHoverBg: bgTertiary,
+            trackBg: bgTertiary,
           },
-
-          // Switch component
           Switch: {
-            handleBg: "#FFFFFF",
+            handleBg: "#ffffff",
             colorPrimary: primaryColor,
           },
-
+          Pagination: {
+            itemActiveBg: isDark ? bgTertiary : "#ffffff",
+            itemBg: "transparent",
+          },
+          Descriptions: {
+            labelBg: bgTertiary,
+            titleColor: textPrimary,
+          },
           Notification: {
-            colorErrorBg: isDark ? bgSecondary : "#FFFFFF",
-            colorSuccessBg: isDark ? bgSecondary : "#FFFFFF",
-            colorText: isDark ? "#E5E7EB" : "#374151",
+            colorErrorBg: isDark ? bgSecondary : "#ffffff",
+            colorSuccessBg: isDark ? bgSecondary : "#ffffff",
+            colorText: textPrimary,
           },
         },
       }}
@@ -171,9 +180,11 @@ export const AntProvider = ({ children }: PropsWithChildren) => {
           toastOptions={{
             duration: 4000,
             style: {
-              background: isDark ? bgSecondary : "#FFFFFF",
-              color: isDark ? "#E5E7EB" : "#374151",
-              border: `1px solid ${isDark ? bgTertiary : "#E5E7EB"}`,
+              background: isDark ? bgSecondary : "#ffffff",
+              color: textPrimary,
+              border: `1px solid ${borderColor}`,
+              borderRadius: 6,
+              boxShadow: "0 8px 30px rgba(15, 15, 15, 0.08)",
             },
           }}
         />

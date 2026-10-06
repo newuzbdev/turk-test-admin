@@ -1,17 +1,27 @@
-import { Table, Modal, notification } from "antd";
-import { useListeningModalStore } from "./utils/listening-modal-store";
-import { ListeningModal } from "./ui/listening-modal";
+import ContentAccessControls from "@/components/access/ContentAccessControls";
+import { ConfigProvider, Modal, notification, Table } from "antd";
+import trTR from "antd/locale/tr_TR";
 import { useState } from "react";
-import { ListeningColumns } from "./ui/listening-columns";
-import { useGetAllListeningTests } from "@/config/queries/listening/get-all.queries";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import { useDeleteListeningTest } from "@/config/queries/listening/delete.queries";
-import { useSearchParams } from "react-router-dom";
+import { useGetAllListeningTests } from "@/config/queries/listening/get-all.queries";
+import {
+  useMoveMockTestToDraft,
+  usePublishMockTest,
+} from "@/config/queries/test/publication.queries";
+import { ExamListHeader } from "@/shared/components/exam-list-ui";
+
+import { ListeningColumns } from "./ui/listening-columns";
+import { ListeningModal } from "./ui/listening-modal";
+import { useListeningModalStore } from "./utils/listening-modal-store";
 
 export const ListeningTable = () => {
+  const navigate = useNavigate();
   const { onOpen } = useListeningModalStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string>("");
+  const [deleteId, setDeleteId] = useState("");
 
   const currentPage = parseInt(searchParams.get("page") || "1");
   const pageSize = parseInt(searchParams.get("limit") || "10");
@@ -19,74 +29,104 @@ export const ListeningTable = () => {
   const { data: listeningTests, isLoading: isListeningLoading } =
     useGetAllListeningTests();
   const { mutate: deleteListeningMutation } = useDeleteListeningTest();
+  const { mutate: publishMockTest } = usePublishMockTest();
+  const { mutate: moveMockTestToDraft } = useMoveMockTestToDraft();
 
-  const handleDelete = (testId: string) => {
-    setDeleteId(testId);
-    setDeleteModalOpen(true);
-  };
+  const tableData = listeningTests?.data || [];
+  const total =
+    listeningTests?.meta?.total ||
+    (listeningTests as { total?: number } | undefined)?.total ||
+    0;
 
-  const confirmDelete = () => {
-    deleteListeningMutation(deleteId);
-    setDeleteModalOpen(false);
-    setDeleteId("");
+  const handleSearch = (value: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (value) nextParams.set("search", value);
+    else nextParams.delete("search");
+    nextParams.set("page", "1");
+    setSearchParams(nextParams);
   };
 
   const handleCopyId = (id: string) => {
     navigator.clipboard.writeText(id);
     notification.success({
-      message: "ID nusxalandi",
+      message: "ID kopyalandı",
       placement: "bottomRight",
     });
   };
 
-  const tableData = listeningTests?.data || [];
-
   return (
-    <>
+    <ConfigProvider locale={trTR}>
       <Table
+        className="exam-list-table"
+        columns={[...ListeningColumns({
+          onEdit: onOpen,
+          onDelete: (testId) => {
+            setDeleteId(testId);
+            setDeleteModalOpen(true);
+          },
+          onCopyId: handleCopyId,
+          onPublish: publishMockTest,
+          onMoveToDraft: moveMockTestToDraft,
+        }),{title:"Erişim",render:(_,row)=><ContentAccessControls target={{scope:"MOCK_LISTENING",targetId:row.id}} row={row}/>}]}
+        dataSource={tableData}
+        loading={isListeningLoading}
         pagination={{
-          total:
-            listeningTests?.meta?.total || (listeningTests as any)?.total || 0,
-          pageSize: pageSize,
+          total,
+          pageSize,
           current: currentPage,
-          showSizeChanger: true,
-          pageSizeOptions: [5, 10, 20, 50, 100],
+          hideOnSinglePage: total <= pageSize,
+          showSizeChanger: total > 10,
+          pageSizeOptions: [10, 20, 50],
+          showTotal: (count) => `${count} test`,
           onChange: (page, size) => {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.set("page", page.toString());
-            newParams.set("limit", size?.toString() || "10");
-            setSearchParams(newParams);
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.set("page", page.toString());
+            nextParams.set("limit", size?.toString() || "10");
+            setSearchParams(nextParams);
           },
         }}
-        title={() => (
-          <div className="flex items-center justify-between">
-            <h2>Listening Testlar</h2>
-            <ListeningModal />
-          </div>
-        )}
+        rowKey={(record) => record.id || ""}
+        scroll={{ x: 600 }}
         size="small"
-        loading={isListeningLoading}
-        scroll={{ x: "max-content" }}
-        dataSource={tableData}
-        rowKey={(rec) => rec.id || ""}
-        columns={ListeningColumns({
-          onEdit: onOpen,
-          onDelete: handleDelete,
-          onCopyId: handleCopyId,
+        title={() => (
+          <ExamListHeader
+            title="Dinleme testleri"
+            action={<ListeningModal />}
+            searchValue={searchParams.get("search") || ""}
+            onSearch={handleSearch}
+          />
+        )}
+        onRow={(record) => ({
+          className:
+            record.isDeleted || searchParams.get("view") === "ARCHIVED"
+              ? ""
+              : "exam-list-clickable-row",
+          onClick: () => {
+            if (
+              record.id &&
+              !record.isDeleted &&
+              searchParams.get("view") !== "ARCHIVED"
+            )
+              navigate(`/listening/${record.id}/edit-v3`);
+          },
         })}
       />
 
       <Modal
-        title="Listening testini o'chirish"
+        title="Dinleme testini arşivle"
         open={deleteModalOpen}
-        onOk={confirmDelete}
+        onOk={() => {
+          deleteListeningMutation(deleteId);
+          setDeleteModalOpen(false);
+          setDeleteId("");
+        }}
         onCancel={() => setDeleteModalOpen(false)}
-        okText="O'chirish"
-        cancelText="Bekor qilish"
+        okText="Arşivle"
+        cancelText="Vazgeç"
         okButtonProps={{ danger: true }}
       >
-        <p>Haqiqatan ham bu listening testini o'chirmoqchimisiz?</p>
+        <p>Bu dinleme testini arşivlemek istediğinizden emin misiniz?</p>
       </Modal>
-    </>
+    </ConfigProvider>
   );
 };

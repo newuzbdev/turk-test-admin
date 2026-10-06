@@ -1,3 +1,4 @@
+import { readExamListView } from "@/shared/components/exam-list-view";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import axiosPrivate from "@/config/api";
@@ -95,16 +96,10 @@ export interface SubmitAnswerDto {
 }
 
 export const useGetAllIelts = () => {
-  const [searchParams] = useSearchParams();
-  const search = searchParams.get("search");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-
   return useQuery({
-    queryKey: [ieltsEndpoints.all, search, page, limit],
+    queryKey: [ieltsEndpoints.all, "package-options"],
     queryFn: async () => {
-      return (
-        await axiosPrivate.get<{
+      type PackageResponse = {
           total: number;
           page: number;
           limit: number;
@@ -113,17 +108,47 @@ export const useGetAllIelts = () => {
           readingTests: TestItem[];
           speakingTests: TestItem[];
           writingTests: TestItem[];
-        }>(
-          ieltsEndpoints.all,
-          {
-            params: {
-              page,
-              limit,
-              search,
-            },
-          }
-        )
-      ).data;
+      };
+      const limit = 50;
+      let page = 1;
+      let catalog: PackageResponse | null = null;
+      while (true) {
+        const { data } = await axiosPrivate.get<PackageResponse>(ieltsEndpoints.all, {
+          params: { page, limit },
+        });
+        if (!catalog) catalog = { ...data };
+        else {
+          catalog.ieltsData.push(...data.ieltsData);
+          catalog.listeningTests.push(...data.listeningTests);
+          catalog.readingTests.push(...data.readingTests);
+          catalog.writingTests.push(...data.writingTests);
+          catalog.speakingTests.push(...data.speakingTests);
+        }
+        if (data.ieltsData.length < limit) return catalog;
+        page += 1;
+      }
     },
+  });
+};
+
+export type AdminIeltsRow = IELTS & {
+  status: "PUBLISHED" | "DRAFT" | "ARCHIVED";
+  isDeleted: boolean;
+};
+export const useAdminIeltsList = () => {
+  const [params] = useSearchParams();
+  const view = readExamListView(params.get("view"));
+  const page = Number(params.get("page") || 1);
+  const limit = Number(params.get("limit") || 10);
+  const search = params.get("search") || "";
+  return useQuery({
+    queryKey: [ieltsEndpoints.all, "admin-list", view, page, limit, search],
+    queryFn: async () =>
+      (
+        await axiosPrivate.get<{ ieltsData: AdminIeltsRow[]; total: number }>(
+          `${ieltsEndpoints.all}/admin/list`,
+          { params: { view, page, limit, search } },
+        )
+      ).data,
   });
 };
