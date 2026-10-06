@@ -1,0 +1,4 @@
+.billing-package-layout {display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+.billing-package-editor {display:grid;grid-template-columns:minmax(280px,2fr) minmax(220px,1fr);gap:20px;align-items:start}
+@media(max-width:1100px){.billing-package-editor{grid-template-columns:1fr}}
+@media(max-width:750px){.billing-package-layout{grid-template-columns:1fr}}

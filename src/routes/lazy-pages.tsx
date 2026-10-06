@@ -27,3 +27,5 @@ export const LearnSkillTagList = lazy(
 
 export const Students=lazy(()=>import("../pages/students/students"));
 export const StudentDetail=lazy(()=>import("../pages/students/student-detail"));
+
+export const BillingPackages=lazy(()=>import('../pages/billing-packages/billing-packages'));

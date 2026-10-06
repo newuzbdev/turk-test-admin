@@ -299,3 +299,7 @@ export const learnSkillTagEndpoints = {
 
 export const accessEndpoints={config:"/api/access/config",grants:"/api/admin/access/grants",publicPolicies:"/api/admin/access/public-policies",shares:"/api/admin/access/share-links"};
 export const studentsEndpoints={live:"/api/admin/students/live",activity:(id:string)=>`/api/admin/students/${encodeURIComponent(id)}/activity`,all:"/api/admin/students",one:(id:string)=>`/api/admin/students/${id}`,access:(id:string)=>`/api/admin/students/${id}/access`,targets:"/api/admin/students/access-targets"};
+
+export const billingPackageEndpoints={packages:'/api/admin/billing/packages',settings:'/api/admin/billing/settings',content:'/api/admin/billing/content-options',
+ one:(id:string)=>`/api/admin/billing/packages/${id}`,history:(id:string)=>`/api/admin/billing/packages/${id}/history`,
+ publish:(id:string)=>`/api/admin/billing/packages/${id}/publish`,sales:(id:string)=>`/api/admin/billing/packages/${id}/sales`,sort:(id:string)=>`/api/admin/billing/packages/${id}/sort`};

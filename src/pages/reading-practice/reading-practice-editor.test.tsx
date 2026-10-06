@@ -1,8 +1,15 @@
 import { App } from "antd";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import ReadingPracticeEditor from "./reading-practice-editor";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const mocks = vi.hoisted(() => ({
   record: undefined as Record<string, unknown> | undefined,
@@ -33,7 +40,10 @@ function renderEditor(initialEntry: string) {
   const router = createMemoryRouter(
     [
       { path: "/reading-practice/new", element: <ReadingPracticeEditor /> },
-      { path: "/reading-practice/:id/edit", element: <ReadingPracticeEditor /> },
+      {
+        path: "/reading-practice/:id/edit",
+        element: <ReadingPracticeEditor />,
+      },
       {
         path: "/reading-practice/:id/section-edit",
         element: <p>Dedicated section editor</p>,
@@ -43,9 +53,17 @@ function renderEditor(initialEntry: string) {
   );
 
   render(
-    <App>
-      <RouterProvider router={router} />
-    </App>,
+    <QueryClientProvider
+      client={
+        new QueryClient({
+          defaultOptions: { queries: { enabled: false, retry: false } },
+        })
+      }
+    >
+      <App>
+        <RouterProvider router={router} />
+      </App>
+    </QueryClientProvider>,
   );
   return router;
 }
@@ -93,7 +111,9 @@ describe("ReadingPracticeEditor route ownership", () => {
         "/reading-practice/section-1/section-edit",
       ),
     );
-    expect(await screen.findByText("Dedicated section editor")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Dedicated section editor"),
+    ).toBeInTheDocument();
     expect(mocks.update).not.toHaveBeenCalled();
   });
 });

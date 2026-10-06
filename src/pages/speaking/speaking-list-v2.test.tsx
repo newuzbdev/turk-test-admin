@@ -7,11 +7,9 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { message, Modal, Table } from "antd";
-import {
-  MemoryRouter,
-  useLocation,
-} from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryMocks = vi.hoisted(() => ({
   listResult: {
@@ -27,9 +25,10 @@ const queryMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/config/queries/speaking/get-all.queries", async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import("@/config/queries/speaking/get-all.queries")
-  >();
+  const actual =
+    await importOriginal<
+      typeof import("@/config/queries/speaking/get-all.queries")
+    >();
   return {
     ...actual,
     useGetAllSpeakingTests: () => queryMocks.listResult,
@@ -174,10 +173,18 @@ const renderSpeakingTable = (rows: SpeakingListRow[]) => {
     refetch: vi.fn(),
   };
   return render(
-    <MemoryRouter initialEntries={["/speaking"]}>
-      <SpeakingTable />
-      <LocationProbe />
-    </MemoryRouter>,
+    <QueryClientProvider
+      client={
+        new QueryClient({
+          defaultOptions: { queries: { enabled: false, retry: false } },
+        })
+      }
+    >
+      <MemoryRouter initialEntries={["/speaking"]}>
+        <SpeakingTable />
+        <LocationProbe />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 };
 
@@ -245,9 +252,9 @@ describe("speaking test list", () => {
     titleLink.focus();
     await user.keyboard("{Enter}");
 
-    expect(screen.getByRole("status", { name: "Geçerli yol" })).toHaveTextContent(
-      "/speaking/draft/edit",
-    );
+    expect(
+      screen.getByRole("status", { name: "Geçerli yol" }),
+    ).toHaveTextContent("/speaking/draft/edit");
   });
 
   it("offers only view and revision actions for archived V2 rows", async () => {

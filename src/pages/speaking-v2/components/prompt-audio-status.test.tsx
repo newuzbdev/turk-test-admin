@@ -71,9 +71,7 @@ describe("PromptAudioStatus", () => {
       />,
     );
 
-    const audio = screen.getByLabelText(
-      "Bölüm 1.1 · Soru 1 ses önizlemesi",
-    );
+    const audio = screen.getByLabelText("Bölüm 1.1 · Soru 1 ses önizlemesi");
 
     await waitFor(() => {
       expect(audio).toHaveAttribute("src", "blob:admin-audio-preview");
@@ -86,7 +84,17 @@ describe("PromptAudioStatus", () => {
     const previewBlob = createObjectURL.mock.calls[0][0] as Blob;
     expect(previewBlob.type).toBe("audio/wav");
     expect(previewBlob.size).toBe(5);
-    expect(await previewBlob.text()).toBe("audio");
+    // Node fetch and jsdom expose different Blob implementations.
+    const text =
+      typeof previewBlob.text === "function"
+        ? await previewBlob.text()
+        : await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(previewBlob);
+          });
+    expect(text).toBe("audio");
   });
 
   it("allows a ready audio to be regenerated or deleted", () => {

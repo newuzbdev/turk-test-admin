@@ -41,7 +41,7 @@ const groups = [
   },
   {
     label: "Yönetim",
-    paths: ["subscriptions", "product", "test-coin-price", "user-coin", "banner"],
+    paths: ["billing-packages", "subscriptions", "product", "test-coin-price", "user-coin", "banner"],
   },
   { label: "Sistem", paths: ["system-services", "ai-costs", "archive"] },
 ];

@@ -40,6 +40,7 @@ import {
   UpdateAdmin,
   UserCoin,
   Subscriptions,
+  BillingPackages,
   AiCosts,
   SystemServices,
 } from "./lazy-pages";
@@ -70,6 +71,7 @@ export interface RouterConfig {
 }
 
 export const routerConfig: RouterConfig[] = [
+  {title:"Paketler ve Fiyatlar",label:"Paketler ve Fiyatlar",icon:<Package/>,path:"billing-packages",page:<BillingPackages/>,inMenu:true},
   {title:"Öğrenciler",label:"Öğrenciler",icon:<User />,path:"students",page:<Students />,inMenu:true},
   {title:"Öğrenci erişimleri",label:"Öğrenci erişimleri",icon:<User />,path:"students/:id",page:<StudentDetail />,inMenu:false},
   {title:"Sınav Takvimi",label:"Sınav Takvimi",icon:<CalendarDays />,path:"official-exams",page:<OfficialExams />,inMenu:true},
