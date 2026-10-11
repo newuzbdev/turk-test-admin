@@ -102,12 +102,12 @@ export default function UserCoinPage() {
               <Col xs={24} md={16}>
                 <Form.Item
                   name="identifier"
-                  label="Kullanıcı adı, Telegram ID veya telefon"
+                  label="Hesap ID, kullanıcı adı, Telegram ID veya telefon"
                   rules={[
-                    { required: true, message: "Kullanıcı adı, Telegram ID veya telefon girin" },
+                    { required: true, message: "Hesap ID, kullanıcı adı, Telegram ID veya telefon girin" },
                   ]}
                 >
-                  <Input placeholder="john_doe | 123456789 | +998901234567" allowClear />
+                  <Input placeholder="Hesap numarası veya kullanıcı bilgisi" allowClear />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>

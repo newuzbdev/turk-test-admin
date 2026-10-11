@@ -121,7 +121,7 @@ export default function SubscriptionsPage() {
           <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
             <Input.Search
               allowClear
-              placeholder="Ad, kullanıcı adı, telefon veya e-posta ara"
+              placeholder="Hesap ID, ad, telefon veya e-posta ara"
               onSearch={(value) => {
                 setSearch(value.trim());
                 setPage(1);
