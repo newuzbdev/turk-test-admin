@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import RootLayout from "./layout";
@@ -23,6 +29,7 @@ vi.mock("../../routes/router-config", () => ({
       inMenu: true,
     },
     { path: "test", label: "Tam denemeler", icon: <span />, inMenu: true },
+    { path: "students", label: "Öğrenciler", icon: <span />, inMenu: true },
     {
       path: "system-services",
       label: "Servisler ve yapay zekâ",
@@ -32,6 +39,10 @@ vi.mock("../../routes/router-config", () => ({
   ],
 }));
 beforeEach(() => {
+  const original = window.getComputedStyle;
+  vi.spyOn(window, "getComputedStyle").mockImplementation((element) =>
+    original(element),
+  );
   vi.stubGlobal(
     "matchMedia",
     vi.fn((query: string) => ({
@@ -50,6 +61,7 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
   vi.clearAllMocks();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 function mount(path = "/test") {
@@ -70,9 +82,30 @@ it("collapses and reopens from the sidebar while keeping navigation accessible",
   fireEvent.click(screen.getByRole("button", { name: "Menüyü daralt" }));
   expect(localStorage.getItem("admin-sidebar-collapsed")).toBe("true");
   expect(screen.getByRole("link", { name: "Dersler" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Öğrenciler" })).toHaveAttribute(
+    "href",
+    "/students",
+  );
   fireEvent.click(screen.getByRole("button", { name: "Menüyü genişlet" }));
   expect(localStorage.getItem("admin-sidebar-collapsed")).toBe("false");
   expect(screen.getAllByRole("heading")).toHaveLength(1);
+});
+it("opens the student directory from Yönetim and keeps it selected for account details", () => {
+  localStorage.setItem(
+    "admin-sidebar-groups",
+    JSON.stringify({ Yönetim: true }),
+  );
+  mount("/students/f3245f75-7cf6-42f4-9d28-4cfa415f5624");
+  const group = screen.getByRole("button", { name: "Yönetim" });
+  expect(group).toHaveAttribute("aria-expanded", "true");
+  const groupContent = document.getElementById(
+    group.getAttribute("aria-controls")!,
+  )!;
+  const students = within(groupContent).getByRole("link", {
+    name: "Öğrenciler",
+  });
+  expect(students).toHaveAttribute("href", "/students");
+  expect(students).toHaveAttribute("aria-current", "page");
 });
 it("marks the specific nested page, not its parent, as selected", () => {
   mount("/learn/skill-tags");

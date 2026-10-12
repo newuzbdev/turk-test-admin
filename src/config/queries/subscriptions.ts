@@ -1,6 +1,11 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosPrivate from "@/config/api";
 import { subscriptionEndpoints } from "@/config/endpoint";
+import {
+  adminSubscriptionGet,
+  useSubscriptionAdminId,
+} from "@/pages/students/student-subscription-query";
 
 export type SubscriptionListStatus = "ALL" | "ACTIVE" | "EXPIRED";
 
@@ -39,7 +44,10 @@ export type AdminSubscriptionRow = {
   periodStart: string;
   periodEnd: string;
   includedAssessment: SubscriptionAllowance;
-  quotas: Record<"MOCK_WRITING" | "MOCK_SPEAKING" | "PRACTICE_AI", SubscriptionAllowance>;
+  quotas: Record<
+    "MOCK_WRITING" | "MOCK_SPEAKING" | "PRACTICE_AI",
+    SubscriptionAllowance
+  >;
   addOnAssessment: SubscriptionAllowance & { frozen: boolean };
   totalAssessmentRemaining: number;
   lastOrder: {
@@ -81,23 +89,39 @@ export function useAdminSubscriptions(params: {
   search: string;
   status: SubscriptionListStatus;
 }) {
-  return useQuery({
-    queryKey: ["admin-subscriptions", params],
-    queryFn: async () => {
-      const response = await axiosPrivate.get<AdminSubscriptionResponse>(
+  const adminId = useSubscriptionAdminId();
+  const client = useQueryClient();
+  useEffect(() => {
+    const legacy = (key: readonly unknown[]) =>
+      key[0] === "admin-subscriptions" && key.length < 3;
+    // Remove old persisted keys, including a restoration that finishes after mount.
+    client.removeQueries({ predicate: (entry) => legacy(entry.queryKey) });
+    return client.getQueryCache().subscribe((event) => {
+      if (event.type === "added" && legacy(event.query.queryKey))
+        client.removeQueries({ queryKey: event.query.queryKey, exact: true });
+    });
+  }, [client]);
+  const query = useQuery({
+    queryKey: ["admin-subscriptions", params, adminId],
+    queryFn: ({ signal }) =>
+      adminSubscriptionGet<AdminSubscriptionResponse>(
         subscriptionEndpoints.admin,
+        adminId,
+        signal,
         {
-          params: {
-            page: params.page,
-            limit: params.limit,
-            status: params.status,
-            search: params.search || undefined,
-          },
+          page: params.page,
+          limit: params.limit,
+          status: params.status,
+          search: params.search || undefined,
         },
-      );
-      return response.data;
-    },
-    placeholderData: keepPreviousData,
+      ),
+    enabled: !!adminId,
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === adminId ? previous : undefined,
     retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    meta: { persist: false },
   });
+  return { ...query, data: adminId ? query.data : undefined };
 }

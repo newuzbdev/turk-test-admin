@@ -205,6 +205,7 @@ export const userCoinEndpoints = {
 export const subscriptionEndpoints = {
   config: "/api/subscription/config",
   admin: "/api/subscription/admin",
+  adminStudent: (userId: string) => `/api/subscription/admin/${encodeURIComponent(userId)}`,
 };
 
 export const aiCostEndpoints = {

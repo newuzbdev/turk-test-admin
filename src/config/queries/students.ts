@@ -1,6 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import {
-  accessGet,
+  usePrivateAccessQuery,
   useAccessConfig,
   type AccessRecord,
   type AccessScope,
@@ -20,40 +19,39 @@ export type PublishedAccessTarget = {
   scope: AccessScope;
   buckets: string[];
 };
-export const studentQueryKey = (filters: StudentFilters) =>
-  ["admin", "students", filters] as const;
+export const studentQueryKey = (filters: StudentFilters, adminId: string) =>
+  ["admin", "students", filters, adminId] as const;
 export function useStudents(filters: StudentFilters) {
   const config = useAccessConfig();
-  return useQuery({
-    queryKey: studentQueryKey(filters),
-    queryFn: () =>
-      accessGet<{
-        items: StudentIdentity[];
-        total: number;
-        page: number;
-        limit: number;
-      }>(studentsEndpoints.all, filters),
-    enabled: config.data?.enabled === true,
-    meta: { persist: false },
-  });
+  return usePrivateAccessQuery<{
+    items: StudentIdentity[];
+    total: number;
+    page: number;
+    limit: number;
+  }>(
+    (adminId) => studentQueryKey(filters, adminId),
+    studentsEndpoints.all,
+    filters,
+    config.data?.enabled === true,
+  );
 }
 export function useStudent(id: string) {
   const config = useAccessConfig();
-  return useQuery({
-    queryKey: ["admin", "student", id],
-    queryFn: () => accessGet<StudentIdentity>(studentsEndpoints.one(id)),
-    enabled: config.data?.enabled === true && !!id,
-    meta: { persist: false },
-  });
+  return usePrivateAccessQuery<StudentIdentity>(
+    ["admin", "student", id],
+    studentsEndpoints.one(id),
+    undefined,
+    config.data?.enabled === true && !!id,
+  );
 }
 export function useStudentAccess(id: string) {
   const config = useAccessConfig();
-  return useQuery({
-    queryKey: ["admin", "access", id],
-    queryFn: () => accessGet<AccessRecord[]>(studentsEndpoints.access(id)),
-    enabled: config.data?.enabled === true && !!id,
-    meta: { persist: false },
-  });
+  return usePrivateAccessQuery<AccessRecord[]>(
+    ["admin", "access", id],
+    studentsEndpoints.access(id),
+    undefined,
+    config.data?.enabled === true && !!id,
+  );
 }
 export function usePublishedAccessTargets(
   scope: AccessScope,
@@ -62,16 +60,15 @@ export function usePublishedAccessTargets(
   targetId?: string,
 ) {
   const config = useAccessConfig();
-  return useQuery({
-    queryKey: ["admin", "access-targets", { scope, q, page, targetId }],
-    queryFn: () =>
-      accessGet<{ items: PublishedAccessTarget[]; total: number }>(
-        studentsEndpoints.targets,
-        { scope, q, page, targetId, limit: 25 },
-      ),
-    enabled: config.data?.enabled === true && scope !== "PLATFORM",
-    meta: { persist: false },
-  });
+  return usePrivateAccessQuery<{
+    items: PublishedAccessTarget[];
+    total: number;
+  }>(
+    ["admin", "access-targets", { scope, q, page, targetId }],
+    studentsEndpoints.targets,
+    { scope, q, page, targetId, limit: 25 },
+    config.data?.enabled === true && scope !== "PLATFORM",
+  );
 }
 
 // Safe projections returned by the ADMIN activity endpoints. No answer/audio/token fields.

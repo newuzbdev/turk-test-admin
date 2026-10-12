@@ -14,6 +14,8 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useStudent, useStudentAccess } from "@/config/queries/students";
 import { useAccessConfig } from "@/config/queries/access";
+import StudentSubscriptionCard from "./student-subscription-card";
+import { useSubscriptionAdminId } from "./student-subscription-query";
 import AccessGrantDialog from "@/components/access/AccessGrantDialog";
 import AccessRecordActions from "@/components/access/AccessRecordActions";
 import {
@@ -30,6 +32,10 @@ import StudentActivitySummary, {
 } from "./student-activity-summary";
 export default function StudentDetail() {
   const { id = "" } = useParams();
+  const adminId = useSubscriptionAdminId();
+  return <StudentDetailContent key={`${id}:${adminId}`} id={id} />;
+}
+function StudentDetailContent({ id }: { id: string }) {
   const student = useStudent(id);
   const access = useStudentAccess(id);
   const config = useAccessConfig();
@@ -83,6 +89,7 @@ export default function StudentDetail() {
           ]}
         />
       </Card>
+      <StudentSubscriptionCard key={id} userId={id} />
       <Card
         title="Etkinlik ve tamamlananlar"
         extra={
@@ -211,7 +218,7 @@ export default function StudentDetail() {
         />
       </Card>
       <Card
-        title="Erişimler"
+        title="Hediye erişimler"
         extra={
           <Button
             disabled={!config.data?.enabled || !student.data}

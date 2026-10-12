@@ -79,7 +79,7 @@ export default function StudentLiveTable() {
       <Space wrap>
         <Input.Search
           aria-label="Canlı öğrenci ara"
-          placeholder="Ad, e-posta veya Telegram"
+          placeholder="Hesap numarası, ad, e-posta veya Telegram"
           maxLength={160}
           style={{ width: 280 }}
           onSearch={(q) => setFilters({ ...filters, q, page: 1 })}
@@ -201,7 +201,7 @@ export default function StudentLiveTable() {
             title: "İşlem",
             render: (_, r) => (
               <Button onClick={() => navigate(`/students/${r.id}`)}>
-                Ayrıntılar / Erişimler
+                Hesabı yönet
               </Button>
             ),
           },

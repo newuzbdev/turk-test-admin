@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fireEvent,
   render,
@@ -49,12 +49,16 @@ vi.mock("@/config/queries/students", () => ({
   }),
 }));
 beforeEach(() => {
+  localStorage.setItem("accessToken", `synthetic.${btoa(JSON.stringify({ id: "admin-a", role: "ADMIN" }))}.signature`);
+  const original = window.getComputedStyle;
+  vi.spyOn(window, "getComputedStyle").mockImplementation(element => original(element));
   mocks.write.mockReset();
   mocks.refresh.mockReset();
   mocks.config.enabled = true;
   mocks.policies = [];
   mocks.targets = [];
 });
+afterEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 describe("access mutation lifecycle", () => {
   it("preserves request identity on unchanged retry and changes it for a changed payload", () => {
     const intent = new RequestIntent();

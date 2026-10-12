@@ -27,6 +27,8 @@ import { accessEndpoints } from "@/config/endpoint";
 import AccessTimeWindow from "./AccessTimeWindow";
 import { initialAccessWindow } from "@/utils/access-time";
 import { relevantLimitFields, RequestIntent } from "./access-form-state";
+import { currentAdminId } from "@/pages/students/student-live-query";
+import { useSubscriptionAdminId } from "@/pages/students/student-subscription-query";
 const scopeLabels: Record<AccessScope, string> = {
   PLATFORM: "Tam platform",
   MOCK_PACKAGE: "Deneme paketi",
@@ -60,6 +62,26 @@ export default function AccessGrantDialog({
   onClose,
   onSaved,
 }: AccessGrantDialogProps) {
+  const adminId = useSubscriptionAdminId();
+  const ownerAdminId = useRef(currentAdminId()).current;
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const currentSession =
+    !sessionExpired &&
+    !!ownerAdminId &&
+    adminId === ownerAdminId &&
+    currentAdminId() === ownerAdminId;
+  useEffect(() => {
+    if (!ownerAdminId || adminId !== ownerAdminId) {
+      setSessionExpired(true);
+      onClose();
+    }
+  }, [adminId, ownerAdminId, onClose]);
+  const requireOwner = () => {
+    if (currentSession && currentAdminId() === ownerAdminId) return true;
+    setSessionExpired(true);
+    onClose();
+    return false;
+  };
   const [scope, setScope] = useState<AccessScope>(
     target?.scope ?? record?.scope ?? "PLATFORM",
   );
@@ -97,7 +119,13 @@ export default function AccessGrantDialog({
   const intent = useRef(new RequestIntent());
   const refresh = useRefreshAccess();
   useEffect(() => {
-    if (reloadReady && (conflictRecord.current.code === 'ACCESS_REQUEST_ID_CONFLICT' || record?.revision !== conflictRecord.current.revision || !record)) onClose();
+    if (
+      reloadReady &&
+      (conflictRecord.current.code === "ACCESS_REQUEST_ID_CONFLICT" ||
+        record?.revision !== conflictRecord.current.revision ||
+        !record)
+    )
+      onClose();
   }, [reloadReady, record, onClose]);
   const selected = picker.data?.items.find((row) => row.id === targetId);
   const fields = relevantLimitFields(scope, selected?.buckets);
@@ -109,7 +137,7 @@ export default function AccessGrantDialog({
         )
       : fields;
   const revoke = async () => {
-    if (!record || lock.current || conflict) return;
+    if (!requireOwner() || !record || lock.current || conflict) return;
     lock.current = true;
     setBusy(true);
     try {
@@ -124,21 +152,30 @@ export default function AccessGrantDialog({
             ...payload,
           }),
         },
+        "post",
+        ownerAdminId,
       );
+      if (!requireOwner()) return;
       await refresh();
+      if (!requireOwner()) return;
       onClose();
     } catch (e) {
+      if (!requireOwner()) return;
       const detail = accessError(e);
       setError(detail);
       setConflict(isAccessConflict(e));
-      if (isAccessConflict(e)) conflictRecord.current = { revision: record?.revision, code: accessErrorCode(e) };
+      if (isAccessConflict(e))
+        conflictRecord.current = {
+          revision: record?.revision,
+          code: accessErrorCode(e),
+        };
     } finally {
       lock.current = false;
       setBusy(false);
     }
   };
   const save = async () => {
-    if (lock.current || conflict || !windowValid) return;
+    if (!requireOwner() || lock.current || conflict || !windowValid) return;
     lock.current = true;
     setBusy(true);
     setError("");
@@ -179,15 +216,23 @@ export default function AccessGrantDialog({
         record && kind !== "public" ? `${base}/${record.id}` : base,
         { ...payload, requestId: intent.current.forPayload(payload) },
         record && kind !== "public" ? "patch" : "post",
+        ownerAdminId,
       );
+      if (!requireOwner()) return;
       await refresh();
+      if (!requireOwner()) return;
       onSaved?.();
       onClose();
     } catch (e) {
+      if (!requireOwner()) return;
       const detail = accessError(e);
       setError(detail);
       setConflict(isAccessConflict(e));
-      if (isAccessConflict(e)) conflictRecord.current = { revision: record?.revision, code: accessErrorCode(e) };
+      if (isAccessConflict(e))
+        conflictRecord.current = {
+          revision: record?.revision,
+          code: accessErrorCode(e),
+        };
     } finally {
       lock.current = false;
       setBusy(false);
@@ -195,7 +240,7 @@ export default function AccessGrantDialog({
   };
   return (
     <Modal
-      open
+      open={currentSession}
       title={
         kind === "grant"
           ? "Kişisel erişim"
@@ -208,7 +253,7 @@ export default function AccessGrantDialog({
       okText="Kaydet"
       cancelText="Vazgeç"
       confirmLoading={busy}
-      okButtonProps={{ disabled: conflict || !windowValid }}
+      okButtonProps={{ disabled: !currentSession || conflict || !windowValid }}
       destroyOnHidden
     >
       <Space direction="vertical" style={{ width: "100%" }}>
@@ -220,7 +265,13 @@ export default function AccessGrantDialog({
               conflict ? (
                 <Button
                   onClick={async () => {
-                    try { await refresh(); setReloadReady(true); } catch { /* Keep stale edits blocked when refreshing fails. */ }
+                    if (!requireOwner()) return;
+                    try {
+                      await refresh();
+                      setReloadReady(true);
+                    } catch {
+                      /* Keep stale edits blocked when refreshing fails. */
+                    }
                   }}
                 >
                   Yeniden yükle

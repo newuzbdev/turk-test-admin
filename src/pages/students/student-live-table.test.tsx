@@ -13,13 +13,15 @@ import {
   QueryClientProvider,
   dehydrate,
 } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import type { PropsWithChildren } from "react";
 import type { StudentLiveResponse } from "@/config/queries/students";
 import StudentLiveTable from "./student-live-table";
 import StudentDetail from "./student-detail";
 import Students from "./students";
 import { studentLiveQueryKey, useStudentLiveQuery } from "./student-live-query";
+import { adminSubscriptionTransport } from "./student-subscription-query";
+const originalPrivateAdapter = adminSubscriptionTransport.defaults.adapter;
 const mocks = vi.hoisted(() => ({ get: vi.fn(), enabled: true }));
 vi.mock("@/config/api", () => ({ default: { get: mocks.get } }));
 vi.mock("@/config/queries/access", async (original) => ({
@@ -30,6 +32,10 @@ vi.mock("@/config/queries/access", async (original) => ({
   }),
 }));
 const filters = { q: "", page: 1, limit: 25 };
+const accountId = "f3245f75-7cf6-42f4-9d28-4cfa415f5624";
+function CurrentPath() {
+  return <output aria-label="Geçerli sayfa">{useLocation().pathname}</output>;
+}
 const counts = {
   mockStarted: 3,
   mockCompleted: 2,
@@ -119,6 +125,14 @@ beforeEach(() => {
   mocks.get.mockImplementation(async () => ({
     data: { success: true, data: data() },
   }));
+  // Exercise the privileged Axios path without permitting real API traffic.
+  adminSubscriptionTransport.defaults.adapter = async (config) => ({
+    ...(await mocks.get(config.url, config)),
+    status: 200,
+    statusText: "OK",
+    headers: {},
+    config,
+  });
   const original = window.getComputedStyle;
   vi.spyOn(window, "getComputedStyle").mockImplementation((element) =>
     original(element),
@@ -126,6 +140,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  adminSubscriptionTransport.defaults.adapter = originalPrivateAdapter;
   vi.restoreAllMocks();
   vi.useRealTimers();
   localStorage.clear();
@@ -396,6 +411,37 @@ describe("live students", () => {
     await settle();
     expect(mocks.get.mock.lastCall?.[1].params.limit).toBe(100);
   });
+  it("searches by the full profile account number and opens its management screen", async () => {
+    const payload = data();
+    payload.items[0].id = accountId;
+    mocks.get.mockResolvedValue({ data: { success: true, data: payload } });
+    const { wrapper } = setup();
+    render(
+      <>
+        <StudentLiveTable />
+        <CurrentPath />
+      </>,
+      { wrapper },
+    );
+    await settle();
+    fireEvent.click(screen.getByTitle("2"));
+    await settle();
+    const search = screen.getByPlaceholderText(
+      "Hesap numarası, ad, e-posta veya Telegram",
+    );
+    fireEvent.change(search, { target: { value: accountId.toUpperCase() } });
+    fireEvent.keyDown(search, { key: "Enter", code: "Enter" });
+    await settle();
+    expect(mocks.get.mock.lastCall?.[1].params).toEqual({
+      q: accountId.toUpperCase(),
+      page: 1,
+      limit: 25,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Hesabı yönet" }));
+    expect(screen.getByLabelText("Geçerli sayfa")).toHaveTextContent(
+      `/students/${accountId}`,
+    );
+  });
   it("mounts live only in the selected tab and stops polling on the directory tab", async () => {
     mocks.get.mockImplementation(async (url) => ({
       data: {
@@ -481,9 +527,29 @@ describe("live students", () => {
                 limit: 25,
               },
             }
-          : url.endsWith("/access")
-            ? []
-            : { id: "ada", name: "Ada" },
+          : url === "/api/subscription/admin/ada"
+            ? {
+                version: "a".repeat(64),
+                subscription: null,
+                plan: {
+                  periodDays: 30,
+                  quotas: {
+                    MOCK_WRITING: 10,
+                    MOCK_SPEAKING: 10,
+                    PRACTICE_AI: 120,
+                  },
+                },
+                history: [],
+              }
+            : url.endsWith("/access")
+              ? []
+              : {
+                  id: "ada",
+                  name: "Ada",
+                  email: "ada@example.test",
+                  telegramId: "123",
+                  telegramUsername: "ada",
+                },
       },
     }));
     // StudentDetail gets its real route parameter from this minimal route wrapper.
@@ -503,7 +569,11 @@ describe("live students", () => {
     expect(screen.getByText("Başladı")).toBeVisible();
     expect(screen.getAllByText("Değerlendirme bekliyor")).toHaveLength(2);
     expect(screen.getByText("Değerlendirme başarısız")).toBeVisible();
-    expect(screen.getByText("Erişimler")).toBeVisible();
+    expect(screen.getByText("Hediye erişimler")).toBeVisible();
+    expect(screen.getByText("Üyelik bulunmuyor.")).toBeVisible();
+    expect(
+      screen.queryByText("Üyelik bilgileri yüklenemedi."),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Erişim ver" })).toBeVisible();
     const historyCard = screen
       .getByText("Sınav ve pratik geçmişi")

@@ -1,4 +1,13 @@
-import { Alert, Button, Card, Input, Table, Tabs } from "antd";
+import {
+  Alert,
+  Button,
+  Card,
+  Input,
+  Space,
+  Table,
+  Tabs,
+  Typography,
+} from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStudents } from "@/config/queries/students";
@@ -13,7 +22,8 @@ function StudentDirectory() {
     <>
       <Input.Search
         aria-label="Öğrenci ara"
-        placeholder="Ad, e-posta veya Telegram"
+        placeholder="Hesap numarası, ad, e-posta veya Telegram"
+        maxLength={160}
         onSearch={(q) => setFilters({ ...filters, q, page: 1 })}
       />
       {config.data?.enabled === false && (
@@ -43,7 +53,26 @@ function StudentDirectory() {
         loading={students.isLoading || config.isLoading}
         dataSource={students.data?.items}
         columns={[
-          { title: "Ad", dataIndex: "name" },
+          {
+            title: "Öğrenci",
+            render: (_, r) => (
+              <Space direction="vertical" size={0}>
+                <Typography.Text>{r.name ?? "—"}</Typography.Text>
+                <Typography.Text
+                  type="secondary"
+                  title={r.id}
+                  aria-label={`Hesap numarası: ${r.id}`}
+                  style={{ fontSize: 12 }}
+                  copyable={{
+                    text: r.id,
+                    tooltips: ["Hesap numarasını kopyala", "Kopyalandı"],
+                  }}
+                >
+                  Hesap: {r.id.slice(0, 8)}…
+                </Typography.Text>
+              </Space>
+            ),
+          },
           { title: "E-posta", dataIndex: "email" },
           {
             title: "Telegram",
@@ -53,7 +82,7 @@ function StudentDirectory() {
             title: "İşlem",
             render: (_, r) => (
               <Button onClick={() => navigate(`/students/${r.id}`)}>
-                Erişimler
+                Hesabı yönet
               </Button>
             ),
           },

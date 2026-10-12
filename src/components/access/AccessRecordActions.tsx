@@ -11,6 +11,8 @@ import {
 import { accessEndpoints } from "@/config/endpoint";
 import AccessGrantDialog from "./AccessGrantDialog";
 import { RequestIntent } from "./access-form-state";
+import { currentAdminId } from "@/pages/students/student-live-query";
+import { useSubscriptionAdminId } from "@/pages/students/student-subscription-query";
 export default function AccessRecordActions({
   kind,
   record,
@@ -20,6 +22,9 @@ export default function AccessRecordActions({
   record: AccessRecord;
   copy?: () => Promise<void>;
 }) {
+  const adminId = useSubscriptionAdminId();
+  const ownerAdminId = useRef(currentAdminId()).current;
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [edit, setEdit] = useState(false);
   const [action, setAction] = useState<"revoke" | "rotate">();
   const [error, setError] = useState("");
@@ -31,26 +36,58 @@ export default function AccessRecordActions({
   const lock = useRef(false);
   const intent = useRef(new RequestIntent());
   const refresh = useRefreshAccess();
+  const currentSession =
+    !sessionExpired &&
+    !!ownerAdminId &&
+    adminId === ownerAdminId &&
+    currentAdminId() === ownerAdminId;
   useEffect(() => {
-    if (reloadRequested && (record.revision !== conflictRevision.current || conflictCode.current === 'ACCESS_REQUEST_ID_CONFLICT')) {
-      setError(""); setConflict(false); setAction(undefined); setReloadRequested(false);
+    if (!ownerAdminId || adminId !== ownerAdminId) {
+      setSessionExpired(true);
+      setEdit(false);
+      setAction(undefined);
+    }
+  }, [adminId, ownerAdminId]);
+  const requireOwner = () => {
+    if (currentSession && currentAdminId() === ownerAdminId) return true;
+    setSessionExpired(true);
+    setEdit(false);
+    setAction(undefined);
+    return false;
+  };
+  useEffect(() => {
+    if (
+      reloadRequested &&
+      (record.revision !== conflictRevision.current ||
+        conflictCode.current === "ACCESS_REQUEST_ID_CONFLICT")
+    ) {
+      setError("");
+      setConflict(false);
+      setAction(undefined);
+      setReloadRequested(false);
       intent.current = new RequestIntent();
     }
   }, [reloadRequested, record.revision]);
   const perform = async (fn: () => Promise<unknown>) => {
-    if (lock.current || conflict) return;
+    if (!requireOwner() || lock.current || conflict) return;
     lock.current = true;
     setBusy(true);
     setError("");
     try {
       await fn();
+      if (!requireOwner()) return;
       await refresh();
+      if (!requireOwner()) return;
       setAction(undefined);
     } catch (e) {
+      if (!requireOwner()) return;
       const detail = accessError(e);
       setError(detail);
       setConflict(isAccessConflict(e));
-      if (isAccessConflict(e)) { conflictRevision.current = record.revision; conflictCode.current = accessErrorCode(e); }
+      if (isAccessConflict(e)) {
+        conflictRevision.current = record.revision;
+        conflictCode.current = accessErrorCode(e);
+      }
     } finally {
       lock.current = false;
       setBusy(false);
@@ -68,14 +105,19 @@ export default function AccessRecordActions({
       ...(action === "rotate" ? { confirmRotation: true } : {}),
     };
     await perform(() =>
-      accessWrite(`${base}/${record.id}/${action}`, {
-        ...payload,
-        requestId: intent.current.forPayload({
-          action,
-          id: record.id,
+      accessWrite(
+        `${base}/${record.id}/${action}`,
+        {
           ...payload,
-        }),
-      }),
+          requestId: intent.current.forPayload({
+            action,
+            id: record.id,
+            ...payload,
+          }),
+        },
+        "post",
+        ownerAdminId,
+      ),
     );
   };
   const errorNotice = error && (
@@ -86,7 +128,13 @@ export default function AccessRecordActions({
         conflict ? (
           <Button
             onClick={async () => {
-              try { await refresh(); setReloadRequested(true); } catch { /* Keep the conflict blocked until a fresh record arrives. */ }
+              if (!requireOwner()) return;
+              try {
+                await refresh();
+                setReloadRequested(true);
+              } catch {
+                /* Keep the conflict blocked until a fresh record arrives. */
+              }
             }}
           >
             Yeniden yükle
@@ -95,9 +143,15 @@ export default function AccessRecordActions({
       }
     />
   );
+  if (!currentSession) return null;
   return (
     <Space wrap>
-      <Button size="small" onClick={() => setEdit(true)}>
+      <Button
+        size="small"
+        onClick={() => {
+          if (requireOwner()) setEdit(true);
+        }}
+      >
         Süre / limit düzenle
       </Button>
       {copy && (
@@ -106,7 +160,12 @@ export default function AccessRecordActions({
         </Button>
       )}
       {kind === "share" && (
-        <Button size="small" onClick={() => setAction("rotate")}>
+        <Button
+          size="small"
+          onClick={() => {
+            if (requireOwner()) setAction("rotate");
+          }}
+        >
           URL yenile
         </Button>
       )}
@@ -114,7 +173,9 @@ export default function AccessRecordActions({
         size="small"
         danger
         disabled={!!record.revokedAt}
-        onClick={() => setAction("revoke")}
+        onClick={() => {
+          if (requireOwner()) setAction("revoke");
+        }}
       >
         İptal et
       </Button>
