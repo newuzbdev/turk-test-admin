@@ -110,10 +110,19 @@ export type VerifiedActivity = {
   expiresAt: string | null;
 };
 export type StudentActivePage = {
+  device?: StudentDevice | null;
   page: StudentPage;
   visible: boolean;
   lastSeenAt: string;
   activity: VerifiedActivity;
+};
+export type StudentDevice = {
+  kind: "COMPUTER" | "PHONE" | "TABLET" | "UNKNOWN";
+  os:
+    "WINDOWS" | "MACOS" | "IOS" | "ANDROID" | "LINUX" | "CHROME_OS" | "UNKNOWN";
+  browser:
+    "CHROME" | "SAFARI" | "EDGE" | "FIREFOX" | "OPERA" | "SAMSUNG" | "UNKNOWN";
+  observedAt: string;
 };
 export type StudentLiveRow = StudentIdentity &
   StudentActivePage & { counts: StudentCounts };
@@ -140,6 +149,7 @@ export type StudentHistoryRow = {
   speakingEvaluationStatus: string | null;
 };
 export type StudentActivityResponse = {
+  lastDevice?: StudentDevice | null;
   student: StudentIdentity;
   counts: StudentCounts;
   observedAt: string;

@@ -282,6 +282,7 @@ describe("live students", () => {
   });
   it("shows server totals, safe rows, unknown Listening, background and preparation", async () => {
     const payload = data();
+    payload.items[0].device = {kind:"COMPUTER",os:"MACOS",browser:"SAFARI",observedAt:new Date().toISOString()};
     payload.items[0].visible = false;
     payload.items[0].activity.state = "PREPARING";
     mocks.get.mockResolvedValue({ data: { success: true, data: payload } });
@@ -293,6 +294,9 @@ describe("live students", () => {
     ).toBeVisible();
     expect(screen.getByText("Çevrimiçi")).toBeVisible();
     expect(screen.getByText("Arka planda")).toBeVisible();
+    expect(screen.getByRole("columnheader", {name:"Cihaz"})).toBeVisible();
+    expect(screen.getByText("Mac bilgisayar")).toBeVisible();
+    expect(screen.getByText("Safari")).toBeVisible();
     expect(screen.getByText("Hazırlık")).toBeVisible();
     fireEvent.click(
       view.container.querySelector(".ant-table-row-expand-icon")!,
@@ -484,6 +488,7 @@ describe("live students", () => {
         success: true,
         data: url.endsWith("/activity")
           ? {
+              lastDevice: {kind:"PHONE",os:"ANDROID",browser:"CHROME",observedAt:new Date().toISOString()},
               student: { id: "", name: "Ada" },
               counts,
               observedAt: new Date().toISOString(),
@@ -570,6 +575,8 @@ describe("live students", () => {
     expect(screen.getAllByText("Değerlendirme bekliyor")).toHaveLength(2);
     expect(screen.getByText("Değerlendirme başarısız")).toBeVisible();
     expect(screen.getByText("Hediye erişimler")).toBeVisible();
+    expect(screen.getByText("Son kullanılan cihaz")).toBeVisible();
+    expect(screen.getByText("Android telefon")).toBeVisible();
     expect(screen.getByText("Üyelik bulunmuyor.")).toBeVisible();
     expect(
       screen.queryByText("Üyelik bilgileri yüklenemedi."),

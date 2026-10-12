@@ -15,6 +15,7 @@ import { useParams } from "react-router-dom";
 import { useStudent, useStudentAccess } from "@/config/queries/students";
 import { useAccessConfig } from "@/config/queries/access";
 import StudentSubscriptionCard from "./student-subscription-card";
+import StudentDeviceSummary from "./student-device-summary";
 import { useSubscriptionAdminId } from "./student-subscription-query";
 import AccessGrantDialog from "@/components/access/AccessGrantDialog";
 import AccessRecordActions from "@/components/access/AccessRecordActions";
@@ -86,6 +87,21 @@ function StudentDetailContent({ id }: { id: string }) {
                 student.data?.telegramUsername ?? student.data?.telegramId,
             },
             { key: "id", label: "Kimlik", children: student.data?.id },
+            {
+              key: "device",
+              label: "Son kullanılan cihaz",
+              span: 3,
+              children: activity.isLoading ? (
+                "Yükleniyor…"
+              ) : activity.isError ? (
+                "Bilgi yüklenemedi"
+              ) : (
+                <StudentDeviceSummary
+                  device={activity.data?.lastDevice}
+                  showTime
+                />
+              ),
+            },
           ]}
         />
       </Card>
@@ -135,6 +151,10 @@ function StudentDetailContent({ id }: { id: string }) {
               pagination={false}
               columns={[
                 { title: "Sayfa", render: (_, r) => pageLabels[r.page] },
+                {
+                  title: "Cihaz",
+                  render: (_, r) => <StudentDeviceSummary device={r.device} />,
+                },
                 {
                   title: "Durum",
                   render: (_, r) => (

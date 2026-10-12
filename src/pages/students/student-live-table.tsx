@@ -1,3 +1,4 @@
+import StudentDeviceSummary from "./student-device-summary";
 import {
   Alert,
   Button,
@@ -145,11 +146,12 @@ export default function StudentLiveTable() {
         rowKey="id"
         loading={live.isLoading || config.isLoading}
         dataSource={live.data?.items ?? []}
-        scroll={{ x: 1000 }}
+        scroll={{ x: 1320 }}
         locale={{ emptyText: "Bu filtrelerde bağlantısı olan öğrenci yok." }}
         columns={[
           {
             title: "Öğrenci",
+            width: 230,
             render: (_, r) => (
               <Space direction="vertical" size={0}>
                 <Typography.Text>{r.name ?? "—"}</Typography.Text>
@@ -163,6 +165,11 @@ export default function StudentLiveTable() {
             ),
           },
           { title: "Sayfa", render: (_, r) => pageLabels[r.page] },
+          {
+            title: "Cihaz",
+            width: 160,
+            render: (_, r) => <StudentDeviceSummary device={r.device} />,
+          },
           {
             title: "Durum",
             render: (_, r) => <StudentActivityState row={r} fresh={fresh} />,
@@ -199,6 +206,8 @@ export default function StudentLiveTable() {
           },
           {
             title: "İşlem",
+            fixed: "right",
+            width: 140,
             render: (_, r) => (
               <Button onClick={() => navigate(`/students/${r.id}`)}>
                 Hesabı yönet
