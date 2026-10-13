@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useStudents } from "@/config/queries/students";
 import { useAccessConfig } from "@/config/queries/access";
 import StudentLiveTable from "./student-live-table";
+import "./students.css";
 function StudentDirectory() {
   const [filters, setFilters] = useState({ q: "", page: 1, limit: 25 });
   const students = useStudents(filters);
@@ -20,12 +21,18 @@ function StudentDirectory() {
   const navigate = useNavigate();
   return (
     <>
-      <Input.Search
-        aria-label="Öğrenci ara"
-        placeholder="Hesap numarası, ad, e-posta veya Telegram"
-        maxLength={160}
-        onSearch={(q) => setFilters({ ...filters, q, page: 1 })}
-      />
+      <div className="student-directory-toolbar">
+        <Input.Search
+          className="student-search"
+          aria-label="Öğrenci ara"
+          placeholder="Hesap numarası, ad, e-posta veya Telegram"
+          maxLength={160}
+          onSearch={(q) => setFilters({ ...filters, q, page: 1 })}
+        />
+        <Typography.Text type="secondary">
+          {students.data ? `${students.data.total} öğrenci` : ""}
+        </Typography.Text>
+      </div>
       {config.data?.enabled === false && (
         <Alert
           type="info"
@@ -49,15 +56,19 @@ function StudentDirectory() {
         />
       )}
       <Table
+        size="middle"
+        scroll={{ x: 760 }}
+        locale={{ emptyText: "Aramaya uygun öğrenci bulunamadı." }}
         rowKey="id"
         loading={students.isLoading || config.isLoading}
         dataSource={students.data?.items}
         columns={[
           {
             title: "Öğrenci",
+            width: 260,
             render: (_, r) => (
               <Space direction="vertical" size={0}>
-                <Typography.Text>{r.name ?? "—"}</Typography.Text>
+                <Typography.Text strong>{r.name ?? "—"}</Typography.Text>
                 <Typography.Text
                   type="secondary"
                   title={r.id}
@@ -73,13 +84,21 @@ function StudentDirectory() {
               </Space>
             ),
           },
-          { title: "E-posta", dataIndex: "email" },
           {
-            title: "Telegram",
-            render: (_, r) => r.telegramUsername ?? r.telegramId,
+            title: "İletişim",
+            render: (_, r) => (
+              <Space direction="vertical" size={2}>
+                <Typography.Text>{r.email ?? "—"}</Typography.Text>
+                <Typography.Text type="secondary">
+                  Telegram: {r.telegramUsername ?? r.telegramId ?? "—"}
+                </Typography.Text>
+              </Space>
+            ),
           },
           {
             title: "İşlem",
+            width: 150,
+            fixed: "right",
             render: (_, r) => (
               <Button onClick={() => navigate(`/students/${r.id}`)}>
                 Hesabı yönet
@@ -93,6 +112,7 @@ function StudentDirectory() {
           total: students.data?.total ?? 0,
           pageSizeOptions: [25, 50, 100],
           showSizeChanger: true,
+          showTotal: (total) => `${total} öğrenci`,
           onChange: (page, limit) => setFilters({ ...filters, page, limit }),
         }}
       />
@@ -103,7 +123,7 @@ function StudentDirectory() {
 export default function Students() {
   const [tab, setTab] = useState("all");
   return (
-    <Card title="Öğrenciler">
+    <Card className="student-management" title="Öğrenciler">
       <Tabs
         activeKey={tab}
         onChange={setTab}

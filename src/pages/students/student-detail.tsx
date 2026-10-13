@@ -12,6 +12,9 @@ import {
 } from "antd";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import "./students.css";
+import type { AccessScope } from "@/config/queries/access";
+import { subscriptionTime } from "./student-subscription-query";
 import { useStudent, useStudentAccess } from "@/config/queries/students";
 import { useAccessConfig } from "@/config/queries/access";
 import StudentSubscriptionCard from "./student-subscription-card";
@@ -20,6 +23,7 @@ import { useSubscriptionAdminId } from "./student-subscription-query";
 import AccessGrantDialog from "@/components/access/AccessGrantDialog";
 import AccessRecordActions from "@/components/access/AccessRecordActions";
 import {
+  currentAdminId,
   useActivityFreshness,
   useDocumentVisible,
   useStudentActivityQuery,
@@ -31,6 +35,29 @@ import StudentActivitySummary, {
   StudentActivityState,
   studentHistoryStatus,
 } from "./student-activity-summary";
+const scopeLabels: Record<AccessScope, string> = {
+  PLATFORM: "Tam platform",
+  MOCK_PACKAGE: "Deneme paketi",
+  MOCK_READING: "Okuma Mock",
+  MOCK_LISTENING: "Dinleme Mock",
+  MOCK_WRITING: "Yazma Mock",
+  MOCK_SPEAKING: "Konuşma Mock",
+  PRACTICE_READING: "Okuma pratiği",
+  PRACTICE_LISTENING: "Dinleme pratiği",
+  PRACTICE_WRITING: "Yazma pratiği",
+  PRACTICE_SPEAKING: "Konuşma pratiği",
+};
+const bucketLabels: Record<string, string> = {
+  MOCK_WRITING: "Yazma Mock",
+  MOCK_SPEAKING: "Konuşma Mock",
+  PRACTICE_AI: "AI pratik",
+};
+const auditLabels: Record<string, string> = {
+  CREATE: "Verildi",
+  UPDATE: "Düzenlendi",
+  REVOKE: "İptal edildi",
+  REDEEM: "Kullanıldı",
+};
 export default function StudentDetail() {
   const { id = "" } = useParams();
   const adminId = useSubscriptionAdminId();
@@ -41,6 +68,7 @@ function StudentDetailContent({ id }: { id: string }) {
   const access = useStudentAccess(id);
   const config = useAccessConfig();
   const [grant, setGrant] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [historyFilters, setHistoryFilters] = useState({
     q: "",
     page: 1,
@@ -59,7 +87,7 @@ function StudentDetailContent({ id }: { id: string }) {
     ) && visible;
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <div className="student-management student-detail">
       <Card title={student.data?.name ?? "Öğrenci"} loading={student.isLoading}>
         {(student.isError || config.isError) && (
           <Alert
@@ -78,6 +106,8 @@ function StudentDetailContent({ id }: { id: string }) {
           />
         )}
         <Descriptions
+          size="small"
+          column={{ xs: 1, sm: 2, lg: 3 }}
           items={[
             { key: "email", label: "E-posta", children: student.data?.email },
             {
@@ -86,7 +116,21 @@ function StudentDetailContent({ id }: { id: string }) {
               children:
                 student.data?.telegramUsername ?? student.data?.telegramId,
             },
-            { key: "id", label: "Kimlik", children: student.data?.id },
+            {
+              key: "id",
+              label: "Hesap no",
+              children: student.data && (
+                <Typography.Text
+                  className="student-account-number"
+                  copyable={{
+                    text: student.data.id,
+                    tooltips: ["Hesap numarasını kopyala", "Kopyalandı"],
+                  }}
+                >
+                  {student.data.id}
+                </Typography.Text>
+              ),
+            },
             {
               key: "device",
               label: "Son kullanılan cihaz",
@@ -106,6 +150,171 @@ function StudentDetailContent({ id }: { id: string }) {
         />
       </Card>
       <StudentSubscriptionCard key={id} userId={id} />
+      <Card
+        title="Hediye erişimler"
+        extra={
+          <Button
+            disabled={!config.data?.enabled || !student.data}
+            onClick={() => setGrant(true)}
+          >
+            Erişim ver
+          </Button>
+        }
+      >
+        {config.data?.enabled === false && (
+          <Alert type="info" message="Erişim yönetimi henüz etkin değil." />
+        )}
+        {access.isError && (
+          <Alert
+            type="error"
+            message="Erişimler yüklenemedi"
+            action={
+              <Button onClick={() => void access.refetch()}>
+                Yeniden dene
+              </Button>
+            }
+          />
+        )}
+        <Table
+          rowKey="id"
+          size="middle"
+          scroll={{ x: 950 }}
+          locale={{ emptyText: "Bu hesapta hediye erişim bulunmuyor." }}
+          loading={access.isLoading}
+          dataSource={access.data}
+          pagination={{ pageSize: 10 }}
+          columns={[
+            {
+              title: "Kapsam",
+              width: 180,
+              render: (_, r) => (
+                <Space direction="vertical" size={2}>
+                  <Typography.Text>{scopeLabels[r.scope]}</Typography.Text>
+                  {r.targetId && r.scope !== "PLATFORM" && (
+                    <Typography.Text
+                      type="secondary"
+                      className="student-account-number"
+                      title={r.targetId}
+                      copyable={{ text: r.targetId }}
+                    >
+                      İçerik: {r.targetId.slice(0, 8)}…
+                    </Typography.Text>
+                  )}
+                </Space>
+              ),
+            },
+            {
+              title: "Durum",
+              render: (_, r) => (
+                <Tag
+                  color={
+                    r.state === "ACTIVE"
+                      ? "green"
+                      : r.state === "REVOKED"
+                        ? "red"
+                        : undefined
+                  }
+                >
+                  {
+                    (
+                      {
+                        ACTIVE: "Aktif",
+                        SCHEDULED: "Planlandı",
+                        EXPIRED: "Süresi doldu",
+                        REVOKED: "İptal edildi",
+                      } as Record<string, string>
+                    )[r.state ?? ""]
+                  }
+                </Tag>
+              ),
+            },
+            {
+              title: "Erişim dönemi (UTC+5)",
+              width: 210,
+              render: (_, r) => (
+                <Space direction="vertical" size={2}>
+                  <Typography.Text type="secondary">
+                    Başlangıç: {subscriptionTime(r.startsAt)}
+                  </Typography.Text>
+                  <Typography.Text>
+                    Bitiş: {subscriptionTime(r.endsAt)}
+                  </Typography.Text>
+                </Space>
+              ),
+            },
+            {
+              title: "Kalan haklar",
+              width: 170,
+              render: (_, r) => (
+                <Space direction="vertical" size={2}>
+                  {Object.entries(r.remaining ?? {}).map(([k, v]) => (
+                    <Typography.Text key={k}>
+                      {bucketLabels[k] ?? k}: <strong>{v}</strong>
+                    </Typography.Text>
+                  ))}
+                </Space>
+              ),
+            },
+            {
+              title: "İşlem",
+              width: 180,
+              fixed: "right",
+              render: (_, r) => <AccessRecordActions kind="grant" record={r} />,
+            },
+          ]}
+          expandable={{
+            expandedRowRender: (r) => (
+              <Collapse
+                items={[
+                  {
+                    key: "audit",
+                    label: "İç not ve denetim geçmişi",
+                    children: (
+                      <>
+                        <p>{r.reason}</p>
+                        <Table
+                          size="small"
+                          pagination={false}
+                          rowKey={(a) =>
+                            `${a.occurredAt}:${a.actorId}:${a.action}`
+                          }
+                          dataSource={r.audit ?? []}
+                          scroll={{ x: 650 }}
+                          columns={[
+                            {
+                              title: "Tarih (UTC+5)",
+                              render: (_, a) => subscriptionTime(a.occurredAt),
+                              width: 180,
+                            },
+                            {
+                              title: "İşlem",
+                              render: (_, a) =>
+                                auditLabels[a.action] ?? a.action,
+                              width: 120,
+                            },
+                            { title: "Not", dataIndex: "reason" },
+                            {
+                              title: "Yönetici",
+                              render: (_, a) => (
+                                <Typography.Text title={a.actorId}>
+                                  {a.actorId === currentAdminId()
+                                    ? "Siz"
+                                    : "Yönetici"}
+                                </Typography.Text>
+                              ),
+                              width: 100,
+                            },
+                          ]}
+                        />
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            ),
+          }}
+        />
+      </Card>
       <Card
         title="Etkinlik ve tamamlananlar"
         extra={
@@ -143,6 +352,9 @@ function StudentDetailContent({ id }: { id: string }) {
             </Typography.Text>
             <StudentActivitySummary counts={activity.data.counts} />
             <Table
+              size="middle"
+              scroll={{ x: 900 }}
+              locale={{ emptyText: "Şu anda açık öğrenci sayfası yok." }}
               rowKey="key"
               dataSource={activity.data.activePages.map((row, index) => ({
                 ...row,
@@ -150,13 +362,19 @@ function StudentDetailContent({ id }: { id: string }) {
               }))}
               pagination={false}
               columns={[
-                { title: "Sayfa", render: (_, r) => pageLabels[r.page] },
+                {
+                  title: "Sayfa",
+                  width: 150,
+                  render: (_, r) => pageLabels[r.page],
+                },
                 {
                   title: "Cihaz",
+                  width: 160,
                   render: (_, r) => <StudentDeviceSummary device={r.device} />,
                 },
                 {
                   title: "Durum",
+                  width: 210,
                   render: (_, r) => (
                     <StudentActivityState row={r} fresh={fresh} />
                   ),
@@ -170,6 +388,7 @@ function StudentDetailContent({ id }: { id: string }) {
                 },
                 {
                   title: "Son bağlantı (UTC+5)",
+                  width: 180,
                   render: (_, r) => activityTime(r.lastSeenAt),
                 },
               ]}
@@ -177,172 +396,95 @@ function StudentDetailContent({ id }: { id: string }) {
           </Space>
         )}
       </Card>
-      <Card title="Sınav ve pratik geçmişi">
-        <Input.Search
-          aria-label="Etkinlik geçmişinde ara"
-          placeholder="Başlığa göre ara"
-          maxLength={160}
-          onSearch={(q) => setHistoryFilters({ ...historyFilters, q, page: 1 })}
-        />
-        <Table
-          rowKey="id"
-          loading={activity.isLoading}
-          dataSource={activity.data?.history.items ?? []}
-          columns={[
-            {
-              title: "Tür",
-              render: (_, r) =>
-                ({
-                  MOCK: "Mock",
-                  PRACTICE_READING: "Okuma pratiği",
-                  PRACTICE_WRITING: "Yazma pratiği",
-                  PRACTICE_SPEAKING: "Konuşma pratiği",
-                })[r.kind],
-            },
-            { title: "Başlık", render: (_, r) => r.title ?? "—" },
-            {
-              title: "Durum",
-              render: (_, r) => studentHistoryStatus(r.status),
-            },
-            {
-              title: "Yazma değerlendirmesi",
-              render: (_, r) => studentHistoryStatus(r.writingEvaluationStatus),
-            },
-            {
-              title: "Konuşma değerlendirmesi",
-              render: (_, r) =>
-                studentHistoryStatus(r.speakingEvaluationStatus),
-            },
-            {
-              title: "Başlangıç (UTC+5)",
-              render: (_, r) => activityTime(r.startedAt),
-            },
-            {
-              title: "Tamamlanma (UTC+5)",
-              render: (_, r) => activityTime(r.completedAt),
-            },
-          ]}
-          pagination={{
-            current: historyFilters.page,
-            pageSize: historyFilters.limit,
-            total: activity.data?.history.total ?? 0,
-            showSizeChanger: true,
-            pageSizeOptions: [25, 50, 100],
-            onChange: (page, limit) =>
-              setHistoryFilters({
-                ...historyFilters,
-                page,
-                limit: Math.min(limit, 100),
-              }),
-          }}
-        />
-      </Card>
       <Card
-        title="Hediye erişimler"
+        title="Sınav ve pratik geçmişi"
         extra={
-          <Button
-            disabled={!config.data?.enabled || !student.data}
-            onClick={() => setGrant(true)}
-          >
-            Erişim ver
+          <Button onClick={() => setShowHistory(!showHistory)}>
+            {showHistory ? "Geçmişi gizle" : "Geçmişi göster"}
           </Button>
         }
       >
-        {config.data?.enabled === false && (
-          <Alert type="info" message="Erişim yönetimi henüz etkin değil." />
+        {showHistory && (
+          <>
+            <Input.Search
+              className="student-search"
+              style={{ marginBottom: 16 }}
+              aria-label="Etkinlik geçmişinde ara"
+              placeholder="Başlığa göre ara"
+              maxLength={160}
+              onSearch={(q) =>
+                setHistoryFilters({ ...historyFilters, q, page: 1 })
+              }
+            />
+            <Table
+              rowKey="id"
+              size="middle"
+              scroll={{ x: 1250 }}
+              locale={{
+                emptyText: "Bu aramada sınav veya pratik kaydı bulunamadı.",
+              }}
+              loading={activity.isLoading}
+              dataSource={activity.data?.history.items ?? []}
+              columns={[
+                {
+                  title: "Tür",
+                  render: (_, r) =>
+                    ({
+                      MOCK: "Mock",
+                      PRACTICE_READING: "Okuma pratiği",
+                      PRACTICE_WRITING: "Yazma pratiği",
+                      PRACTICE_SPEAKING: "Konuşma pratiği",
+                    })[r.kind],
+                },
+                {
+                  title: "Başlık",
+                  width: 210,
+                  render: (_, r) => r.title ?? "—",
+                },
+                {
+                  title: "Durum",
+                  render: (_, r) => studentHistoryStatus(r.status),
+                },
+                {
+                  title: "Yazma değerlendirmesi",
+                  render: (_, r) =>
+                    studentHistoryStatus(r.writingEvaluationStatus),
+                },
+                {
+                  title: "Konuşma değerlendirmesi",
+                  render: (_, r) =>
+                    studentHistoryStatus(r.speakingEvaluationStatus),
+                },
+                {
+                  title: "Başlangıç (UTC+5)",
+                  render: (_, r) => activityTime(r.startedAt),
+                },
+                {
+                  title: "Tamamlanma (UTC+5)",
+                  render: (_, r) => activityTime(r.completedAt),
+                },
+              ]}
+              pagination={{
+                current: historyFilters.page,
+                pageSize: historyFilters.limit,
+                total: activity.data?.history.total ?? 0,
+                showSizeChanger: true,
+                pageSizeOptions: [25, 50, 100],
+                onChange: (page, limit) =>
+                  setHistoryFilters({
+                    ...historyFilters,
+                    page,
+                    limit: Math.min(limit, 100),
+                  }),
+              }}
+            />
+          </>
         )}
-        {access.isError && (
-          <Alert
-            type="error"
-            message="Erişimler yüklenemedi"
-            action={
-              <Button onClick={() => void access.refetch()}>
-                Yeniden dene
-              </Button>
-            }
-          />
-        )}
-        <Table
-          rowKey="id"
-          loading={access.isLoading}
-          dataSource={access.data}
-          pagination={{ pageSize: 10 }}
-          columns={[
-            {
-              title: "Kapsam",
-              render: (_, r) =>
-                `${r.scope}${r.targetId && r.scope !== "PLATFORM" ? ` / ${r.targetId}` : ""}`,
-            },
-            {
-              title: "Durum",
-              render: (_, r) => (
-                <Tag>
-                  {
-                    (
-                      {
-                        ACTIVE: "Aktif",
-                        SCHEDULED: "Planlandı",
-                        EXPIRED: "Süresi doldu",
-                        REVOKED: "İptal edildi",
-                      } as Record<string, string>
-                    )[r.state ?? ""]
-                  }
-                </Tag>
-              ),
-            },
-            {
-              title: "Başlangıç / bitiş (UTC+5)",
-              render: (_, r) =>
-                [r.startsAt, r.endsAt]
-                  .map((t) =>
-                    new Date(t).toLocaleString("tr-TR", {
-                      timeZone: "Asia/Tashkent",
-                    }),
-                  )
-                  .join(" — "),
-            },
-            {
-              title: "Kalan haklar",
-              render: (_, r) =>
-                Object.entries(r.remaining ?? {})
-                  .map(([k, v]) => `${k}: ${v}`)
-                  .join(", "),
-            },
-            {
-              title: "İşlem",
-              render: (_, r) => <AccessRecordActions kind="grant" record={r} />,
-            },
-          ]}
-          expandable={{
-            expandedRowRender: (r) => (
-              <Collapse
-                items={[
-                  {
-                    key: "audit",
-                    label: "İç not ve denetim geçmişi",
-                    children: (
-                      <>
-                        <p>{r.reason}</p>
-                        {r.audit?.map((a, i) => (
-                          <p key={i}>
-                            {new Date(a.occurredAt).toLocaleString("tr-TR", {
-                              timeZone: "Asia/Tashkent",
-                            })}{" "}
-                            · {a.action} · {a.actorId} · {a.reason}
-                          </p>
-                        ))}
-                      </>
-                    ),
-                  },
-                ]}
-              />
-            ),
-          }}
-        />
       </Card>
+
       {grant && (
         <AccessGrantDialog userId={id} onClose={() => setGrant(false)} />
       )}
-    </Space>
+    </div>
   );
 }

@@ -33,6 +33,7 @@ const statusLabels = {
   ACTIVE: "Aktif",
   EXPIRED: "Süresi doldu",
   SCHEDULED: "Planlandı",
+  CANCELLED: "İptal edildi",
 };
 export default function StudentSubscriptionCard({
   userId,
@@ -109,7 +110,7 @@ export default function StudentSubscriptionCard({
           loading={query.isFetching}
           onClick={() => void query.refetch()}
         >
-          Yenile
+          Güncelle
         </Button>
       }
     >
@@ -219,27 +220,42 @@ export default function StudentSubscriptionCard({
                 },
               ]}
             />
-            <Space wrap>
+            <div className="student-subscription-actions">
+              <Space wrap>
+                <Button
+                  type="primary"
+                  disabled={!ready}
+                  onClick={() => open("RENEW")}
+                >
+                  {subscription ? "Üyeliği yenile" : "Üyeliği başlat"}
+                </Button>
+                <Button
+                  disabled={!ready || subscription?.status !== "ACTIVE"}
+                  onClick={() => open("EXTEND")}
+                >
+                  Süre uzat
+                </Button>
+                <Button
+                  disabled={!ready || subscription?.status !== "ACTIVE"}
+                  onClick={() => open("ADD_QUOTA")}
+                >
+                  Hak ekle
+                </Button>
+                <Button
+                  disabled={!ready || subscription?.status !== "ACTIVE"}
+                  onClick={() => open("REDUCE_QUOTA")}
+                >
+                  Hak azalt
+                </Button>
+              </Space>
               <Button
-                type="primary"
-                disabled={!ready}
-                onClick={() => open("RENEW")}
-              >
-                {subscription ? "Üyeliği yenile" : "Üyeliği başlat"}
-              </Button>
-              <Button
+                danger
                 disabled={!ready || subscription?.status !== "ACTIVE"}
-                onClick={() => open("EXTEND")}
+                onClick={() => open("CANCEL")}
               >
-                Süre uzat
+                Üyeliği iptal et
               </Button>
-              <Button
-                disabled={!ready || subscription?.status !== "ACTIVE"}
-                onClick={() => open("ADD_QUOTA")}
-              >
-                Hak ekle
-              </Button>
-            </Space>
+            </div>
             <Typography.Text type="secondary">
               Hediye erişimler ve satın alınan ek haklar ayrı tutulur.
             </Typography.Text>
@@ -251,21 +267,39 @@ export default function StudentSubscriptionCard({
                     key: "history",
                     label: "Son yönetici işlemleri",
                     children: (
-                      <Space direction="vertical" style={{ width: "100%" }}>
-                        {data.history.map((row) => (
-                          <div key={row.id}>
-                            <Typography.Text>
-                              {subscriptionTime(row.occurredAt)} ·{" "}
-                              {subscriptionActionLabels[row.action]} ·{" "}
-                              {row.reason}
-                            </Typography.Text>
-                            <br />
-                            <Typography.Text type="secondary">
-                              Yönetici: {row.actorId}
-                            </Typography.Text>
-                          </div>
-                        ))}
-                      </Space>
+                      <Table
+                        size="small"
+                        pagination={false}
+                        rowKey="id"
+                        dataSource={data.history}
+                        scroll={{ x: 650 }}
+                        columns={[
+                          {
+                            title: "Tarih (UTC+5)",
+                            render: (_, row) =>
+                              subscriptionTime(row.occurredAt),
+                            width: 180,
+                          },
+                          {
+                            title: "İşlem",
+                            render: (_, row) =>
+                              subscriptionActionLabels[row.action],
+                            width: 160,
+                          },
+                          { title: "Not", dataIndex: "reason" },
+                          {
+                            title: "Yönetici",
+                            render: (_, row) => (
+                              <Typography.Text title={row.actorId}>
+                                {row.actorId === query.adminId
+                                  ? "Siz"
+                                  : "Yönetici"}
+                              </Typography.Text>
+                            ),
+                            width: 100,
+                          },
+                        ]}
+                      />
                     ),
                   },
                 ]}

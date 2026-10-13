@@ -22,13 +22,14 @@ adminSubscriptionTransport.interceptors.request.use((config) => {
 
 export type SubscriptionBucket =
   "MOCK_WRITING" | "MOCK_SPEAKING" | "PRACTICE_AI";
-export type StudentSubscriptionAction = "RENEW" | "EXTEND" | "ADD_QUOTA";
+export type StudentSubscriptionAction =
+  "RENEW" | "EXTEND" | "ADD_QUOTA" | "REDUCE_QUOTA" | "CANCEL";
 export type StudentSubscriptionState = {
   version: string;
   subscription: null | {
     id: string;
     userId: string;
-    status: "ACTIVE" | "EXPIRED" | "SCHEDULED";
+    status: "ACTIVE" | "EXPIRED" | "SCHEDULED" | "CANCELLED";
     periodStart: string;
     periodEnd: string;
     quotas: Record<
@@ -60,6 +61,8 @@ export const subscriptionActionLabels = {
   RENEW: "Üyeliği yenile",
   EXTEND: "Süre uzat",
   ADD_QUOTA: "Hak ekle",
+  REDUCE_QUOTA: "Hak azalt",
+  CANCEL: "Üyeliği iptal et",
 };
 export function subscriptionTime(value: string) {
   return new Date(value).toLocaleString("tr-TR", {

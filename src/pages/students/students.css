@@ -1,0 +1,72 @@
+.student-management {
+  min-width: 0;
+}
+.student-detail {
+  display: grid;
+  gap: 20px;
+}
+.student-management .ant-card {
+  min-width: 0;
+  border-radius: 12px;
+}
+.student-management .ant-card-head-title {
+  white-space: normal;
+}
+.student-management .ant-table-cell {
+  vertical-align: top;
+}
+.student-management .ant-table-thead th {
+  white-space: nowrap;
+}
+.student-management .ant-table-tbody .ant-typography {
+  overflow-wrap: anywhere;
+}
+.student-management .ant-table-pagination {
+  flex-wrap: wrap;
+}
+.student-directory-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+.student-management .student-search {
+  width: min(420px, 100%);
+}
+.student-live-toolbar .student-search {
+  width: 320px;
+}
+.student-live-totals .ant-statistic {
+  padding: 16px 20px;
+  border: 1px solid rgba(128, 128, 128, 0.18);
+  border-radius: 10px;
+}
+.student-subscription-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-account-number {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.student-management .ant-collapse-content-box .ant-table {
+  background: transparent;
+}
+@media (max-width: 600px) {
+  .student-management .ant-card-body {
+    padding: 16px;
+  }
+  .student-management .ant-card-head {
+    padding: 0 16px;
+  }
+  .student-live-toolbar .student-search {
+    width: min(320px, calc(100vw - 88px));
+  }
+  .student-detail {
+    gap: 16px;
+  }
+}

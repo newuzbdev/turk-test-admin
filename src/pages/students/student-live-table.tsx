@@ -57,7 +57,7 @@ export default function StudentLiveTable() {
       <Typography.Text>
         Son 90 saniyede bağlantısı olan öğrenciler
       </Typography.Text>
-      <Row gutter={[16, 16]}>
+      <Row className="student-live-totals" gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <Statistic
             title="Kayıtlı öğrenci"
@@ -77,12 +77,12 @@ export default function StudentLiveTable() {
           />
         </Col>
       </Row>
-      <Space wrap>
+      <Space className="student-live-toolbar" wrap>
         <Input.Search
           aria-label="Canlı öğrenci ara"
           placeholder="Hesap numarası, ad, e-posta veya Telegram"
           maxLength={160}
-          style={{ width: 280 }}
+          className="student-search"
           onSearch={(q) => setFilters({ ...filters, q, page: 1 })}
         />
         <Select<StudentPage>
@@ -143,15 +143,16 @@ export default function StudentLiveTable() {
         Son güncelleme (UTC+5): {activityTime(live.data?.observedAt)}
       </Typography.Text>
       <Table
+        size="middle"
         rowKey="id"
         loading={live.isLoading || config.isLoading}
         dataSource={live.data?.items ?? []}
-        scroll={{ x: 1320 }}
+        scroll={{ x: 1100 }}
         locale={{ emptyText: "Bu filtrelerde bağlantısı olan öğrenci yok." }}
         columns={[
           {
             title: "Öğrenci",
-            width: 230,
+            width: 210,
             render: (_, r) => (
               <Space direction="vertical" size={0}>
                 <Typography.Text>{r.name ?? "—"}</Typography.Text>
@@ -164,45 +165,34 @@ export default function StudentLiveTable() {
               </Space>
             ),
           },
-          { title: "Sayfa", render: (_, r) => pageLabels[r.page] },
+          {
+            title: "Sayfa / çalışma",
+            width: 210,
+            render: (_, r) => (
+              <Space direction="vertical" size={2}>
+                <Typography.Text>{pageLabels[r.page]}</Typography.Text>
+                <Typography.Text type="secondary">
+                  {[r.activity.title, activitySection(r.activity.section)]
+                    .filter(Boolean)
+                    .join(" · ") || "—"}
+                </Typography.Text>
+              </Space>
+            ),
+          },
           {
             title: "Cihaz",
-            width: 160,
+            width: 140,
             render: (_, r) => <StudentDeviceSummary device={r.device} />,
           },
           {
             title: "Durum",
+            width: 180,
             render: (_, r) => <StudentActivityState row={r} fresh={fresh} />,
           },
           {
-            title: "Hedef / bölüm",
-            render: (_, r) =>
-              [r.activity.title, activitySection(r.activity.section)]
-                .filter(Boolean)
-                .join(" · ") || "—",
-          },
-          {
             title: "Son bağlantı (UTC+5)",
+            width: 175,
             render: (_, r) => activityTime(r.lastSeenAt),
-          },
-          {
-            title: "Tamamlananlar",
-            render: (_, r) => (
-              <Space direction="vertical" size={0}>
-                <Typography.Text>
-                  Mock: {r.counts.mockStarted} başlanan /{" "}
-                  {r.counts.mockCompleted} tamamlanan
-                </Typography.Text>
-                <Typography.Text>
-                  Pratik: Okuma {r.counts.practiceCompleted.reading} · Yazma{" "}
-                  {r.counts.practiceCompleted.writing} · Konuşma{" "}
-                  {r.counts.practiceCompleted.speaking}
-                </Typography.Text>
-                <Typography.Text type="secondary">
-                  Dinleme: Henüz ölçülmüyor
-                </Typography.Text>
-              </Space>
-            ),
           },
           {
             title: "İşlem",
@@ -226,6 +216,7 @@ export default function StudentLiveTable() {
           total: live.data?.total ?? 0,
           pageSizeOptions: [25, 50, 100],
           showSizeChanger: true,
+          showTotal: (total) => `${total} öğrenci`,
           onChange: (page, limit) =>
             setFilters({ ...filters, page, limit: Math.min(limit, 100) }),
         }}

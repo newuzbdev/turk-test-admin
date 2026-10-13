@@ -117,6 +117,85 @@ afterEach(() => {
 });
 
 describe("student subscription actions", () => {
+  it("requires explicit confirmation to cancel and displays cancelled membership with its used rights", async () => {
+    mount();
+    const dialog = await open("Üyeliği iptal et");
+    await waitFor(() =>
+      expect(within(dialog).getByText(/Para iadesi yapılmaz/)).toBeVisible(),
+    );
+    expect(within(dialog).queryByRole("spinbutton")).not.toBeInTheDocument();
+    fireEvent.change(
+      within(dialog).getByRole("textbox", { name: "İşlem notu" }),
+      { target: { value: "Yanlış üyelik düzeltmesi" } },
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Üyeliği iptal et" }),
+    );
+    await within(dialog).findByText("İşlemin etkisini onaylayın.");
+    expect(api.patch).not.toHaveBeenCalled();
+    const cancelled = state(true, nextVersion);
+    cancelled.subscription!.status = "CANCELLED";
+    for (const quota of Object.values(cancelled.subscription!.quotas))
+      quota.remaining = 0;
+    api.patch.mockResolvedValue({ data: { success: true, data: cancelled } });
+    api.get.mockResolvedValue({ data: { success: true, data: cancelled } });
+    fireEvent.click(within(dialog).getByRole("checkbox"));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Üyeliği iptal et" }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(api.patch.mock.calls[0][1]).toEqual({
+      requestId: expect.any(String),
+      expectedVersion: version,
+      action: "CANCEL",
+      reason: "Yanlış üyelik düzeltmesi",
+      confirmed: true,
+    });
+    expect(screen.getByText("İptal edildi")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Hak azalt" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Üyeliği iptal et" }),
+    ).toBeDisabled();
+  });
+
+  it("reduces only available rights, previews the new remaining amounts and blocks excessive input", async () => {
+    mount();
+    const dialog = await open("Hak azalt");
+    approve(dialog);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Hakları azalt" }),
+    );
+    await within(dialog).findByText("En az bir hak azaltın.");
+    const input = within(dialog).getByRole("spinbutton", {
+      name: "Yazma Mock hakkı",
+    });
+    fireEvent.change(input, { target: { value: "8" } });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Hakları azalt" }),
+    );
+    await within(dialog).findByText("0–7 arasında tam sayı girin.");
+    expect(api.patch).not.toHaveBeenCalled();
+    fireEvent.change(input, { target: { value: "2" } });
+    expect(within(dialog).getByRole("table")).toBeVisible();
+    expect(within(dialog).getByText("5")).toBeVisible();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Hakları azalt" }),
+    );
+    await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
+    expect(api.patch.mock.calls[0][1]).toEqual({
+      requestId: expect.any(String),
+      expectedVersion: version,
+      action: "REDUCE_QUOTA",
+      reason: "Öğrenciye destek verildi",
+      confirmed: true,
+      writingMock: 2,
+      speakingMock: 0,
+      practiceAi: 0,
+    });
+  });
+
   it("requires a note and explicit confirmation before starting membership, then refreshes the card and subscription list", async () => {
     api.get.mockResolvedValue({ data: { success: true, data: state(false) } });
     const { client } = mount();

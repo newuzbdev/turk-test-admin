@@ -7,6 +7,7 @@ import {
   InputNumber,
   Modal,
   Space,
+  Table,
   Typography,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -101,6 +102,8 @@ export default function StudentSubscriptionDialog({
     action === "RENEW" && !state.subscription
       ? "Üyeliği başlat"
       : subscriptionActionLabels[action];
+  const quotaAction = action === "ADD_QUOTA" || action === "REDUCE_QUOTA";
+  const destructive = action === "CANCEL" || action === "REDUCE_QUOTA";
   const sameSession = () => mounted.current && currentAdminId() === adminId;
 
   async function save() {
@@ -116,11 +119,18 @@ export default function StudentSubscriptionDialog({
         return;
       }
       if (
-        action === "ADD_QUOTA" &&
+        quotaAction &&
         fields.writingMock + fields.speakingMock + fields.practiceAi <= 0
       ) {
         form.setFields([
-          { name: "writingMock", errors: ["En az bir hak ekleyin."] },
+          {
+            name: "writingMock",
+            errors: [
+              action === "REDUCE_QUOTA"
+                ? "En az bir hak azaltın."
+                : "En az bir hak ekleyin.",
+            ],
+          },
         ]);
         return;
       }
@@ -130,7 +140,7 @@ export default function StudentSubscriptionDialog({
         reason: fields.reason.trim(),
         confirmed: true,
         ...(action === "EXTEND" ? { days: fields.days } : {}),
-        ...(action === "ADD_QUOTA"
+        ...(quotaAction
           ? {
               writingMock: fields.writingMock,
               speakingMock: fields.speakingMock,
@@ -192,10 +202,16 @@ export default function StudentSubscriptionDialog({
         if (!locked.current) onClose();
       }}
       onOk={() => void save()}
-      okText="İşlemi onayla"
+      okText={
+        action === "CANCEL"
+          ? "Üyeliği iptal et"
+          : action === "REDUCE_QUOTA"
+            ? "Hakları azalt"
+            : "İşlemi onayla"
+      }
       cancelText="Vazgeç"
       confirmLoading={busy}
-      okButtonProps={{ disabled: conflict }}
+      okButtonProps={{ disabled: conflict, danger: destructive }}
       cancelButtonProps={{ disabled: busy }}
       closable={!busy}
       maskClosable={false}
@@ -204,14 +220,22 @@ export default function StudentSubscriptionDialog({
     >
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <Alert
-          type={action === "RENEW" && state.subscription ? "warning" : "info"}
+          type={
+            destructive || (action === "RENEW" && state.subscription)
+              ? "warning"
+              : "info"
+          }
           showIcon
           message={
             action === "RENEW"
               ? `${state.plan.periodDays} günlük yeni üyelik dönemi şimdi başlar.`
               : action === "EXTEND"
                 ? `Yeni bitiş (UTC+5): ${extensionEnd}`
-                : "Haklar mevcut üyelik dönemine eklenir."
+                : action === "CANCEL"
+                  ? "Üyelik erişimi şimdi kapanır."
+                  : action === "REDUCE_QUOTA"
+                    ? "Yalnız kalan haklar azaltılır."
+                    : "Haklar mevcut üyelik dönemine eklenir."
           }
           description={
             action === "RENEW" ? (
@@ -230,29 +254,50 @@ export default function StudentSubscriptionDialog({
               </>
             ) : action === "EXTEND" ? (
               "Mevcut bitiş tarihine gün eklenir; kalan haklar korunur."
+            ) : action === "CANCEL" ? (
+              "Geçmiş sınavlar ve kullanılmış hak kayıtları korunur."
             ) : (
-              <>
-                <p>
-                  Yeni kalan haklar:{" "}
-                  {(state.subscription?.quotas.MOCK_WRITING.remaining ?? 0) +
-                    writing}{" "}
-                  Yazma Mock ·{" "}
-                  {(state.subscription?.quotas.MOCK_SPEAKING.remaining ?? 0) +
-                    speaking}{" "}
-                  Konuşma Mock ·{" "}
-                  {(state.subscription?.quotas.PRACTICE_AI.remaining ?? 0) +
-                    practice}{" "}
-                  AI pratik.
-                </p>
-                <p>Bitiş tarihi ve kullanılan haklar değişmez.</p>
-              </>
+              "Bitiş tarihi ve kullanılan haklar değişmez."
             )
           }
         />
         <Typography.Text type="secondary">
-          Payme üzerinden ödeme alınmaz. Hediye erişimler ve satın alınan ek
-          haklar korunur.
+          {action === "CANCEL"
+            ? "Para iadesi yapılmaz."
+            : "Payme üzerinden ödeme alınmaz."}{" "}
+          Hediye erişimler ve satın alınan ek haklar korunur.
         </Typography.Text>
+        {quotaAction && (
+          <Table
+            size="small"
+            pagination={false}
+            rowKey="bucket"
+            dataSource={quotaFields.map((field, index) => {
+              const current =
+                state.subscription?.quotas[field.bucket].remaining ?? 0;
+              const amount = [writing, speaking, practice][index];
+              const next =
+                current + (action === "REDUCE_QUOTA" ? -amount : amount);
+              return {
+                ...field,
+                current,
+                next: Number.isInteger(next) && next >= 0 ? next : null,
+              };
+            })}
+            columns={[
+              { title: "Hak", dataIndex: "label" },
+              { title: "Şimdi", dataIndex: "current", align: "right" },
+              {
+                title: "İşlem sonrası",
+                dataIndex: "next",
+                align: "right",
+                render: (value) => (
+                  <Typography.Text strong>{value ?? "—"}</Typography.Text>
+                ),
+              },
+            ]}
+          />
+        )}
         {error && (
           <Alert
             role="alert"
@@ -299,20 +344,31 @@ export default function StudentSubscriptionDialog({
               />
             </Form.Item>
           )}
-          {action === "ADD_QUOTA" &&
+          {quotaAction &&
             quotaFields.map((field) => (
               <Form.Item
                 key={field.name}
                 name={field.name}
                 label={field.label}
                 rules={[
-                  integerRule(0, 10_000, "0–10000 arasında tam sayı girin."),
+                  integerRule(
+                    0,
+                    action === "REDUCE_QUOTA"
+                      ? Math.min(
+                          10000,
+                          state.subscription?.quotas[field.bucket].remaining ??
+                            0,
+                        )
+                      : 10000,
+                    `0–${action === "REDUCE_QUOTA" ? Math.min(10000, state.subscription?.quotas[field.bucket].remaining ?? 0) : 10000} arasında tam sayı girin.`,
+                  ),
                 ]}
               >
                 <InputNumber
                   aria-label={field.label}
                   min={0}
-                  max={10_000}
+                  max={action === "REDUCE_QUOTA" ? undefined : 10000}
+                  changeOnBlur={action !== "REDUCE_QUOTA"}
                   step={1}
                   style={{ width: "100%" }}
                 />
@@ -355,10 +411,7 @@ export default function StudentSubscriptionDialog({
               },
             ]}
           >
-            <Checkbox>
-              İşlemin etkisini okudum ve bu ücretsiz yönetici düzenlemesini
-              onaylıyorum.
-            </Checkbox>
+            <Checkbox>İşlemin etkisini okudum ve onaylıyorum.</Checkbox>
           </Form.Item>
         </Form>
       </Space>
