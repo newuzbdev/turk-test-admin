@@ -70,3 +70,237 @@
     gap: 16px;
   }
 }
+
+.student-directory-toolbar {
+  gap: 10px;
+  margin-bottom: 12px;
+  align-items: end;
+}
+.student-directory-toolbar .student-search {
+  flex: 1 1 300px;
+  min-width: 230px;
+  width: auto;
+}
+.student-filter {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--tm-text-muted, #777);
+}
+.student-filter select {
+  font: inherit;
+  font-size: 13px;
+  color: var(--tm-text-primary, #36352f);
+  border: 1px solid var(--tm-border-subtle, #ddd);
+  border-radius: 7px;
+  background: var(--tm-bg-surface, #fff);
+  padding: 9px 28px 9px 10px;
+  min-height: 38px;
+}
+.student-filter select:focus-visible {
+  outline: 2px solid #e72125;
+  outline-offset: 2px;
+}
+.student-directory-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.student-notice-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--tm-text-muted, #777);
+}
+.student-date {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.student-account-summary {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.25fr) minmax(190px, 0.9fr) minmax(
+      180px,
+      0.85fr
+    );
+  gap: 20px 28px;
+  margin: 0;
+}
+.student-account-summary dt,
+.student-field-label {
+  font-size: 12px;
+  color: var(--tm-text-muted, #888);
+  margin-bottom: 5px;
+  display: block;
+}
+.student-account-summary dd {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.student-account-id {
+  grid-column: span 2;
+}
+.student-account-summary .student-account-number {
+  font-size: 13px;
+}
+.student-subscription-period {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.student-subscription-period .ant-tag {
+  margin: 0;
+}
+.student-timezone {
+  font-size: 11px;
+  color: var(--tm-text-muted, #888);
+}
+.student-management .student-quota-table {
+  max-width: 760px;
+}
+.student-management .ant-table-tbody > tr > td {
+  padding: 11px 14px;
+}
+.student-management .ant-table-thead > tr > th {
+  padding: 10px 14px;
+  font-size: 12px;
+}
+.student-registration-toast {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 1100;
+  bottom: 22px;
+  right: 22px;
+  width: min(340px, calc(100vw - 32px));
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px;
+  border: 1px solid var(--tm-border-subtle, #e5e5e1);
+  border-radius: 12px;
+  background: var(--tm-bg-surface, #fff);
+  color: var(--tm-text-primary, #36352f);
+  box-shadow: 0 8px 30px #00000014;
+  font-size: 13px;
+}
+.student-registration-toast > svg {
+  color: #e72125;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.student-registration-toast > div {
+  flex: 1;
+}
+.student-registration-toast strong {
+  font-weight: 600;
+  display: block;
+  line-height: 1.5;
+}
+.student-notice-link {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  margin-top: 4px;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+}
+.student-notice-close {
+  border: 0;
+  background: none;
+  padding: 3px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .student-registration-toast {
+    animation: student-notice-enter 0.16s ease-out;
+  }
+}
+@keyframes student-notice-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 800px) {
+  .student-account-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .student-account-id {
+    grid-column: span 2;
+  }
+}
+@media (max-width: 500px) {
+  .student-account-summary {
+    grid-template-columns: 1fr;
+  }
+  .student-account-id {
+    grid-column: auto;
+  }
+  .student-filter {
+    flex: 1 1 120px;
+  }
+  .student-registration-toast {
+    bottom: 16px;
+    right: 16px;
+  }
+  .student-subscription-period {
+    gap: 14px;
+  }
+}
+
+.student-origin-summary {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.25fr) minmax(190px, 0.9fr) minmax(
+      180px,
+      0.85fr
+    );
+  gap: 18px 28px;
+  padding-top: 18px;
+  margin: 18px 0 0;
+  border-top: 1px solid var(--tm-border-subtle, #e5e5e1);
+}
+.student-origin-summary dt {
+  font-size: 12px;
+  color: var(--tm-text-muted, #888);
+  margin-bottom: 5px;
+}
+.student-origin-summary dd {
+  margin: 0;
+  font-size: 13px;
+}
+.student-origin-location,
+.student-origin-method {
+  font-size: 12px;
+}
+.student-origin-campaign {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 800px) {
+  .student-origin-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 500px) {
+  .student-origin-summary {
+    grid-template-columns: 1fr;
+  }
+}

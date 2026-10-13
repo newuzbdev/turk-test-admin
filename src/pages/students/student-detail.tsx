@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   Collapse,
-  Descriptions,
   Input,
   Typography,
   Space,
@@ -14,10 +13,12 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import "./students.css";
 import type { AccessScope } from "@/config/queries/access";
+import { joinedTime } from "./student-joined-time";
 import { subscriptionTime } from "./student-subscription-query";
 import { useStudent, useStudentAccess } from "@/config/queries/students";
 import { useAccessConfig } from "@/config/queries/access";
 import StudentSubscriptionCard from "./student-subscription-card";
+import StudentOriginSummary from "./student-origin-summary";
 import StudentDeviceSummary from "./student-device-summary";
 import { useSubscriptionAdminId } from "./student-subscription-query";
 import AccessGrantDialog from "@/components/access/AccessGrantDialog";
@@ -105,21 +106,29 @@ function StudentDetailContent({ id }: { id: string }) {
             }
           />
         )}
-        <Descriptions
-          size="small"
-          column={{ xs: 1, sm: 2, lg: 3 }}
-          items={[
-            { key: "email", label: "E-posta", children: student.data?.email },
-            {
-              key: "telegram",
-              label: "Telegram",
-              children:
-                student.data?.telegramUsername ?? student.data?.telegramId,
-            },
-            {
-              key: "id",
-              label: "Hesap no",
-              children: student.data && (
+        <dl className="student-account-summary">
+          <div>
+            <dt>E-posta</dt>
+            <dd>{student.data?.email || "—"}</dd>
+          </div>
+          <div>
+            <dt>Telegram</dt>
+            <dd>
+              {student.data?.telegramUsername
+                ? `@${student.data.telegramUsername}`
+                : student.data?.telegramId || "—"}
+            </dd>
+          </div>
+          <div>
+            <dt>Katılım (UTC+5)</dt>
+            <dd className="student-date">
+              {joinedTime(student.data?.createdAt)}
+            </dd>
+          </div>
+          <div className="student-account-id">
+            <dt>Hesap no</dt>
+            <dd>
+              {student.data && (
                 <Typography.Text
                   className="student-account-number"
                   copyable={{
@@ -129,13 +138,13 @@ function StudentDetailContent({ id }: { id: string }) {
                 >
                   {student.data.id}
                 </Typography.Text>
-              ),
-            },
-            {
-              key: "device",
-              label: "Son kullanılan cihaz",
-              span: 3,
-              children: activity.isLoading ? (
+              )}
+            </dd>
+          </div>
+          <div className="student-account-device">
+            <dt>Son kullanılan cihaz</dt>
+            <dd>
+              {activity.isLoading ? (
                 "Yükleniyor…"
               ) : activity.isError ? (
                 "Bilgi yüklenemedi"
@@ -144,10 +153,11 @@ function StudentDetailContent({ id }: { id: string }) {
                   device={activity.data?.lastDevice}
                   showTime
                 />
-              ),
-            },
-          ]}
-        />
+              )}
+            </dd>
+          </div>
+        </dl>
+        <StudentOriginSummary student={student.data} />
       </Card>
       <StudentSubscriptionCard key={id} userId={id} />
       <Card
@@ -186,7 +196,7 @@ function StudentDetailContent({ id }: { id: string }) {
           columns={[
             {
               title: "Kapsam",
-              width: 180,
+              width: 160,
               render: (_, r) => (
                 <Space direction="vertical" size={2}>
                   <Typography.Text>{scopeLabels[r.scope]}</Typography.Text>
@@ -205,6 +215,7 @@ function StudentDetailContent({ id }: { id: string }) {
             },
             {
               title: "Durum",
+              width: 120,
               render: (_, r) => (
                 <Tag
                   color={
@@ -230,7 +241,7 @@ function StudentDetailContent({ id }: { id: string }) {
             },
             {
               title: "Erişim dönemi (UTC+5)",
-              width: 210,
+              width: 220,
               render: (_, r) => (
                 <Space direction="vertical" size={2}>
                   <Typography.Text type="secondary">

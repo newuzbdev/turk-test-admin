@@ -11,17 +11,36 @@ export type StudentIdentity = {
   email: string | null;
   telegramId: string | null;
   telegramUsername: string | null;
+  signupMethod?: "GOOGLE" | "TELEGRAM" | "LOCAL" | "UNKNOWN";
+  registrationOrigin?: {
+    countryCode: string | null;
+    city: string | null;
+    source:
+      "INSTAGRAM" | "TELEGRAM" | "GOOGLE" | "YOUTUBE" | "OTHER" | "UNKNOWN";
+    medium: string | null;
+    campaign: string | null;
+    capturedAt: string;
+  } | null;
+  createdAt?: string;
+  membership?: "ACTIVE" | "EXPIRED" | "NONE" | "SCHEDULED";
 };
 export type StudentFilters = { q: string; page: number; limit: number };
+export type StudentDirectoryFilters = StudentFilters & {
+  joinedPeriod?: "ALL" | "TODAY" | "WEEK" | "MONTH";
+  membership?: "ALL" | "ACTIVE" | "EXPIRED" | "NONE";
+  order?: "NEWEST" | "OLDEST";
+};
 export type PublishedAccessTarget = {
   id: string;
   title: string;
   scope: AccessScope;
   buckets: string[];
 };
-export const studentQueryKey = (filters: StudentFilters, adminId: string) =>
-  ["admin", "students", filters, adminId] as const;
-export function useStudents(filters: StudentFilters) {
+export const studentQueryKey = (
+  filters: StudentDirectoryFilters,
+  adminId: string,
+) => ["admin", "students", filters, adminId] as const;
+export function useStudents(filters: StudentDirectoryFilters) {
   const config = useAccessConfig();
   return usePrivateAccessQuery<{
     items: StudentIdentity[];

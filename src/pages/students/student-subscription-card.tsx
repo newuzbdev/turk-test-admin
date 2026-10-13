@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   Collapse,
-  Descriptions,
   Space,
   Table,
   Tag,
@@ -138,53 +137,36 @@ export default function StudentSubscriptionCard({
         )}
         {data && (
           <>
-            <Descriptions
-              size="small"
-              column={{ xs: 1, sm: 2, md: 3 }}
-              items={
-                subscription
-                  ? [
-                      {
-                        key: "status",
-                        label: "Durum",
-                        children: (
-                          <Tag
-                            color={
-                              subscription.status === "ACTIVE"
-                                ? "green"
-                                : undefined
-                            }
-                          >
-                            {statusLabels[subscription.status]}
-                          </Tag>
-                        ),
-                      },
-                      {
-                        key: "start",
-                        label: "Başlangıç (UTC+5)",
-                        children: subscriptionTime(subscription.periodStart),
-                      },
-                      {
-                        key: "end",
-                        label: "Bitiş (UTC+5)",
-                        children: subscriptionTime(subscription.periodEnd),
-                      },
-                    ]
-                  : [
-                      {
-                        key: "none",
-                        label: "Durum",
-                        children: "Üyelik bulunmuyor.",
-                      },
-                      {
-                        key: "plan",
-                        label: "Yeni dönem",
-                        children: `${data.plan.periodDays} gün`,
-                      },
-                    ]
-              }
-            />
+            <div className="student-subscription-period">
+              <Tag
+                color={subscription?.status === "ACTIVE" ? "green" : undefined}
+              >
+                {subscription
+                  ? statusLabels[subscription.status]
+                  : "Üyelik yok"}
+              </Tag>
+              {subscription ? (
+                <>
+                  <span>
+                    <span className="student-field-label">Başlangıç</span>
+                    <span className="student-date">
+                      {subscriptionTime(subscription.periodStart)}
+                    </span>
+                  </span>
+                  <span>
+                    <span className="student-field-label">Bitiş</span>
+                    <span className="student-date">
+                      {subscriptionTime(subscription.periodEnd)}
+                    </span>
+                  </span>
+                </>
+              ) : (
+                <span>Yeni dönem: {data.plan.periodDays} gün</span>
+              )}
+              <span className="student-timezone">UTC+5</span>
+            </div>
             <Table
+              className="student-quota-table"
               size="small"
               rowKey="key"
               pagination={false}
@@ -198,22 +180,25 @@ export default function StudentSubscriptionCard({
                 }),
               }))}
               columns={[
-                { title: "Üyelik hakkı", dataIndex: "label" },
+                { title: "Üyelik hakkı", dataIndex: "label", width: "52%" },
                 {
                   title: subscription ? "Verilen" : "Yeni dönem hakkı",
                   dataIndex: "granted",
                   align: "right",
+                  width: "16%",
                 },
                 {
                   title: "Kullanılan",
                   dataIndex: "used",
                   align: "right",
+                  width: "16%",
                   render: (value) => value ?? "—",
                 },
                 {
                   title: "Kalan",
                   dataIndex: "remaining",
                   align: "right",
+                  width: "16%",
                   render: (value) => (
                     <Typography.Text strong>{value ?? "—"}</Typography.Text>
                   ),

@@ -589,7 +589,7 @@ describe("live students", () => {
     expect(screen.getByText("Hediye erişimler")).toBeVisible();
     expect(screen.getByText("Son kullanılan cihaz")).toBeVisible();
     expect(screen.getByText("Android telefon")).toBeVisible();
-    expect(screen.getByText("Üyelik bulunmuyor.")).toBeVisible();
+    expect(screen.getByText("Üyelik yok")).toBeVisible();
     expect(
       screen.queryByText("Üyelik bilgileri yüklenemedi."),
     ).not.toBeInTheDocument();

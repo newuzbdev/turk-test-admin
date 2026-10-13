@@ -30,6 +30,7 @@ vi.mock("@/config/queries/students", async (importOriginal) => ({
             email: "ada@example.test",
             telegramUsername: "ada",
             telegramId: null,
+            createdAt: "2026-10-13T04:20:00Z", membership: "ACTIVE", signupMethod:"GOOGLE", registrationOrigin:{countryCode:"UZ",city:"Tashkent",source:"INSTAGRAM",medium:"PAID",campaign:"launch_01",capturedAt:"2026-10-13T04:20:00Z"},
           },
         ],
         total: 60,
@@ -86,7 +87,7 @@ describe("student directory", () => {
     expect(mocks.filters).toHaveBeenLastCalledWith({
       q: "Telegram",
       page: 1,
-      limit: 25,
+      limit: 25, joinedPeriod: "ALL", membership: "ALL", order: "NEWEST",
     });
   });
   it("finds a profile account number and opens that account for management", () => {
@@ -102,7 +103,7 @@ describe("student directory", () => {
     expect(mocks.filters).toHaveBeenLastCalledWith({
       q: "",
       page: 2,
-      limit: 25,
+      limit: 25, joinedPeriod: "ALL", membership: "ALL", order: "NEWEST",
     });
     const search = screen.getByPlaceholderText(
       "Hesap numarası, ad, e-posta veya Telegram",
@@ -112,7 +113,7 @@ describe("student directory", () => {
     expect(mocks.filters).toHaveBeenLastCalledWith({
       q: accountId.toUpperCase(),
       page: 1,
-      limit: 25,
+      limit: 25, joinedPeriod: "ALL", membership: "ALL", order: "NEWEST",
     });
     expect(
       screen.getByLabelText(`Hesap numarası: ${accountId}`),
@@ -157,4 +158,16 @@ describe("student directory", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Öğrenciler yüklenemedi")).toBeInTheDocument();
   });
+});
+
+it("shows joined time and preserves search while filters reset pagination", () => {
+ render(<MemoryRouter><Students /></MemoryRouter>);
+ expect(screen.getByText("13.10.2026 09:20")).toBeInTheDocument();
+ expect(screen.getByText("Özbekistan · Tashkent")).toBeInTheDocument();expect(screen.getByText("Instagram reklamı")).toBeInTheDocument();expect(screen.getByText("Kayıt: Google")).toBeInTheDocument();
+ fireEvent.click(screen.getByTitle("2"));
+ fireEvent.change(screen.getByLabelText("Katılım zamanı"), {target:{value:"WEEK"}});
+ expect(mocks.filters).toHaveBeenLastCalledWith({q:"",page:1,limit:25,joinedPeriod:"WEEK",membership:"ALL",order:"NEWEST"});
+ fireEvent.change(screen.getByLabelText("Üyelik durumu"), {target:{value:"ACTIVE"}});
+ fireEvent.change(screen.getByLabelText("Katılım sıralaması"), {target:{value:"OLDEST"}});
+ expect(mocks.filters).toHaveBeenLastCalledWith({q:"",page:1,limit:25,joinedPeriod:"WEEK",membership:"ACTIVE",order:"OLDEST"});
 });

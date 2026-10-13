@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Drawer } from "antd";
 import { PanelLeftOpen } from "lucide-react";
+import StudentRegistrationNotices from "@/pages/students/student-registration-notices";
 import Sidebar from "./sidebar";
 
 export default function RootLayout() {
@@ -64,6 +65,7 @@ export default function RootLayout() {
           </Drawer>
         </>
       )}
+      <StudentRegistrationNotices />
       <div className="admin-main">
         <div id="admin-workspace" tabIndex={-1} className="admin-content">
           <div className="admin-content-inner">
