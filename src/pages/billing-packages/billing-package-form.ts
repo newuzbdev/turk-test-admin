@@ -13,6 +13,22 @@ export type MockSelection = {
   packageId?: string;
   sections: { scope: PackageScope; targetId: string }[];
 };
+export type BillingCampaign = {
+  id: string;
+  enabled: boolean;
+  label: string;
+  userLimit: number | null;
+};
+export type BillingCampaignState = {
+  id: string;
+  label: string;
+  userLimit: number | null;
+  claimedUsers: number;
+  reservedUsers: number;
+  remainingUsers: number | null;
+  availableUsers: number | null;
+  status: "ACTIVE" | "PAUSED" | "SCHEDULED" | "ENDED" | "SOLD_OUT" | "RESERVED" | "ALREADY_USED";
+};
 export type PackageTerms = {
   kind: PackageKind;
   saleMode: "STANDALONE" | "MEMBERSHIP_ADD_ON" | "BOTH";
@@ -27,6 +43,7 @@ export type PackageTerms = {
   practiceScopes: PackageScope[];
   attemptLimit: number;
   validityDays: number | null;
+  campaign?: BillingCampaign | null;
   discount: null | {
     kind: "PERCENT" | "AMOUNT_UZS";
     value: number;
@@ -41,6 +58,7 @@ export type PackageDraft = {
   salesEnabled: boolean;
   sortOrder: number;
   activeVersionId?: string | null;
+  campaignState?: BillingCampaignState | null;
 };
 export type ContentOptions = {
   mocks: { label: string; selection: MockSelection }[];
@@ -109,6 +127,18 @@ export function validatePackageForm(t: PackageTerms): string[] {
     errors.push("En az bir sınav seçin.");
   if (t.kind === "LESSON_PACKAGE" && !t.lessonIds.length)
     errors.push("En az bir ders seçin.");
+  if (t.campaign) {
+    const campaign = t.campaign;
+    if (t.kind !== "MEMBERSHIP") errors.push("Kampanya yalnız üyelik paketlerinde kullanılabilir.");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(campaign.id))
+      errors.push("Kampanya kimliği geçerli olmalı.");
+    if (!campaign.label.trim() || campaign.label.length > 40)
+      errors.push("Kampanya adı 1–40 karakter olmalı.");
+    if (campaign.userLimit !== null && !integer(campaign.userLimit, 1, 1000000))
+      errors.push("Kullanıcı sınırı 1–1.000.000 tam sayı olmalı.");
+    if (campaign.enabled && !t.discount)
+      errors.push("Kampanya için zamanlı indirim tanımlayın.");
+  }
   if (t.discount) {
     const d = t.discount;
     const discounted = d.kind === "PERCENT"
@@ -127,6 +157,7 @@ export function validatePackageForm(t: PackageTerms): string[] {
 }
 export function previewPrice(t: PackageTerms, now = new Date()) {
   if (
+    (t.kind === "MEMBERSHIP" && t.campaign?.enabled === false) ||
     !t.discount ||
     +now < Date.parse(t.discount.startsAt) ||
     +now >= Date.parse(t.discount.endsAt)
@@ -144,7 +175,16 @@ export function mockChoiceKey(s: MockSelection) {
 }
 
 export function billingError(error: unknown) {
-  return (error as { response?: { status: number } })?.response?.status === 409
+  const response = (error as {
+    response?: { status?: number; data?: { code?: unknown; message?: unknown } };
+  })?.response;
+  if (
+    response?.status === 409 &&
+    (response.data?.code === "CAMPAIGN_LIMIT_BELOW_OCCUPIED" ||
+      response.data?.message === "CAMPAIGN_LIMIT_BELOW_OCCUPIED")
+  )
+    return "Kullanıcı sınırı, mevcut katılımcılar ve ödeme için ayrılan kontenjanların toplamından az olamaz. Sınırı artırın.";
+  return response?.status === 409
     ? "Başka bir düzenleme kaydedildi. Taslağınız korunuyor; yeniden yüklemeden önce değişikliklerinizi kopyalayabilirsiniz."
     : error instanceof Error
       ? error.message

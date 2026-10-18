@@ -5,12 +5,17 @@ export default function BillingPackagePreview({
 }: {
   terms: PackageTerms;
 }) {
+  const price = previewPrice(terms);
+  const hasDiscount = price < terms.basePriceUzs;
   return (
-    <Card title="Öğrenciye sunulan paket" size="small">
+    <Card title="Öğrenciye sunulan paket" size="small" role="region" aria-label="Paket önizlemesi">
       <Typography.Title level={4}>{terms.name}</Typography.Title>
+      {hasDiscount && <Typography.Text type="secondary" style={{ textDecoration: "line-through" }}>{terms.basePriceUzs.toLocaleString("tr-TR")} som</Typography.Text>}
       <Typography.Title level={3}>
-        {previewPrice(terms).toLocaleString("tr-TR")} som
+        {price.toLocaleString("tr-TR")} som
       </Typography.Title>
+      {terms.kind === "MEMBERSHIP" && terms.campaign && <p>{hasDiscount ? `Kampanya fiyatı · ${terms.campaign.label}` : "Normal fiyat"}</p>}
+      {terms.kind === "MEMBERSHIP" && terms.campaign && <Typography.Text type="secondary">Taslak önizlemesi. Katılım sınırı ve öğrenciye uygunluk satın alma sırasında kontrol edilir.</Typography.Text>}
       <p>{terms.description}</p>
       <p>
         {terms.periodDays

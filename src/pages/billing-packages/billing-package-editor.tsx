@@ -19,6 +19,7 @@ import {
   type PackageDraft,
   type PackageScope,
   type PackageTerms,
+  type BillingCampaignState,
 } from "./billing-package-form";
 import BillingPackagePreview from "./billing-package-preview";
 const practiceOptions = [
@@ -34,12 +35,16 @@ export default function BillingPackageEditor({
   onSave,
   onPublish,
   onReload,
+  campaignState,
+  campaignStateError = false,
 }: {
   draft: PackageDraft;
   content: ContentOptions;
   onSave: (draft: PackageDraft, terms: PackageTerms) => Promise<PackageDraft>;
   onPublish: (draft: PackageDraft) => Promise<PackageDraft>;
   onReload: () => void;
+  campaignState?: BillingCampaignState | null;
+  campaignStateError?: boolean;
 }) {
   const [current, setCurrent] = useState(draft),
     [terms, setTerms] = useState(() => structuredClone(draft.terms)),
@@ -48,6 +53,8 @@ export default function BillingPackageEditor({
     [notice, setNotice] = useState("");
   const dirty = JSON.stringify(terms) !== JSON.stringify(current.terms),
     canComponents = terms.kind === "MEMBERSHIP";
+  const serverCampaign = campaignState === undefined ? current.campaignState : campaignState;
+  const counter = serverCampaign?.id === terms.campaign?.id ? serverCampaign : null;
   const edit = (patch: Partial<PackageTerms>) => {
     if (busy) return;
     setTerms((old) => ({ ...old, ...patch }));
@@ -278,6 +285,62 @@ export default function BillingPackageEditor({
               />
             </label>
           )}
+          {canComponents && (
+            <section aria-label="Kampanya ayarları" className="billing-campaign-settings">
+              <Checkbox
+                checked={terms.campaign?.enabled ?? false}
+                onChange={(e) => edit({
+                  campaign: terms.campaign
+                    ? { ...terms.campaign, enabled: e.target.checked }
+                    : { id: crypto.randomUUID(), enabled: e.target.checked, label: "Kampanya", userLimit: 1000 },
+                })}
+              >
+                Kampanya
+              </Checkbox>
+              {terms.campaign && (
+                <>
+                  <Typography.Text type="secondary">
+                    {terms.campaign.enabled ? "Kampanya etkin." : "Kampanya duraklatıldı; normal fiyat uygulanır."}{" "}
+                    Duraklatıp sürdürmek katılım geçmişini korur. Değişiklikler kaydedilip yayımlandığında uygulanır.
+                  </Typography.Text>
+                  <label>
+                    Kampanya adı
+                    <Input aria-label="Kampanya adı" maxLength={40} value={terms.campaign.label}
+                      onChange={(e) => edit({ campaign: { ...terms.campaign!, label: e.target.value } })} />
+                  </label>
+                  <Checkbox checked={terms.campaign.userLimit !== null}
+                    onChange={(e) => edit({ campaign: { ...terms.campaign!, userLimit: e.target.checked ? 1000 : null } })}>
+                    Kullanıcı sınırı
+                  </Checkbox>
+                  {terms.campaign.userLimit !== null ? (
+                    <label>
+                      Kullanıcı sayısı
+                      <InputNumber aria-label="Kullanıcı sayısı" min={1} max={1000000} precision={0}
+                        value={terms.campaign.userLimit}
+                        onChange={(n) => edit({ campaign: { ...terms.campaign!, userLimit: n ?? 0 } })} />
+                    </label>
+                  ) : <Typography.Text type="secondary">Kullanıcı sınırı yok.</Typography.Text>}
+                  <Typography.Text type="secondary">
+                    Kampanya fiyatı ve tarihleri aşağıdaki zamanlı indirimden alınır.
+                  </Typography.Text>
+                  <section aria-label="Güncel kampanya katılımı" className="billing-campaign-counter">
+                    <Typography.Text strong>Kaydedilmiş kampanyanın katılımı</Typography.Text>
+                    {counter ? (
+                      <>
+                        <p>{counter.userLimit === null ? "Kullanıcı sınırı yok" : `${counter.userLimit.toLocaleString("tr-TR")} kişiye özel · ${counter.remainingUsers?.toLocaleString("tr-TR")} kontenjan kaldı`}</p>
+                        <p>{counter.claimedUsers.toLocaleString("tr-TR")} kullanıcı katıldı</p>
+                        {counter.reservedUsers > 0 && <p>{counter.reservedUsers.toLocaleString("tr-TR")} kontenjan ödeme için ayrıldı</p>}
+                        {counter.status === "RESERVED" && <p>Son kontenjanlar ödeme aşamasında</p>}
+                        {counter.status === "SOLD_OUT" && <p>Kampanya kontenjanı doldu</p>}
+                      </>
+                    ) : <p>Katılım bilgisi taslak kaydedildikten sonra yüklenir.</p>}
+                    {campaignStateError && <Typography.Text type="warning">Sayaç güncellenemedi. Son alınan değerler gösteriliyor.</Typography.Text>}
+                    <Typography.Text type="secondary">Sayım yaklaşık 15 saniyede bir yenilenir. Ödeme için ayrılan yerler başarılı katılımdan ayrı gösterilir.</Typography.Text>
+                  </section>
+                </>
+              )}
+            </section>
+          )}
           <Checkbox
             checked={!!terms.discount}
             onChange={(e) =>
@@ -297,7 +360,7 @@ export default function BillingPackageEditor({
           </Checkbox>
           {terms.discount && (
             <>
-              <Space>
+              <Space wrap>
                 <Select
                   aria-label="İndirim türü"
                   value={terms.discount.kind}

@@ -17,6 +17,7 @@ import {
   useBillingMutation,
   useBillingPackages,
   useBillingSettings,
+  useBillingCampaignState,
 } from "@/config/queries/billing-packages";
 import {
   billingError,
@@ -40,6 +41,7 @@ export default function BillingPackages() {
     [editorKey, setEditorKey] = useState(0),
     [error, setError] = useState("");
   const history = useBillingHistory(draft?.id);
+  const campaign = useBillingCampaignState(draft?.terms.kind === "MEMBERSHIP" ? draft.id : undefined);
   const create = useBillingMutation(billingApi.create),
     save = useBillingMutation(
       ({
@@ -121,9 +123,13 @@ export default function BillingPackages() {
               disabled={create.isPending}
               onClick={async () => {
                 try {
+                  const terms = structuredClone(draft.terms);
+                  if (terms.kind === "MEMBERSHIP" && terms.campaign) {
+                    terms.campaign = { ...terms.campaign, id: crypto.randomUUID(), enabled: false };
+                  }
                   setDraft(
                     await create.mutateAsync({
-                      ...structuredClone(draft.terms),
+                      ...terms,
                       name: `${draft.terms.name} kopyası`.slice(0, 120),
                     }),
                   );
@@ -212,6 +218,8 @@ export default function BillingPackages() {
               key={`${draft.id}-${editorKey}`}
               draft={draft}
               content={content.data}
+              campaignState={campaign.data}
+              campaignStateError={campaign.isError}
               onSave={async (draft, terms) => {
                 const updated = draft.id
                   ? await save.mutateAsync({ draft, terms })

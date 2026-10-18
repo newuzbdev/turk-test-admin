@@ -72,6 +72,18 @@ export function useBillingPackages() {
     retry: false,
   });
 }
+export function useBillingCampaignState(id?: string) {
+  return useQuery({
+    queryKey: ["billing-package-campaign", id],
+    queryFn: () => billingApi.get(id!),
+    select: (draft) => draft.campaignState ?? null,
+    enabled: !!id,
+    refetchInterval: 15000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: "always",
+    retry: false,
+  });
+}
 export function useBillingContent() {
   return useQuery({
     queryKey: ["billing-content"],
@@ -101,6 +113,7 @@ export function useBillingMutation<T, R>(fn: (input: T) => Promise<R>) {
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: ["billing-packages"] }),
+        client.invalidateQueries({ queryKey: ["billing-package-campaign"] }),
         client.invalidateQueries({ queryKey: ["billing-settings"] }),
         client.invalidateQueries({ queryKey: ["billing-history"] }),
         client.invalidateQueries({ queryKey: ["subscription-config"] }),
