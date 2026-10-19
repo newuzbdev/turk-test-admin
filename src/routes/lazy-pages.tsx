@@ -29,3 +29,5 @@ export const Students=lazy(()=>import("../pages/students/students"));
 export const StudentDetail=lazy(()=>import("../pages/students/student-detail"));
 
 export const BillingPackages=lazy(()=>import('../pages/billing-packages/billing-packages'));
+
+export const ExpertSocial = lazy(() => import("../pages/expert-social/expert-social"));

@@ -43,6 +43,7 @@ const groups = [
     label: "Yönetim",
     paths: [
       "students",
+      "expert-social",
       "billing-packages",
       "subscriptions",
       "product",

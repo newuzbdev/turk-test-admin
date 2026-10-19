@@ -42,6 +42,7 @@ import {
   Subscriptions,
   BillingPackages,
   AiCosts,
+  ExpertSocial,
   SystemServices,
 } from "./lazy-pages";
 import ListeningEditor from "@/pages/listening/listening-editor";
@@ -71,6 +72,7 @@ export interface RouterConfig {
 }
 
 export const routerConfig: RouterConfig[] = [
+  {title:"Uzman bağlantıları",label:"Uzman bağlantıları",icon:<Activity/>,path:"expert-social",page:<ExpertSocial/>,inMenu:true},
   {title:"Paketler ve Fiyatlar",label:"Paketler ve Fiyatlar",icon:<Package/>,path:"billing-packages",page:<BillingPackages/>,inMenu:true},
   {title:"Öğrenciler",label:"Öğrenciler",icon:<User />,path:"students",page:<Students />,inMenu:true},
   {title:"Öğrenci erişimleri",label:"Öğrenci erişimleri",icon:<User />,path:"students/:id",page:<StudentDetail />,inMenu:false},
