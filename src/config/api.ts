@@ -3,75 +3,79 @@ import { api } from ".";
 import { authEndpoints } from "./endpoint";
 
 const baseURL = import.meta.env.VITE_API_URL || "https://api.turkishmock.uz";
-const axiosPrivate = axios.create({
-	baseURL,
+const axiosPrivate = axios.create({ baseURL });
+const requestSessions = new WeakMap<object, string | null>();
+let renewal: { token: string; promise: Promise<string> } | null = null;
+
+function requireLogin() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  const returnTo = window.location.pathname + window.location.search + window.location.hash;
+  window.location.href = `/login?redirect=${encodeURIComponent(returnTo)}`;
+}
+
+function renewAccessToken(refreshToken: string): Promise<string> {
+  if (renewal?.token === refreshToken) return renewal.promise;
+  const promise = (async () => {
+    try {
+      const { data } = await api.post(authEndpoints.refresh, { refreshToken }, {
+        timeout: 10_000, withCredentials: false,
+      });
+      if (localStorage.getItem("refreshToken") !== refreshToken) {
+        throw new Error("Oturum değişti. İsteği yeniden deneyin.");
+      }
+      if (typeof data?.accessToken !== "string" || !data.accessToken) {
+        throw new Error("Oturum yenileme yanıtı eksik.");
+      }
+      localStorage.setItem("accessToken", data.accessToken);
+      if (typeof data.refreshToken === "string" && data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
+      return data.accessToken as string;
+    } catch (error) {
+      if (localStorage.getItem("refreshToken") !== refreshToken) {
+        throw new Error("Oturum değişti. İsteği yeniden deneyin.");
+      }
+      // Only a confirmed rejection invalidates login. Network/5xx keeps it.
+      if (axios.isAxiosError(error) && error.response?.status === 401) requireLogin();
+      throw error;
+    }
+  })();
+  renewal = { token: refreshToken, promise };
+  void promise.finally(() => {
+    if (renewal?.promise === promise) renewal = null;
+  }).catch(() => undefined);
+  return promise;
+}
+
+axiosPrivate.interceptors.request.use((config) => {
+  requestSessions.set(config, localStorage.getItem("refreshToken"));
+  const token = localStorage.getItem("accessToken");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
-axiosPrivate.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 axiosPrivate.interceptors.response.use(
-  (response) => response,
-
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        const refreshResponse = await api.post(authEndpoints.refresh, {
-          refreshToken,
-        });
-
-        if (refreshResponse?.data?.accessToken) {
-          const newAccessToken = refreshResponse.data.accessToken;
-          localStorage.setItem("accessToken", newAccessToken);
-          if (refreshResponse.data.refreshToken) {
-            localStorage.setItem(
-              "refreshToken",
-              refreshResponse.data.refreshToken
-            );
-          }
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return axiosPrivate(originalRequest);
-        }
-      } catch (err) {
-        console.error("Error refreshing token:", err);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        // Redirect to login with current location for better UX
-        const currentPath = window.location.pathname;
-        window.location.href = `/login?redirect=${encodeURIComponent(
-          currentPath
-        )}`;
-        return Promise.reject(err);
-      }
+  response => response,
+  async error => {
+    const original = error.config;
+    if (error.response?.status !== 401 || !original) return Promise.reject(error);
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (requestSessions.get(original) !== refreshToken) {
+      return Promise.reject(new Error("Oturum değişti. İsteği yeniden deneyin."));
     }
-
-    if (
-      error.response?.status === 405 &&
-      error.response?.data?.message === "Password Change Requierd" &&
-      error.response?.data?.error === "Method Not Allowed"
-    ) {
+    if (original._retry || !refreshToken) {
+      requireLogin();
       return Promise.reject(error);
     }
-
-    return Promise.reject(error);
-  }
+    original._retry = true;
+    // Another request may already have renewed the token that was rejected.
+    const current = localStorage.getItem("accessToken");
+    const token = current && original.headers.Authorization !== `Bearer ${current}`
+      ? current : await renewAccessToken(refreshToken);
+    original.headers.Authorization = `Bearer ${token}`;
+    return axiosPrivate(original);
+  },
 );
 
 export default axiosPrivate;
